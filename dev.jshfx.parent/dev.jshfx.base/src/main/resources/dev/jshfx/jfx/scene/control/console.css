@@ -1,0 +1,17 @@
+.styled-text-area .jsh-console-normal {
+    -fx-fill: white;
+}
+
+.styled-text-area .jsh-console-error {
+    -fx-fill: red;
+}
+
+.styled-text-area .jsh-console-comment {
+   /*  -fx-fill: #666; */
+    -fx-fill: lime;
+    -fx-font-style: italic;
+}
+
+.styled-text-area .jsh-console-help {
+    -fx-fill: white;
+}

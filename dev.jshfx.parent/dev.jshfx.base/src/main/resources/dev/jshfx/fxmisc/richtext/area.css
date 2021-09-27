@@ -1,0 +1,30 @@
+.main-selection {
+    -fx-fill: mediumblue;
+}
+
+.styled-text-area .jsh-find {
+    -rtfx-background-color: rgba(255, 0, 255, 0.5);
+}
+
+.styled-text-area .jsh-find-selected {
+    -rtfx-background-color: #90ee90;
+}
+
+.styled-text-area .jsh-warning, .styled-text-area .jsh-mandatory_warning {
+    -rtfx-underline-color: orange;
+    -rtfx-underline-width: 1;
+}
+
+.styled-text-area .jsh-error {
+    -rtfx-underline-color: red;
+    -rtfx-underline-width: 1;
+/*     -rtfx-underline-dash-array: 2;
+    -rtfx-underline-cap: butt; */
+}
+
+.styled-text-area .jsh-note, .styled-text-area .jsh-other {
+    -rtfx-underline-color: blue;
+    -rtfx-underline-width: 1;
+}
+
+
