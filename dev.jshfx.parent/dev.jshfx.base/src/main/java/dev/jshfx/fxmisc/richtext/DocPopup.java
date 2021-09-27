@@ -9,7 +9,7 @@ import java.util.function.Function;
 
 import org.fxmisc.wellbehaved.event.Nodes;
 
-import dev.jshfx.jfx.application.XPlatform;
+import dev.jshfx.jfx.application.FXPlatform;
 import dev.jshfx.jfx.scene.layout.LayoutUtils;
 import dev.jshfx.jfx.scene.web.JSUtils;
 import dev.jshfx.jfx.util.FXResourceBundle;
@@ -40,7 +40,7 @@ public class DocPopup extends Tooltip {
         setMinSize(10, 10);
         setPrefSize(CompletionPopup.DEFAULT_WIDTH, CompletionPopup.DEFAULT_HEIGHT);
 
-        XPlatform.runFX(() -> {
+        FXPlatform.runFX(() -> {
             webView = new WebView();
             webView.setContextMenuEnabled(false);
             StackPane pane = new StackPane(webView);

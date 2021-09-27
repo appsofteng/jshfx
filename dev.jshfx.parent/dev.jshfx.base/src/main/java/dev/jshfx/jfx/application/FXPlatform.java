@@ -2,9 +2,9 @@ package dev.jshfx.jfx.application;
 
 import javafx.application.Platform;
 
-public final class XPlatform {
+public final class FXPlatform {
 
-    private XPlatform() {
+    private FXPlatform() {
     }
 
     public static void runFX(Runnable run) {

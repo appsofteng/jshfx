@@ -12,7 +12,7 @@ import javax.tools.Diagnostic;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.event.MouseOverTextEvent;
 
-import dev.jshfx.jfx.application.XPlatform;
+import dev.jshfx.jfx.application.FXPlatform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
@@ -92,7 +92,7 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
         
         CompletableFuture<List<Diagnostic<Path>>> future = futures.get(0);
 
-        future.thenAccept(diags -> XPlatform.runFX(() -> {
+        future.thenAccept(diags -> FXPlatform.runFX(() -> {
             
             diagnostics.clear();
 
