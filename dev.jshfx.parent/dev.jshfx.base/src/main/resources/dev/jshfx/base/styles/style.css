@@ -15,6 +15,12 @@
 }*/
 
 /******************************************************************************/
+.tooltip {
+	-fx-font-size: 0.95em;
+	-fx-font-weight: bold;
+}
+
+
 .glyph-font {
     -fx-text-fill: -fx-text-background-color;
 } 

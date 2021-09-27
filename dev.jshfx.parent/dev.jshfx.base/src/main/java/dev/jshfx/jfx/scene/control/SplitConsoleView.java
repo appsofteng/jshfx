@@ -13,6 +13,8 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
 import dev.jshfx.fxmisc.richtext.ContextMenuBuilder;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
@@ -31,6 +33,7 @@ public class SplitConsoleView extends BorderPane {
     private ObservableList<String> history = FXCollections.observableArrayList();
     private int historyIndex;
     private List<String> styleFilter;
+    private final ReadOnlyBooleanWrapper edited = new ReadOnlyBooleanWrapper();
 
     public SplitConsoleView() {
         this(new ConsoleModel(), List.of(), List.of());
@@ -53,6 +56,14 @@ public class SplitConsoleView extends BorderPane {
         setBehavior();
     }
 
+	public boolean isEdited() {
+		return edited.get();
+	}
+    
+    public ReadOnlyBooleanProperty editedProperty() {
+        return edited.getReadOnlyProperty();
+    }
+    
     public ConsoleModel getConsoleModel() {
         return consoleModel;
     }
@@ -99,6 +110,9 @@ public class SplitConsoleView extends BorderPane {
     }
 
     private void setBehavior() {
+    	
+    	inputArea.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> edited.set((Boolean) n));
+    	inputArea.textProperty().addListener((v, o, n) -> edited.set(true));
 
         inputArea.sceneProperty().addListener((v, o, n) -> {
             if (n != null) {

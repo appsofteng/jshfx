@@ -18,7 +18,7 @@ public class RootPane extends BorderPane {
 		centerPane.setTabDragPolicy(TabDragPolicy.REORDER);
 		
 		actions = new Actions(centerPane.getTabs());
-		actions.newShell();
+
 		ToolBar toolBar = ActionUtils.createToolBar(actions.getActions(), ActionTextBehavior.HIDE);
 
 		setTop(toolBar);		

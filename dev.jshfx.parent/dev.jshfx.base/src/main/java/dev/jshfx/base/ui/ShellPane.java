@@ -1,5 +1,6 @@
 package dev.jshfx.base.ui;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -16,19 +17,28 @@ import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.CTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
+import dev.jshfx.jfx.file.FXPath;
 import dev.jshfx.jfx.scene.control.SplitConsoleView;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
-import javafx.scene.layout.StackPane;
 
-public class ShellPane extends StackPane {
+public class ShellPane extends Part {
 
 	private SplitConsoleView consoleView;
 	private Completion completion;
 	private Session session;
 	private TaskQueuer taskQueuer = new TaskQueuer();
+	private FXPath path;
 
 	public ShellPane() {
+		this(Path.of("new.jsh"));
+	}
+	
+	
+	public ShellPane(Path path) {
+		this.path = new FXPath(path);
+		
 		List<String> history = JsonUtils.get().fromJson(FileManager.HISTORY_FILE, List.class, List.of());
 		consoleView = new SplitConsoleView(history, List.of("block-delimiter-match"));
 		getProperties().put(getClass(), consoleView.getInputArea());
@@ -49,6 +59,9 @@ public class ShellPane extends StackPane {
 	}
 
 	private void setBehavior() {
+		
+		title.bind(Bindings.createStringBinding(() -> createTitle() , path.nameProperty(), consoleView.editedProperty()));
+		longTitle.bind(Bindings.createStringBinding(() -> path.getPath().toString(), path.pathProperty()));
 		
         sceneProperty().addListener((v, o, n) -> {
             if (n != null) {
@@ -79,6 +92,12 @@ public class ShellPane extends StackPane {
 				}
 			}
 		});
+	}
+	
+	private String createTitle() {
+		String result = consoleView.isEdited() ? "*" + path.getName(): path.getName();
+		
+		return result;
 	}
 
 	private void codeCompletion(Consumer<Collection<CompletionItem>> behavior) {
