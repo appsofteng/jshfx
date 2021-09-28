@@ -10,11 +10,12 @@ import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 
-import dev.jshfx.fxmisc.richtext.ContextMenuBuilder;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
@@ -33,6 +34,8 @@ public class SplitConsolePane extends BorderPane {
 	private CodeArea outputArea = new CodeArea();
 	private ObservableList<String> history = FXCollections.observableArrayList();
 	private int historyIndex;
+	private BooleanProperty historyStartReached = new SimpleBooleanProperty();
+	private BooleanProperty historyEndReached = new SimpleBooleanProperty();
 	private List<String> styleFilter;
 	private final ReadOnlyBooleanWrapper edited = new ReadOnlyBooleanWrapper();
 
@@ -53,6 +56,8 @@ public class SplitConsolePane extends BorderPane {
 		this.history.addAll(history);
 		this.styleFilter = styleFilter;
 		historyIndex = history.size();
+		historyStartReached.set(historyIndex == 0);
+		historyEndReached.set(historyIndex == history.size());
 		setGraphics();
 		setBehavior();
 	}
@@ -92,9 +97,6 @@ public class SplitConsolePane extends BorderPane {
 	private void setGraphics() {
 		outputArea.setEditable(false);
 		outputArea.setFocusTraversable(false);
-
-		ContextMenuBuilder.get(inputArea).copy().cut().paste().selectAll().clear().separator().undo().redo();
-		ContextMenuBuilder.get(outputArea).copy().selectAll().clear();
 
 		SplitPane splitPane = new SplitPane(new VirtualizedScrollPane<>(inputArea),
 				new VirtualizedScrollPane<>(outputArea));
@@ -168,7 +170,7 @@ public class SplitConsolePane extends BorderPane {
 		});
 	}
 
-	private void enter() {
+	public void enter() {
 
 		// Null char may come from clipboard.
 		if (inputArea.getText().contains("\0")) {
@@ -190,6 +192,8 @@ public class SplitConsolePane extends BorderPane {
 		}
 
 		historyIndex = history.size();
+		historyStartReached.set(historyIndex == 0);
+		historyEndReached.set(historyIndex == history.size());
 
 		inputArea.clear();
 
@@ -221,16 +225,18 @@ public class SplitConsolePane extends BorderPane {
 		return styleSpans;
 	}
 
-	private void historyUp() {
+	public void historyUp() {
 
 		if (historyIndex > 0 && historyIndex <= history.size()) {
 			historyIndex--;
 			String text = history.get(historyIndex);
 			inputArea.replaceText(text);
+			historyStartReached.set(historyIndex == 0);
+			historyEndReached.set(historyIndex == history.size());
 		}
 	}
 
-	private void historyDown() {
+	public void historyDown() {
 
 		if (historyIndex >= 0 && historyIndex < history.size() - 1) {
 			historyIndex++;
@@ -240,8 +246,20 @@ public class SplitConsolePane extends BorderPane {
 			inputArea.replaceText("");
 			historyIndex = history.size();
 		}
+
+		historyStartReached.set(historyIndex == 0);
+		historyEndReached.set(historyIndex == history.size());
+
 	}
 
+	public ReadOnlyBooleanProperty historyStartReachedProperty() {
+		return historyStartReached;
+	}
+
+	public ReadOnlyBooleanProperty historyEndReachedProperty() {
+		return historyEndReached;
+	}
+	
 	public void dispose() {
 		inputArea.dispose();
 		outputArea.dispose();

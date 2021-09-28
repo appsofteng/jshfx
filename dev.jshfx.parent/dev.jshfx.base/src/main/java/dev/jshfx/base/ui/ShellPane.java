@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.controlsfx.control.action.Action;
 import org.fxmisc.richtext.LineNumberFactory;
 
 import dev.jshfx.base.jshell.Completion;
@@ -22,6 +23,7 @@ import dev.jshfx.jfx.scene.control.SplitConsolePane;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
+import javafx.scene.control.SeparatorMenuItem;
 
 public class ShellPane extends Part {
 
@@ -30,15 +32,19 @@ public class ShellPane extends Part {
 	private Session session;
 	private TaskQueuer taskQueuer = new TaskQueuer();
 	private FXPath path;
+	private List<Action> inputAreaActions;
+	private List<Action> outputAreaActions;
+	private Action submitAction;
+	private Action historyUpAction;
+	private Action historyDownAction;
 
 	public ShellPane() {
 		this(Path.of("new.jsh"));
 	}
-	
-	
+
 	public ShellPane(Path path) {
 		this.path = new FXPath(path);
-		
+
 		List<String> history = JsonUtils.get().fromJson(FileManager.HISTORY_FILE, List.class, List.of());
 		consoleView = new SplitConsolePane(history, List.of("block-delimiter-match"));
 		getProperties().put(getClass(), consoleView.getInputArea());
@@ -46,9 +52,20 @@ public class ShellPane extends Part {
 		completion = new Completion(session);
 
 		getChildren().add(consoleView);
-		
+
 		consoleView.getInputArea().setParagraphGraphicFactory(LineNumberFactory.get(consoleView.getInputArea()));
-		
+		inputAreaActions = Actions.get().setEditContextMenu(consoleView.getInputArea());
+		outputAreaActions = Actions.get().setReadOnlyContextMenu(consoleView.getOutputArea());
+
+		consoleView.getInputArea().getContextMenu().getItems().add(new SeparatorMenuItem());
+		submitAction = Actions.get().createAction(consoleView.getInputArea(), () -> consoleView.enter(), "submit",
+				"Shift+Enter");
+		historyUpAction = Actions.get().createAction(consoleView.getInputArea(), () -> consoleView.historyUp(),
+				"historyUp", "Ctrl+Up", consoleView.historyStartReachedProperty());
+		historyDownAction = Actions.get().createAction(consoleView.getInputArea(), () -> consoleView.historyDown(),
+				"historyDown", "Ctrl+Down", consoleView.historyEndReachedProperty());
+
+
 		CodeAreaWrappers.get(consoleView.getInputArea(), "java").style()
 				.highlighting(consoleView.getConsoleModel().getReadFromPipe())
 				.completion(this::codeCompletion, completion::loadDocumentation).indentation();
@@ -59,15 +76,16 @@ public class ShellPane extends Part {
 	}
 
 	private void setBehavior() {
-		
-		title.bind(Bindings.createStringBinding(() -> createTitle() , path.nameProperty(), consoleView.editedProperty()));
+
+		title.bind(
+				Bindings.createStringBinding(() -> createTitle(), path.nameProperty(), consoleView.editedProperty()));
 		longTitle.bind(Bindings.createStringBinding(() -> path.getPath().toString(), path.pathProperty()));
-		
-        sceneProperty().addListener((v, o, n) -> {
-            if (n != null) {
-                session.setIO();
-            }
-        });
+
+		sceneProperty().addListener((v, o, n) -> {
+			if (n != null) {
+				session.setIO();
+			}
+		});
 
 		consoleView.getConsoleModel().getInputToOutput().addListener((Change<? extends TextStyleSpans> c) -> {
 
@@ -93,10 +111,10 @@ public class ShellPane extends Part {
 			}
 		});
 	}
-	
+
 	private String createTitle() {
-		String result = consoleView.isEdited() ? "*" + path.getName(): path.getName();
-		
+		String result = consoleView.isEdited() ? "*" + path.getName() : path.getName();
+
 		return result;
 	}
 
