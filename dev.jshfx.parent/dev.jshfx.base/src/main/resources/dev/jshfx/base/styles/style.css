@@ -39,11 +39,11 @@
 }
 
 .styled-text-area .text {
+	-fx-font-family: monospace;
 	-fx-font-size: 14;
     -fx-font-smoothing-type: lcd;
     -fx-fill: white;
     -fx-font-weight: bold;
-   
 }
 
 .list-cell .text {
