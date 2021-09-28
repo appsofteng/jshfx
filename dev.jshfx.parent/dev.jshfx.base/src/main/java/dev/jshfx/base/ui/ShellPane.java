@@ -18,14 +18,14 @@ import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.CTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
 import dev.jshfx.jfx.file.FXPath;
-import dev.jshfx.jfx.scene.control.SplitConsoleView;
+import dev.jshfx.jfx.scene.control.SplitConsolePane;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
 
 public class ShellPane extends Part {
 
-	private SplitConsoleView consoleView;
+	private SplitConsolePane consoleView;
 	private Completion completion;
 	private Session session;
 	private TaskQueuer taskQueuer = new TaskQueuer();
@@ -40,7 +40,7 @@ public class ShellPane extends Part {
 		this.path = new FXPath(path);
 		
 		List<String> history = JsonUtils.get().fromJson(FileManager.HISTORY_FILE, List.class, List.of());
-		consoleView = new SplitConsoleView(history, List.of("block-delimiter-match"));
+		consoleView = new SplitConsolePane(history, List.of("block-delimiter-match"));
 		getProperties().put(getClass(), consoleView.getInputArea());
 		session = new Session(consoleView, taskQueuer);
 		completion = new Completion(session);
