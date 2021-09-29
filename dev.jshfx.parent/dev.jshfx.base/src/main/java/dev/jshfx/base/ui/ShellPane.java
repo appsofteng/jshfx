@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Optional;
 
 import org.fxmisc.richtext.LineNumberFactory;
 
@@ -13,6 +13,7 @@ import dev.jshfx.base.jshell.Session;
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.fxmisc.richtext.CodeAreaWrappers;
 import dev.jshfx.fxmisc.richtext.CompletionItem;
+import dev.jshfx.fxmisc.richtext.CompletionPopup;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.CTask;
@@ -22,11 +23,13 @@ import dev.jshfx.jfx.scene.control.SplitConsolePane;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
+import javafx.geometry.Bounds;
 
 public class ShellPane extends Part {
 
 	private SplitConsolePane consolePane;
 	private Completion completion;
+	private CompletionPopup codeCompletion;
 	private Session session;
 	private TaskQueuer taskQueuer = new TaskQueuer();
 	private FXPath path;
@@ -51,14 +54,13 @@ public class ShellPane extends Part {
 		Actions.get().setReadOnlyContextMenu(consolePane.getOutputArea());
 
 		CodeAreaWrappers.get(consolePane.getInputArea(), "java").style()
-				.highlighting(consolePane.getConsoleModel().getReadFromPipe())
-				.completion(this::codeCompletion, completion::loadDocumentation).indentation();
+				.highlighting(consolePane.getConsoleModel().getReadFromPipe()).indentation();
 
 		CodeAreaWrappers.get(consolePane.getOutputArea(), "java").style();
 
 		setBehavior();
 	}
-	
+
 	private void setBehavior() {
 
 		title.bind(
@@ -68,6 +70,12 @@ public class ShellPane extends Part {
 		sceneProperty().addListener((v, o, n) -> {
 			if (n != null) {
 				session.setIO();
+			}
+		});
+
+		consolePane.getInputArea().caretPositionProperty().addListener((v, o, n) -> {
+			if (codeCompletion != null && codeCompletion.isShowing()) {
+				showCodeCompletion();
 			}
 		});
 
@@ -102,38 +110,51 @@ public class ShellPane extends Part {
 		return result;
 	}
 
-	private void codeCompletion(Consumer<Collection<CompletionItem>> behavior) {
-
+	public void showCodeCompletion() {
 		CTask<Collection<CompletionItem>> task = CTask
-				.create(() -> completion.getCompletionItems(consolePane.getInputArea())).onSucceeded(behavior);
+				.create(() -> completion.getCompletionItems(consolePane.getInputArea()))
+				.onSucceeded(this::codeCompletion);
 
 		taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
+	}
+
+	private void codeCompletion(Collection<CompletionItem> items) {
+		Optional<Bounds> boundsOption = consolePane.getInputArea().caretBoundsProperty().getValue();
+		if (boundsOption.isPresent()) {
+			Bounds bounds = boundsOption.get();
+			if (codeCompletion == null) {
+				codeCompletion = new CompletionPopup(completion::loadDocumentation);
+			}
+			codeCompletion.setOnHidden(e -> codeCompletion = null);
+			codeCompletion.setItems(items);
+			codeCompletion.show(consolePane.getInputArea(), bounds.getMaxX(), bounds.getMaxY());
+		}
 	}
 
 	public SplitConsolePane getConsolePane() {
 		return consolePane;
 	}
-	
+
 	public ReadOnlyBooleanProperty closedProperty() {
 		return session.closedProperty();
 	}
 
 	public void insertDirPath() {
 		var dir = FileDialogUtils.getDirectory(getScene().getWindow());
-		
+
 		dir.ifPresent(d -> {
 			consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), d.toString() + " ");
 		});
 	}
-	
+
 	public void insertFilePaths() {
 		var files = FileDialogUtils.getJavaFiles(getScene().getWindow());
-		
+
 		files.forEach(f -> {
 			consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), f.toString() + " ");
 		});
 	}
-	
+
 	public void dispose() {
 		var task = CTask.create(() -> session.close()).onFinished(t -> consolePane.dispose());
 

@@ -50,6 +50,8 @@ public class Actions {
 	private Action insertDirPathAction;
 	private Action insertFilePathAction;
 
+	private Action codeCompletionAction;
+
 	public static Actions get() {
 		return INSTANCE;
 	}
@@ -156,6 +158,11 @@ public class Actions {
 		FXResourceBundle.getBundle().put(insertFilePathAction.longTextProperty(), "insertFilePaths");
 		insertFilePathAction.setAccelerator(KeyCombination.keyCombination("Alt+F"));
 
+		codeCompletionAction = new Action(e -> rootPane.getSelectedShell().showCodeCompletion());
+		FXResourceBundle.getBundle().put(codeCompletionAction.textProperty(), "codeCompletion");
+		FXResourceBundle.getBundle().put(codeCompletionAction.longTextProperty(), "codeCompletion");
+		codeCompletionAction.setAccelerator(KeyCombination.keyCombination("Ctrl+Space"));
+
 		newAction = new Action(e -> rootPane.newShell());
 		newAction.setGraphic(GlyphFontRegistry.font(Fonts.FONT_AWESOME_5_FREE_REGULAR).create(Fonts.FontAwesome.FILE));
 		FXResourceBundle.getBundle().put(newAction.textProperty(), "new");
@@ -185,30 +192,25 @@ public class Actions {
 		var actions = List.of(inputAreaCopyAction, inputAreaCutAction, inputAreaPasteAction, inputAreaSelectAllAction,
 				inputAreaClearAction, ActionUtils.ACTION_SEPARATOR, inputAreaUndoAction, inputAreaReduAction,
 				ActionUtils.ACTION_SEPARATOR, submitAction, historyUpAction, historyDownAction,
-				ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction);
+				ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction, ActionUtils.ACTION_SEPARATOR,
+				codeCompletionAction);
 		ActionUtils.updateContextMenu(menu, actions);
 
-		Nodes.addInputMap(area,
-				sequence(consume(keyPressed(submitAction.getAccelerator()).onlyIf(e -> !submitAction.isDisabled()),
-						e -> submitAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
-		Nodes.addInputMap(area,
-				sequence(
-						consume(keyPressed(historyUpAction.getAccelerator()).onlyIf(e -> !historyUpAction.isDisabled()),
-								e -> historyUpAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
-		Nodes.addInputMap(area,
-				sequence(consume(
-						keyPressed(historyDownAction.getAccelerator()).onlyIf(e -> !historyDownAction.isDisabled()),
-						e -> historyDownAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
-
-		Nodes.addInputMap(area,
-				sequence(consume(
-						keyPressed(insertDirPathAction.getAccelerator()).onlyIf(e -> !insertDirPathAction.isDisabled()),
-						e -> insertDirPathAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
-		
-		Nodes.addInputMap(area,
-				sequence(consume(
-						keyPressed(insertFilePathAction.getAccelerator()).onlyIf(e -> !insertFilePathAction.isDisabled()),
-						e -> insertFilePathAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
+		Nodes.addInputMap(area, sequence(
+				consume(keyPressed(submitAction.getAccelerator()).onlyIf(e -> !submitAction.isDisabled()),
+						e -> submitAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+				consume(keyPressed(historyUpAction.getAccelerator()).onlyIf(e -> !historyUpAction.isDisabled()),
+						e -> historyUpAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+				consume(keyPressed(historyDownAction.getAccelerator()).onlyIf(e -> !historyDownAction.isDisabled()),
+						e -> historyDownAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+				consume(keyPressed(insertDirPathAction.getAccelerator()).onlyIf(e -> !insertDirPathAction.isDisabled()),
+						e -> insertDirPathAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+				consume(keyPressed(insertFilePathAction.getAccelerator())
+						.onlyIf(e -> !insertFilePathAction.isDisabled()),
+						e -> insertFilePathAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+				consume(keyPressed(codeCompletionAction.getAccelerator())
+						.onlyIf(e -> !codeCompletionAction.isDisabled()),
+						e -> codeCompletionAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
 	}
 
 	public void setReadOnlyContextMenu(GenericStyledArea<?, ?, ?> area) {

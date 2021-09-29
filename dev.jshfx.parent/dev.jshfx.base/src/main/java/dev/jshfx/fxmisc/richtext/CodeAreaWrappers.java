@@ -15,11 +15,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.tools.Diagnostic;
@@ -34,9 +31,6 @@ import org.fxmisc.wellbehaved.event.Nodes;
 import dev.jshfx.j.nio.file.XFiles;
 import dev.jshfx.jx.tools.Lexer;
 import javafx.application.Platform;
-import javafx.geometry.Bounds;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 
 public final class CodeAreaWrappers {
 
@@ -165,34 +159,6 @@ public final class CodeAreaWrappers {
         return this;
     }
 
-    public CodeAreaWrappers completion(Consumer<Consumer<Collection<CompletionItem>>> complete, Function<DocRef, String> documentation) {
-        area.getStylesheets().add(getClass().getResource("completion.css").toExternalForm());
-        CompletionPopup codeCompletion = new CompletionPopup(documentation);
-
-        Consumer<Collection<CompletionItem>> show = items -> {
-            Optional<Bounds> boundsOption = area.caretBoundsProperty().getValue();
-            if (boundsOption.isPresent()) {
-                Bounds bounds = boundsOption.get();
-                codeCompletion.setItems(items);
-                codeCompletion.show(area, bounds.getMaxX(), bounds.getMaxY());
-            }
-        };
-
-        area.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-
-            if (e.getCode() == KeyCode.SPACE && e.isControlDown()) {
-                complete.accept(show);
-            }
-        });
-
-        area.caretPositionProperty().addListener((v, o, n) -> {
-            if (codeCompletion != null && codeCompletion.isShowing()) {
-                complete.accept(show);
-            }
-        });
-
-        return this;
-    }
 
     public CodeAreaWrappers indentation() {
         IndentationWrapper<GenericStyledArea<?, ?, ?>> indentationWrapper = new IndentationWrapper<>(area, getLexer());

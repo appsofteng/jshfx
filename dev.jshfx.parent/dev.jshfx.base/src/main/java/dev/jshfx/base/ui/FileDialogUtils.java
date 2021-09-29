@@ -38,7 +38,7 @@ public class FileDialogUtils {
 		List<Path> paths = List.of();
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle(FXResourceBundle.getBundle().getString​("insertFilePaths"));
-		fileChooser.getExtensionFilters().addAll(new ExtensionFilter("JAR", "*.jar"),
+		fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Java", "*.jar", "*.java", "*.jmod", "*.jsh"), new ExtensionFilter("JAR", "*.jar"),
 				new ExtensionFilter("Java", "*.java"), new ExtensionFilter("JMOD", "*.jmod"),
 				new ExtensionFilter("JSH", "*.jsh"), new ExtensionFilter("*", "*.*"));
 		fileChooser.setInitialDirectory(PreferenceManager.get().getLatestDir().toFile());
