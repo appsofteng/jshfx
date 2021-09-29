@@ -29,7 +29,6 @@ public class ShellPane extends Part {
 
 	private SplitConsolePane consolePane;
 	private Completion completion;
-	private CompletionPopup codeCompletion;
 	private Session session;
 	private TaskQueuer taskQueuer = new TaskQueuer();
 	private FXPath path;
@@ -74,7 +73,7 @@ public class ShellPane extends Part {
 		});
 
 		consolePane.getInputArea().caretPositionProperty().addListener((v, o, n) -> {
-			if (codeCompletion != null && codeCompletion.isShowing()) {
+			if (CompletionPopup.get().isShowing()) {
 				showCodeCompletion();
 			}
 		});
@@ -122,12 +121,9 @@ public class ShellPane extends Part {
 		Optional<Bounds> boundsOption = consolePane.getInputArea().caretBoundsProperty().getValue();
 		if (boundsOption.isPresent()) {
 			Bounds bounds = boundsOption.get();
-			if (codeCompletion == null) {
-				codeCompletion = new CompletionPopup(completion::loadDocumentation);
-			}
-			codeCompletion.setOnHidden(e -> codeCompletion = null);
-			codeCompletion.setItems(items);
-			codeCompletion.show(consolePane.getInputArea(), bounds.getMaxX(), bounds.getMaxY());
+			CompletionPopup.get().setDocumentation(completion::loadDocumentation);
+			CompletionPopup.get().setItems(items);
+			CompletionPopup.get().show(consolePane.getInputArea(), bounds.getMaxX(), bounds.getMaxY());
 		}
 	}
 

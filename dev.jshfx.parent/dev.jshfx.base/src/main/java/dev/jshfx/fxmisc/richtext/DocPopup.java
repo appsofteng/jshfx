@@ -35,8 +35,7 @@ public class DocPopup extends Tooltip {
     private ObservableList<DocRef> history = FXCollections.observableArrayList();
     private IntegerProperty historyIndex = new SimpleIntegerProperty(-1);
 
-    public DocPopup(Function<DocRef, String> documentation) {
-        this.documentation = documentation;
+    public DocPopup() {        
         setMinSize(10, 10);
         setPrefSize(CompletionPopup.DEFAULT_WIDTH, CompletionPopup.DEFAULT_HEIGHT);
 
@@ -52,6 +51,10 @@ public class DocPopup extends Tooltip {
         });
     }
 
+    public void setDocumentation(Function<DocRef, String> documentation) {
+    	this.documentation = documentation;
+    }
+    
     private void setBehavior() {
         setHideOnEscape(false);
         Nodes.addInputMap(webView,

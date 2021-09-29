@@ -28,6 +28,7 @@ import javafx.stage.Screen;
 
 public class CompletionPopup extends Tooltip {
 
+	private static CompletionPopup INSTANCE;
     static final double DEFAULT_WIDTH = 450;
     static final double DEFAULT_HEIGHT = 200;
     private ListView<CompletionItem> itemView = new ListView<>();
@@ -37,8 +38,8 @@ public class CompletionPopup extends Tooltip {
 
     private EventHandler<KeyEvent> handler;
 
-    public CompletionPopup(Function<DocRef, String> documentation) {
-        docPopup = new DocPopup(documentation);
+    private CompletionPopup() {
+        docPopup = new DocPopup();
         // does not work well because it blocks mouse press events outside the popup
         // setAutoHide(true);
 
@@ -55,7 +56,19 @@ public class CompletionPopup extends Tooltip {
 
         setBehavior();
     }
+    
+    public static CompletionPopup get() {
+    	if (INSTANCE == null) {
+    		INSTANCE = new CompletionPopup();
+    	}
+    	
+    	return INSTANCE;
+    }
 
+    public void setDocumentation(Function<DocRef, String> documentation) {
+    	docPopup.setDocumentation(documentation);
+    }
+    
     public void setItems(Collection<? extends CompletionItem> items) {
         itemView.setItems(FXCollections.observableArrayList(items));
     }
