@@ -18,4 +18,10 @@ public abstract class BaseCommand  implements Runnable {
     public BaseCommand(CommandProcessor commandProcessor) {
         this.commandProcessor = commandProcessor;
     }
+    
+    @Override
+    public void run() {
+    	commandSpec.commandLine().usage(commandSpec.commandLine().getOut());
+    	
+    }
 }

@@ -124,17 +124,6 @@ public class SplitConsolePane extends BorderPane {
 			}
 		});
 
-		inputArea.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-
-			if (e.getCode() == KeyCode.ENTER && e.isShiftDown()) {
-				enter();
-			} else if (e.getCode() == KeyCode.UP && e.isControlDown()) {
-				historyUp();
-			} else if (e.getCode() == KeyCode.DOWN && e.isControlDown()) {
-				historyDown();
-			}
-		});
-
 		outputArea.focusedProperty().addListener((v, o, n) -> {
 			if (n) {
 				inputArea.requestFocus();

@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.controlsfx.control.action.Action;
 import org.fxmisc.richtext.LineNumberFactory;
 
 import dev.jshfx.base.jshell.Completion;
@@ -23,20 +22,14 @@ import dev.jshfx.jfx.scene.control.SplitConsolePane;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
-import javafx.scene.control.SeparatorMenuItem;
 
 public class ShellPane extends Part {
 
-	private SplitConsolePane consoleView;
+	private SplitConsolePane consolePane;
 	private Completion completion;
 	private Session session;
 	private TaskQueuer taskQueuer = new TaskQueuer();
 	private FXPath path;
-	private List<Action> inputAreaActions;
-	private List<Action> outputAreaActions;
-	private Action submitAction;
-	private Action historyUpAction;
-	private Action historyDownAction;
 
 	public ShellPane() {
 		this(Path.of("new.jsh"));
@@ -46,39 +39,30 @@ public class ShellPane extends Part {
 		this.path = new FXPath(path);
 
 		List<String> history = JsonUtils.get().fromJson(FileManager.HISTORY_FILE, List.class, List.of());
-		consoleView = new SplitConsolePane(history, List.of("block-delimiter-match"));
-		getProperties().put(getClass(), consoleView.getInputArea());
-		session = new Session(consoleView, taskQueuer);
+		consolePane = new SplitConsolePane(history, List.of("block-delimiter-match"));
+		getProperties().put(getClass(), consolePane.getInputArea());
+		session = new Session(consolePane, taskQueuer);
 		completion = new Completion(session);
 
-		getChildren().add(consoleView);
+		getChildren().add(consolePane);
 
-		consoleView.getInputArea().setParagraphGraphicFactory(LineNumberFactory.get(consoleView.getInputArea()));
-		inputAreaActions = Actions.get().setEditContextMenu(consoleView.getInputArea());
-		outputAreaActions = Actions.get().setReadOnlyContextMenu(consoleView.getOutputArea());
+		consolePane.getInputArea().setParagraphGraphicFactory(LineNumberFactory.get(consolePane.getInputArea()));
+		Actions.get().setEditContextMenu(consolePane.getInputArea());
+		Actions.get().setReadOnlyContextMenu(consolePane.getOutputArea());
 
-		consoleView.getInputArea().getContextMenu().getItems().add(new SeparatorMenuItem());
-		submitAction = Actions.get().createAction(consoleView.getInputArea(), () -> consoleView.enter(), "submit",
-				"Shift+Enter");
-		historyUpAction = Actions.get().createAction(consoleView.getInputArea(), () -> consoleView.historyUp(),
-				"historyUp", "Ctrl+Up", consoleView.historyStartReachedProperty());
-		historyDownAction = Actions.get().createAction(consoleView.getInputArea(), () -> consoleView.historyDown(),
-				"historyDown", "Ctrl+Down", consoleView.historyEndReachedProperty());
-
-
-		CodeAreaWrappers.get(consoleView.getInputArea(), "java").style()
-				.highlighting(consoleView.getConsoleModel().getReadFromPipe())
+		CodeAreaWrappers.get(consolePane.getInputArea(), "java").style()
+				.highlighting(consolePane.getConsoleModel().getReadFromPipe())
 				.completion(this::codeCompletion, completion::loadDocumentation).indentation();
 
-		CodeAreaWrappers.get(consoleView.getOutputArea(), "java").style();
+		CodeAreaWrappers.get(consolePane.getOutputArea(), "java").style();
 
 		setBehavior();
 	}
-
+	
 	private void setBehavior() {
 
 		title.bind(
-				Bindings.createStringBinding(() -> createTitle(), path.nameProperty(), consoleView.editedProperty()));
+				Bindings.createStringBinding(() -> createTitle(), path.nameProperty(), consolePane.editedProperty()));
 		longTitle.bind(Bindings.createStringBinding(() -> path.getPath().toString(), path.pathProperty()));
 
 		sceneProperty().addListener((v, o, n) -> {
@@ -87,7 +71,7 @@ public class ShellPane extends Part {
 			}
 		});
 
-		consoleView.getConsoleModel().getInputToOutput().addListener((Change<? extends TextStyleSpans> c) -> {
+		consolePane.getConsoleModel().getInputToOutput().addListener((Change<? extends TextStyleSpans> c) -> {
 
 			while (c.next()) {
 
@@ -100,12 +84,12 @@ public class ShellPane extends Part {
 			}
 		});
 
-		consoleView.getHistory().addListener((Change<? extends String> c) -> {
+		consolePane.getHistory().addListener((Change<? extends String> c) -> {
 
 			while (c.next()) {
 
 				if (c.wasAdded() || c.wasRemoved()) {
-					List<? extends String> history = new ArrayList<>(consoleView.getHistory());
+					List<? extends String> history = new ArrayList<>(consolePane.getHistory());
 					JsonUtils.get().toJson(history, FileManager.HISTORY_FILE);
 				}
 			}
@@ -113,7 +97,7 @@ public class ShellPane extends Part {
 	}
 
 	private String createTitle() {
-		String result = consoleView.isEdited() ? "*" + path.getName() : path.getName();
+		String result = consolePane.isEdited() ? "*" + path.getName() : path.getName();
 
 		return result;
 	}
@@ -121,17 +105,37 @@ public class ShellPane extends Part {
 	private void codeCompletion(Consumer<Collection<CompletionItem>> behavior) {
 
 		CTask<Collection<CompletionItem>> task = CTask
-				.create(() -> completion.getCompletionItems(consoleView.getInputArea())).onSucceeded(behavior);
+				.create(() -> completion.getCompletionItems(consolePane.getInputArea())).onSucceeded(behavior);
 
 		taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
 	}
 
+	public SplitConsolePane getConsolePane() {
+		return consolePane;
+	}
+	
 	public ReadOnlyBooleanProperty closedProperty() {
 		return session.closedProperty();
 	}
 
+	public void insertDirPath() {
+		var dir = FileDialogUtils.getDirectory(getScene().getWindow());
+		
+		dir.ifPresent(d -> {
+			consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), d.toString() + " ");
+		});
+	}
+	
+	public void insertFilePaths() {
+		var files = FileDialogUtils.getJavaFiles(getScene().getWindow());
+		
+		files.forEach(f -> {
+			consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), f.toString() + " ");
+		});
+	}
+	
 	public void dispose() {
-		var task = CTask.create(() -> session.close()).onFinished(t -> consoleView.dispose());
+		var task = CTask.create(() -> session.close()).onFinished(t -> consolePane.dispose());
 
 		taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
 	}
