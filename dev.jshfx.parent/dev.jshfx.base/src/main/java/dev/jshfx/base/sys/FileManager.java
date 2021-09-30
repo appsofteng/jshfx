@@ -24,7 +24,7 @@ public final class FileManager extends Manager {
 
 	public static final Path HISTORY_FILE =  Path.of(USER_CONF_DIR + "/history.json");
     public static final Path ENV_FILE = Path.of(USER_CONF_DIR + "/env.json");
-    public static final Path SETTINGS_FILE = Path.of(USER_CONF_DIR + "/settings.json");
+    public static final Path SET_FILE = Path.of(USER_CONF_DIR + "/set.json");
     public static final Path ENVS_FILE = Path.of(USER_CONF_DIR + "/envs.json");
     
     public static final String LOGGING_CONF_FILE =  "logging.properties";

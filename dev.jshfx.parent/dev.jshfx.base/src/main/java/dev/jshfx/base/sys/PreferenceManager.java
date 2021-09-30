@@ -113,12 +113,12 @@ public final class PreferenceManager extends Manager {
 	}
 	
 	public Path getLatestDir() {
-		String dir = Preferences.userRoot().node("/files").get("latestDir", System.getProperty("user.home"));
+		String dir = Preferences.userRoot().node("/sys").get("latestDir", System.getProperty("user.home"));
 		
 		return Path.of(dir);
 	}
 	
 	public void setLatestDir(Path dir) {
-		Preferences.userRoot().node("/files").put("latestDir", dir.toString());
+		Preferences.userRoot().node("/sys").put("latestDir", dir.toString());
 	}
 }
