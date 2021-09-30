@@ -2,6 +2,7 @@ package dev.jshfx.base;
 
 import org.controlsfx.glyphfont.GlyphFontRegistry;
 
+import dev.jshfx.base.jshell.Session;
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.base.sys.PreferenceManager;
 import dev.jshfx.base.sys.ResourceManager;
@@ -51,6 +52,7 @@ public class MainApp extends Application {
 
 	@Override
 	public void stop() throws Exception {
+	    Session.closeCommon();
 		root.dispose();
 		TaskManager.get().stop();
 	}

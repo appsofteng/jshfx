@@ -118,6 +118,7 @@ public class ShellPane extends Part {
 	}
 
 	private void codeCompletion(Collection<CompletionItem> items) {
+
 		Optional<Bounds> boundsOption = consolePane.getInputArea().caretBoundsProperty().getValue();
 		if (boundsOption.isPresent()) {
 			Bounds bounds = boundsOption.get();
@@ -127,6 +128,10 @@ public class ShellPane extends Part {
 		}
 	}
 
+	public Session getSession() {
+		return session;
+	}
+	
 	public SplitConsolePane getConsolePane() {
 		return consolePane;
 	}

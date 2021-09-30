@@ -26,301 +26,317 @@ import jdk.jshell.JShell.Subscription;
 import jdk.jshell.execution.LocalExecutionControlProvider;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Status;
+import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SnippetEvent;
 
 public class Session {
 
-	public static final String PRIVILEDGED_TASK_QUEUE = "priviledged-task-queue";
+    public static final String PRIVILEDGED_TASK_QUEUE = "priviledged-task-queue";
 
-	private BooleanProperty closed = new SimpleBooleanProperty();
-	private Env env;
-	private Settings settings;
-	private Feedback feedback;
-	private JShell jshell;
-	private SplitConsolePane console;
-	private TaskQueuer taskQueuer;
-	private ConsoleModel consoleModel;
-	private List<String> history = new ArrayList<>();
-	private IdGenerator idGenerator;
-	private CommandProcessor commandProcessor;
-	private SnippetProcessor snippetProcessor;
-	private int startSnippetMaxIndex;
-	private Map<String, Snippet> snippetsById = new HashMap<>();
-	private Map<String, List<Snippet>> snippetsByName = new HashMap<>();
-	private Subscription subscription;
+    private static JShell commonJshell = JShell.builder().executionEngine(new LocalExecutionControlProvider(), null)
+            .build();
 
-	public Session(SplitConsolePane console, TaskQueuer taskQueuer) {
+    private BooleanProperty closed = new SimpleBooleanProperty();
+    private Env env;
+    private Settings settings;
+    private Feedback feedback;
+    private JShell jshell;
+    private SplitConsolePane console;
+    private TaskQueuer taskQueuer;
+    private ConsoleModel consoleModel;
+    private List<String> history = new ArrayList<>();
+    private IdGenerator idGenerator;
+    private CommandProcessor commandProcessor;
+    private SnippetProcessor snippetProcessor;
+    private int startSnippetMaxIndex;
+    private Map<String, Snippet> snippetsById = new HashMap<>();
+    private Map<String, List<Snippet>> snippetsByName = new HashMap<>();
+    private Subscription subscription;
 
-		this.console = console;
-		this.consoleModel = console.getConsoleModel();
-		this.taskQueuer = taskQueuer;
+    public Session(SplitConsolePane console, TaskQueuer taskQueuer) {
 
-		feedback = new Feedback(consoleModel);
-		commandProcessor = new CommandProcessor(this);
-		snippetProcessor = new SnippetProcessor(this);
-		env = loadEnv();
-		settings = loadSettings();
-		idGenerator = new IdGenerator();
-		reset();
-		setListener();
-	}
+        this.console = console;
+        this.consoleModel = console.getConsoleModel();
+        this.taskQueuer = taskQueuer;
 
-	public ReadOnlyBooleanProperty closedProperty() {
-		return closed;
-	}
-	
-	public Feedback getFeedback() {
-		return feedback;
-	}
+        feedback = new Feedback(consoleModel);
+        commandProcessor = new CommandProcessor(this);
+        snippetProcessor = new SnippetProcessor(this);
+        env = loadEnv();
+        settings = loadSettings();
+        idGenerator = new IdGenerator();
+        reset();
+        setListener();
+    }
 
-	public JShell getJshell() {
-		return jshell;
-	}
+    public static List<Documentation> documentation(String input, int cursor, boolean computeJavadoc) {
+        return commonJshell.sourceCodeAnalysis().documentation(input, cursor, computeJavadoc);
+    }
 
-	SplitConsolePane getConsoleView() {
-		return console;
-	}
+    public static void closeCommon() {
 
-	public ConsoleModel getConsoleModel() {
-		return consoleModel;
-	}
+	        if (commonJshell != null) {
 
-	public TaskQueuer getTaskQueuer() {
-		return taskQueuer;
-	}
-	
-	public List<String> getHistory() {
-		return history;
-	}
+	            commonJshell.stop();
+	            commonJshell.close();         
+	        }       
+	    }
 
-	public CommandProcessor getCommandProcessor() {
-		return commandProcessor;
-	}
+    public ReadOnlyBooleanProperty closedProperty() {
+        return closed;
+    }
 
-	public SnippetProcessor getSnippetProcessor() {
-		return snippetProcessor;
-	}
+    public Feedback getFeedback() {
+        return feedback;
+    }
 
-	public int getStartSnippetMaxIndex() {
-		return startSnippetMaxIndex;
-	}
+    public JShell getJshell() {
+        return jshell;
+    }
 
-	public void setStartSnippetMaxIndex(int startSnippetMaxIndex) {
-		this.startSnippetMaxIndex = startSnippetMaxIndex;
-	}
+    SplitConsolePane getConsoleView() {
+        return console;
+    }
 
-	public Window getWindow() {
-		return console.getScene().getWindow();
-	}
+    public ConsoleModel getConsoleModel() {
+        return consoleModel;
+    }
 
-	public Map<String, Snippet> getSnippetsById() {
-		return snippetsById;
-	}
+    public TaskQueuer getTaskQueuer() {
+        return taskQueuer;
+    }
 
-	public Map<String, List<Snippet>> getSnippetsByName() {
-		return snippetsByName;
-	}
-	
-	public void setIO() {
+    public List<String> getHistory() {
+        return history;
+    }
+
+    public CommandProcessor getCommandProcessor() {
+        return commandProcessor;
+    }
+
+    public SnippetProcessor getSnippetProcessor() {
+        return snippetProcessor;
+    }
+
+    public int getStartSnippetMaxIndex() {
+        return startSnippetMaxIndex;
+    }
+
+    public void setStartSnippetMaxIndex(int startSnippetMaxIndex) {
+        this.startSnippetMaxIndex = startSnippetMaxIndex;
+    }
+
+    public Window getWindow() {
+        return console.getScene().getWindow();
+    }
+
+    public Map<String, Snippet> getSnippetsById() {
+        return snippetsById;
+    }
+
+    public Map<String, List<Snippet>> getSnippetsByName() {
+        return snippetsByName;
+    }
+
+    public void setIO() {
         System.setErr(consoleModel.getErr());
         System.setOut(consoleModel.getOut());
-	}
+    }
 
-	public Env loadEnv() {
-		return JsonUtils.get().fromJson(FileManager.ENV_FILE, Env.class, new Env("default"));
-	}
+    public Env loadEnv() {
+        return JsonUtils.get().fromJson(FileManager.ENV_FILE, Env.class, new Env("default"));
+    }
 
-	private void setEnv(Env env) {
-		this.env = env;
-		JsonUtils.get().toJson(env, FileManager.ENV_FILE);
-	}
+    private void setEnv(Env env) {
+        this.env = env;
+        JsonUtils.get().toJson(env, FileManager.ENV_FILE);
+    }
 
-	public void resetEnv(Env env) {
-		setEnv(env);
-		reset();
-	}
+    public void resetEnv(Env env) {
+        setEnv(env);
+        reset();
+    }
 
-	public void reloadEnv(Env env) {
-		setEnv(env);
-		reload(Mode.SILENT);
-	}
+    public void reloadEnv(Env env) {
+        setEnv(env);
+        reload(Mode.SILENT);
+    }
 
-	public Settings loadSettings() {
-		return JsonUtils.get().fromJson(FileManager.SETTINGS_FILE, Settings.class, new Settings());
-	}
+    public Settings loadSettings() {
+        return JsonUtils.get().fromJson(FileManager.SET_FILE, Settings.class, new Settings());
+    }
 
-	public void setSettings(Settings settings) {
-		this.settings = settings;
-		JsonUtils.get().toJson(settings, FileManager.SETTINGS_FILE);
-	}
+    public void setSettings(Settings settings) {
+        this.settings = settings;
+        JsonUtils.get().toJson(settings, FileManager.SET_FILE);
+    }
 
-	private void setListener() {
-		subscription = jshell.onSnippetEvent(e -> {
+    private void setListener() {
+        subscription = jshell.onSnippetEvent(e -> {
 
-			if (e.snippet() == null || e.snippet().id() == null) {
-				return;
-			}
+            if (e.snippet() == null || e.snippet().id() == null) {
+                return;
+            }
 
-			String name = SnippetUtils.getName(e.snippet());
+            String name = SnippetUtils.getName(e.snippet());
 
-			snippetsById.put(e.snippet().id(), e.snippet());
-			List<Snippet> snippets = snippetsByName.computeIfAbsent(name, k -> new ArrayList<>());
-			snippets.add(e.snippet());
-		});
-	}
+            snippetsById.put(e.snippet().id(), e.snippet());
+            List<Snippet> snippets = snippetsByName.computeIfAbsent(name, k -> new ArrayList<>());
+            snippets.add(e.snippet());
+        });
+    }
 
-	public void reset() {
-		snippetsById.clear();
-		snippetsByName.clear();
-		feedback.setMode(Mode.SILENT);
-		buildJShell();
-		setListener();
-		if (settings.isLoadDefault()) {
-			loadDefault();
-		}
+    public void reset() {
+        snippetsById.clear();
+        snippetsByName.clear();
+        feedback.setMode(Mode.SILENT);
+        buildJShell();
+        setListener();
+        if (settings.isLoadDefault()) {
+            loadDefault();
+        }
 
-		if (settings.isLoadPrinting()) {
-			loadPrinting();
-		}
+        if (settings.isLoadPrinting()) {
+            loadPrinting();
+        }
 
-		if (settings.isLoadScripts()) {
-			loadStartupScripts();
-		}
+        if (settings.isLoadScripts()) {
+            loadStartupScripts();
+        }
 
-		startSnippetMaxIndex = idGenerator.getMaxId();
-		feedback.setMode(Mode.NORMAL);
-	}
+        startSnippetMaxIndex = idGenerator.getMaxId();
+        feedback.setMode(Mode.NORMAL);
+    }
 
-	public void reload() {
-		reload(Mode.NORMAL);
-	}
+    public void reload() {
+        reload(Mode.NORMAL);
+    }
 
-	private void reload(Mode mode) {
+    private void reload(Mode mode) {
 
-		feedback.setMode(mode);
-		List<Entry<Snippet, Status>> snippets = jshell.snippets()
-				.filter(s -> jshell.status(s) == Status.VALID || jshell.status(s) == Status.DROPPED)
-				.map(s -> new SimpleEntry<>(s, jshell.status(s))).collect(Collectors.toList());
-		reset();
+        feedback.setMode(mode);
+        List<Entry<Snippet, Status>> snippets = jshell.snippets()
+                .filter(s -> jshell.status(s) == Status.VALID || jshell.status(s) == Status.DROPPED)
+                .map(s -> new SimpleEntry<>(s, jshell.status(s))).collect(Collectors.toList());
+        reset();
 
-		snippets.forEach(s -> {
-			var newSnippets = snippetProcessor.getSnippetEvents(s.getKey().source()).stream().map(SnippetEvent::snippet)
-					.collect(Collectors.toList());
-			if (s.getValue() == Status.DROPPED) {
-				commandProcessor.drop(newSnippets);
-			}
-		});
+        snippets.forEach(s -> {
+            var newSnippets = snippetProcessor.getSnippetEvents(s.getKey().source()).stream().map(SnippetEvent::snippet)
+                    .collect(Collectors.toList());
+            if (s.getValue() == Status.DROPPED) {
+                commandProcessor.drop(newSnippets);
+            }
+        });
 
-		feedback.setMode(Mode.NORMAL);
-	}
+        feedback.setMode(Mode.NORMAL);
+    }
 
-	private void buildJShell() {
+    private void buildJShell() {
 
-		close();
-		try {
-			String[] options = env.getOptions();
-			jshell = JShell.builder()
-					.executionEngine(new LocalExecutionControlProvider(), null)
-					.idGenerator(idGenerator).in(consoleModel.getIn()).out(consoleModel.getOut())
-					.err(consoleModel.getErr()).compilerOptions(options).remoteVMOptions(options).build();
-			// Create the analysis before putting on the class path.
-			jshell.sourceCodeAnalysis();
-			env.getClassPath().forEach(p -> jshell.addToClasspath(p));
-			env.getModuleLocations().forEach(p -> jshell.addToClasspath(p));
-			idGenerator.setJshell(jshell);
+        close();
+        try {
+            String[] options = env.getOptions();
+            jshell = JShell.builder().executionEngine(new LocalExecutionControlProvider(), null)
+                    .idGenerator(idGenerator).in(consoleModel.getIn()).out(consoleModel.getOut())
+                    .err(consoleModel.getErr()).compilerOptions(options).remoteVMOptions(options).build();
+            // Create the analysis before putting on the class path.
+            jshell.sourceCodeAnalysis();
+            env.getClassPath().forEach(p -> jshell.addToClasspath(p));
+            env.getModuleLocations().forEach(p -> jshell.addToClasspath(p));
+            idGenerator.setJshell(jshell);
 
-		} catch (Exception e) {
-			e.printStackTrace(consoleModel.getErr());
-		}
-	}
+        } catch (Exception e) {
+            e.printStackTrace(consoleModel.getErr());
+        }
+    }
 
-	public void stop() {
-		jshell.stop();
-	}
+    public void stop() {
+        jshell.stop();
+    }
 
-	public void close() {
+    public void close() {
 
-		if (jshell != null) {
-			if (subscription != null) {
-				jshell.unsubscribe(subscription);
-			}
+        if (jshell != null) {
+            if (subscription != null) {
+                jshell.unsubscribe(subscription);
+            }
 
-			jshell.stop();
-			jshell.close();			
-		}		
-	}
-	
-	public void exit() {
-	
-		close();
-		closed.set(true);
-	}
+            jshell.stop();
+            jshell.close();
+        }
+    }
 
-	public void loadDefault() {
-		try {
-			JShellUtils.loadSnippets(jshell, getClass().getResourceAsStream("start-default.txt"));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    public void exit() {
 
-	public void loadPrinting() {
+        close();
+        closed.set(true);
+    }
 
-		try {
-			JShellUtils.loadSnippets(jshell, getClass().getResourceAsStream("start-printing.txt"));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    public void loadDefault() {
+        try {
+            JShellUtils.loadSnippets(jshell, getClass().getResourceAsStream("start-default.txt"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	private void loadStartupScripts() {
+    public void loadPrinting() {
 
-		for (String file : settings.getStartupScripts()) {
-			Path path = Path.of(file);
-			if (Files.exists(path)) {
-				try {
-					String spippets = Files.readString(path);
-					process(spippets);
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		}
-	}
+        try {
+            JShellUtils.loadSnippets(jshell, getClass().getResourceAsStream("start-printing.txt"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public void processBatch(String input) {
-		feedback.setCached(true);
-		process(input);
-		feedback.flush();
-	}
+    private void loadStartupScripts() {
 
-	private void process(String input) {
+        for (String file : settings.getStartupScripts()) {
+            Path path = Path.of(file);
+            if (Files.exists(path)) {
+                try {
+                    String spippets = Files.readString(path);
+                    process(spippets);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
 
-		if (input.isBlank()) {
-			return;
-		}
+    public void processBatch(String input) {
+        feedback.setCached(true);
+        process(input);
+        feedback.flush();
+    }
 
-		history.add(input.strip());
+    private void process(String input) {
 
-		String[] lines = input.split("\n");
-		StringBuilder sb = new StringBuilder();
+        if (input.isBlank()) {
+            return;
+        }
 
-		for (String line : lines) {
+        history.add(input.strip());
 
-			if (CommandProcessor.isCommand(line)) {
-				if (sb.length() > 0) {
-					String snippets = sb.toString();
-					snippetProcessor.process(snippets);
-					sb.delete(0, sb.length());
-				}
-				commandProcessor.process(line);
-			} else {
-				sb.append(line).append("\n");
-			}
-		}
+        String[] lines = input.split("\n");
+        StringBuilder sb = new StringBuilder();
 
-		if (sb.length() > 0) {
-			snippetProcessor.process(sb.toString());
-		}
-	}
+        for (String line : lines) {
+
+            if (CommandProcessor.isCommand(line)) {
+                if (sb.length() > 0) {
+                    String snippets = sb.toString();
+                    snippetProcessor.process(snippets);
+                    sb.delete(0, sb.length());
+                }
+                commandProcessor.process(line);
+            } else {
+                sb.append(line).append("\n");
+            }
+        }
+
+        if (sb.length() > 0) {
+            snippetProcessor.process(sb.toString());
+        }
+    }
 }

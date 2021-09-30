@@ -112,7 +112,7 @@ public class Completion {
 
         for (SuggestionCompletionItem item : suggestionItems) {
 
-            List<Documentation> docs = session.getJshell().sourceCodeAnalysis().documentation(item.getDocRef().getDocCode(),
+            List<Documentation> docs = Session.documentation(item.getDocRef().getDocCode(),
                     item.getDocRef().getDocCode().length(), false);
 
             if (docs.isEmpty()) {
@@ -144,7 +144,8 @@ public class Completion {
 
     public String loadDocumentation(DocRef docRef) {
         Map<String, String> docBlockNames = FXResourceBundle.getBundle().getStrings(JavadocUtils.getBlockTagNames());
-        String documentation = JShellUtils.getDocumentation(session.getJshell(), docRef, docBlockNames);
+        List<Documentation> docs = Session.documentation(docRef.getDocCode(), docRef.getDocCode().length(), true);
+        String documentation = JShellUtils.getDocumentation(docs, docRef, docBlockNames);
 
         return documentation;
     }

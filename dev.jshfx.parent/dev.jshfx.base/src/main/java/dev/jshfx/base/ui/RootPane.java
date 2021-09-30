@@ -39,12 +39,15 @@ public class RootPane extends BorderPane {
 		centerPane.getSelectionModel().selectedItemProperty().addListener((v,o,n) -> {
 			if (n != null) {
 				selectedShell.set((ShellPane) n.getContent());
+				selectedShell.get().getSession().setIO();
 				inputArea.set(selectedShell.get().getConsolePane().getInputArea());
 				outputArea.set(selectedShell.get().getConsolePane().getOutputArea());
 			} else {
 				selectedShell.set(null);
 				inputArea.set(null);
 				outputArea.set(null);
+		        System.setErr(null);
+		        System.setOut(null);
 			}
 		});
 	}

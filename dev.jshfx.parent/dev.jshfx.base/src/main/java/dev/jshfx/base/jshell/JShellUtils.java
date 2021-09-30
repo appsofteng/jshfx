@@ -31,9 +31,7 @@ public final class JShellUtils {
         }
     }
 
-    public static String getDocumentation(JShell jshell, DocRef docRef, Map<String, String> bundle) {
-
-        List<Documentation> docs = jshell.sourceCodeAnalysis().documentation(docRef.getDocCode(), docRef.getDocCode().length(), true);
+    public static String getDocumentation(List<Documentation> docs, DocRef docRef, Map<String, String> bundle) {        
 
         Documentation documentation = docs.stream().filter(d -> matches(d.signature(), docRef)).findFirst().orElse(null);
 
