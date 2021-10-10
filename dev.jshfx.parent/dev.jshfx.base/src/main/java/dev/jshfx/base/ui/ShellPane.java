@@ -27,138 +27,146 @@ import javafx.geometry.Bounds;
 
 public class ShellPane extends Part {
 
-	private SplitConsolePane consolePane;
-	private Completion completion;
-	private Session session;
-	private TaskQueuer taskQueuer = new TaskQueuer();
-	private FXPath path;
+    private SplitConsolePane consolePane;
+    private Completion completion;
+    private Session session;
+    private TaskQueuer taskQueuer = new TaskQueuer();
+    private FXPath path;
 
-	public ShellPane() {
-		this(Path.of("new.jsh"));
-	}
+    public ShellPane() {
+        this(Path.of("new.jsh"));
+    }
 
-	public ShellPane(Path path) {
-		this.path = new FXPath(path);
+    public ShellPane(Path path) {
+        this.path = new FXPath(path);
 
-		List<String> history = JsonUtils.get().fromJson(FileManager.HISTORY_FILE, List.class, List.of());
-		consolePane = new SplitConsolePane(history, List.of("block-delimiter-match"));
-		getProperties().put(getClass(), consolePane.getInputArea());
-		session = new Session(consolePane, taskQueuer);
-		completion = new Completion(session);
+        List<String> history = JsonUtils.get().fromJson(FileManager.HISTORY_FILE, List.class, List.of());
+        consolePane = new SplitConsolePane(history, List.of("block-delimiter-match"));
+        getProperties().put(getClass(), consolePane.getInputArea());
+        session = new Session(consolePane, taskQueuer);
+        completion = new Completion(session);
 
-		getChildren().add(consolePane);
+        getChildren().add(consolePane);
 
-		consolePane.getInputArea().setParagraphGraphicFactory(LineNumberFactory.get(consolePane.getInputArea()));
-		Actions.get().setEditContextMenu(consolePane.getInputArea());
-		Actions.get().setReadOnlyContextMenu(consolePane.getOutputArea());
+        consolePane.getInputArea().setParagraphGraphicFactory(LineNumberFactory.get(consolePane.getInputArea()));
+        Actions.get().setEditContextMenu(consolePane.getInputArea());
+        Actions.get().setReadOnlyContextMenu(consolePane.getOutputArea());
 
-		CodeAreaWrappers.get(consolePane.getInputArea(), "java").style()
-				.highlighting(consolePane.getConsoleModel().getReadFromPipe()).indentation();
+        CodeAreaWrappers.get(consolePane.getInputArea(), "java").style()
+                .highlighting(consolePane.getConsoleModel().getReadFromPipe()).indentation();
 
-		CodeAreaWrappers.get(consolePane.getOutputArea(), "java").style();
+        CodeAreaWrappers.get(consolePane.getOutputArea(), "java").style();
 
-		setBehavior();
-	}
+        setBehavior();
+    }
 
-	private void setBehavior() {
+    private void setBehavior() {
 
-		title.bind(
-				Bindings.createStringBinding(() -> createTitle(), path.nameProperty(), consolePane.editedProperty()));
-		longTitle.bind(Bindings.createStringBinding(() -> path.getPath().toString(), path.pathProperty()));
+        title.bind(
+                Bindings.createStringBinding(() -> createTitle(), path.nameProperty(), consolePane.editedProperty()));
+        longTitle.bind(Bindings.createStringBinding(() -> path.getPath().toString(), path.pathProperty()));
 
-		sceneProperty().addListener((v, o, n) -> {
-			if (n != null) {
-				session.setIO();
-			}
-		});
+        sceneProperty().addListener((v, o, n) -> {
+            if (n != null) {
+                session.setIO();
+            }
+        });
 
-		consolePane.getInputArea().caretPositionProperty().addListener((v, o, n) -> {
-			if (CompletionPopup.get().isShowing()) {
-				showCodeCompletion();
-			}
-		});
+        consolePane.getInputArea().caretPositionProperty().addListener((v, o, n) -> {
+            if (CompletionPopup.get().isShowing()) {
+                showCodeCompletion();
+            }
+        });
 
-		consolePane.getConsoleModel().getInputToOutput().addListener((Change<? extends TextStyleSpans> c) -> {
+        consolePane.getConsoleModel().getInputToOutput().addListener((Change<? extends TextStyleSpans> c) -> {
 
-			while (c.next()) {
+            while (c.next()) {
 
-				if (c.wasAdded()) {
-					List<? extends TextStyleSpans> added = new ArrayList<>(c.getAddedSubList());
-					for (TextStyleSpans span : added) {
-						session.processBatch(span.getText());
-					}
-				}
-			}
-		});
+                if (c.wasAdded()) {
+                    List<? extends TextStyleSpans> added = new ArrayList<>(c.getAddedSubList());
+                    for (TextStyleSpans span : added) {
+                        session.processBatch(span.getText());
+                    }
+                }
+            }
+        });
 
-		consolePane.getHistory().addListener((Change<? extends String> c) -> {
+        consolePane.getHistory().addListener((Change<? extends String> c) -> {
 
-			while (c.next()) {
+            while (c.next()) {
 
-				if (c.wasAdded() || c.wasRemoved()) {
-					List<? extends String> history = new ArrayList<>(consolePane.getHistory());
-					JsonUtils.get().toJson(history, FileManager.HISTORY_FILE);
-				}
-			}
-		});
-	}
+                if (c.wasAdded() || c.wasRemoved()) {
+                    List<? extends String> history = new ArrayList<>(consolePane.getHistory());
+                    JsonUtils.get().toJson(history, FileManager.HISTORY_FILE);
+                }
+            }
+        });
+    }
 
-	private String createTitle() {
-		String result = consolePane.isEdited() ? "*" + path.getName() : path.getName();
+    private String createTitle() {
+        String result = consolePane.isEdited() ? "*" + path.getName() : path.getName();
 
-		return result;
-	}
+        return result;
+    }
 
-	public void showCodeCompletion() {
-		CTask<Collection<CompletionItem>> task = CTask
-				.create(() -> completion.getCompletionItems(consolePane.getInputArea()))
-				.onSucceeded(this::codeCompletion);
+    public void showCodeCompletion() {
+        CTask<Collection<CompletionItem>> task = CTask
+                .create(() -> completion.getCompletionItems(consolePane.getInputArea()))
+                .onSucceeded(this::codeCompletion);
 
-		taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
-	}
+        taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
+    }
 
-	private void codeCompletion(Collection<CompletionItem> items) {
+    private void codeCompletion(Collection<CompletionItem> items) {
 
-		Optional<Bounds> boundsOption = consolePane.getInputArea().caretBoundsProperty().getValue();
-		if (boundsOption.isPresent()) {
-			Bounds bounds = boundsOption.get();
-			CompletionPopup.get().setDocumentation(completion::loadDocumentation);
-			CompletionPopup.get().setItems(items);
-			CompletionPopup.get().show(consolePane.getInputArea(), bounds.getMaxX(), bounds.getMaxY());
-		}
-	}
+        Optional<Bounds> boundsOption = consolePane.getInputArea().caretBoundsProperty().getValue();
+        if (boundsOption.isPresent()) {
+            Bounds bounds = boundsOption.get();
+            CompletionPopup.get().setDocumentation(completion::loadDocumentation);
+            CompletionPopup.get().setItems(items);
+            CompletionPopup.get().show(consolePane.getInputArea(), bounds.getMaxX(), bounds.getMaxY());
+        }
+    }
 
-	public Session getSession() {
-		return session;
-	}
-	
-	public SplitConsolePane getConsolePane() {
-		return consolePane;
-	}
+    public Session getSession() {
+        return session;
+    }
 
-	public ReadOnlyBooleanProperty closedProperty() {
-		return session.closedProperty();
-	}
+    public SplitConsolePane getConsolePane() {
+        return consolePane;
+    }
 
-	public void insertDirPath() {
-		var dir = FileDialogUtils.getDirectory(getScene().getWindow());
+    public ReadOnlyBooleanProperty closedProperty() {
+        return session.closedProperty();
+    }
 
-		dir.ifPresent(d -> {
-			consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), d.toString() + " ");
-		});
-	}
+    public void insertDirPath() {
+        var dir = FileDialogUtils.getDirectory(getScene().getWindow());
 
-	public void insertFilePaths() {
-		var files = FileDialogUtils.getJavaFiles(getScene().getWindow());
+        dir.ifPresent(d -> {
+            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), d.toString() + " ");
+        });
+    }
 
-		files.forEach(f -> {
-			consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), f.toString() + " ");
-		});
-	}
+    public void insertFilePaths() {
+        var files = FileDialogUtils.getJavaFiles(getScene().getWindow());
 
-	public void dispose() {
-		var task = CTask.create(() -> session.close()).onFinished(t -> consolePane.dispose());
+        files.forEach(f -> {
+            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), f.toString() + " ");
+        });
+    }
 
-		taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
-	}
+    public void insertSaveFilePaths() {
+        var file = FileDialogUtils.saveJavaFile(getScene().getWindow());
+
+        file.ifPresent(f -> {
+            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), f.toString() + " ");
+        });
+    }
+
+    public void dispose() {
+        var task = CTask.create(() -> session.close()).onFinished(t -> consolePane.dispose());
+
+        taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
+    }
 }

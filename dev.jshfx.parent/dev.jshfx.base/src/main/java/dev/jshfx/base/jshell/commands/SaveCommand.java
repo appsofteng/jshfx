@@ -1,7 +1,7 @@
 package dev.jshfx.base.jshell.commands;
 
-import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
@@ -10,7 +10,6 @@ import dev.jshfx.base.jshell.Session;
 import dev.jshfx.j.util.LU;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import javafx.application.Platform;
-import javafx.stage.FileChooser;
 import jdk.jshell.Snippet;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -19,8 +18,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "/save")
 public class SaveCommand extends BaseCommand {
 
-
-    @Parameters(paramLabel = "{name|id|startID-endID}[ {name|id|startID-endID}...]", descriptionKey = "/save.ids")
+    @Parameters(paramLabel = "id", descriptionKey = "/save.ids")
     private ArrayList<String> parameters;
 
     @Option(names = "-all", descriptionKey = "/save.-all")
@@ -39,42 +37,49 @@ public class SaveCommand extends BaseCommand {
     @Override
     public void run() {
 
-        if (Stream.of(parameters!= null && !parameters.isEmpty(), all, start, history).filter(o -> o).count() > 1) {
+        if (Stream.of(parameters != null && parameters.size() > 1, all, start, history).filter(o -> o).count() > 1) {
             commandProcessor.getCommandLine().getErr()
                     .println(FXResourceBundle.getBundle().getString​("onlyOneOptionAllowed") + "\n");
             return;
         }
 
-        if (parameters != null && !parameters.isEmpty()) {
-            save(commandProcessor.matches(parameters).stream().map(Snippet::source));
-        } else if (all) {
-            save(commandProcessor.getSession().getJshell().snippets().map(Snippet::source));
+        if (parameters == null || parameters.isEmpty()) {
+            commandProcessor.getCommandLine().getErr()
+                    .println(FXResourceBundle.getBundle().getString​("fileNameNotSpecified") + "\n");
+            return;
+        }
+
+        String file = parameters.remove(parameters.size() - 1);
+
+        if (all) {
+            save(file, commandProcessor.getSession().getJshell().snippets().map(Snippet::source));
         } else if (start) {
-               save(commandProcessor.getSession().getJshell().snippets()
-                        .filter(s -> Integer.parseInt(s.id()) <= commandProcessor.getSession().getStartSnippetMaxIndex())
-                        .map(Snippet::source));
+            save(file,
+                    commandProcessor.getSession().getJshell().snippets().filter(
+                            s -> Integer.parseInt(s.id()) <= commandProcessor.getSession().getStartSnippetMaxIndex())
+                            .map(Snippet::source));
         } else if (history) {
-            save(commandProcessor.getSession().getHistory().stream());
+            save(file, commandProcessor.getSession().getHistory().stream());
+        } else if (parameters.size() > 0) {
+            save(file, commandProcessor.matches(parameters).stream().map(Snippet::source));
+
         } else {
-            save(commandProcessor.getSession().getJshell().snippets()
-                        .filter(s -> commandProcessor.getSession().getJshell().status(s).isActive())
-                        .map(Snippet::source));
+            save(file, commandProcessor.getSession().getJshell().snippets()
+                    .filter(s -> commandProcessor.getSession().getJshell().status(s).isActive()).map(Snippet::source));
         }
     }
 
-    private void save(Stream<String> snippets) {
+    private void save(String file, Stream<String> snippets) {
         Platform.runLater(() -> {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setInitialFileName("snippets.jsh");
-            File file = fileChooser.showSaveDialog(commandProcessor.getSession().getWindow());
 
-            if (file != null) {
                 commandProcessor.getSession().getTaskQueuer().add(Session.PRIVILEDGED_TASK_QUEUE, () -> {
-                    try (var f = Files.newBufferedWriter(file.toPath())) {
-                        snippets.forEach(s -> LU.of(() -> { f.append(s.strip()); f.newLine();}));
+                    try (var f = Files.newBufferedWriter(Path.of(file))) {
+                        snippets.forEach(s -> LU.of(() -> {
+                            f.append(s.strip());
+                            f.newLine();
+                        }));
                     }
                 });
-            }
         });
     }
 }
