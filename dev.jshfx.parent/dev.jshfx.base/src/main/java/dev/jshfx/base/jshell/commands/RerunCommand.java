@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dev.jshfx.base.jshell.CommandProcessor;
+import dev.jshfx.jfx.util.FXResourceBundle;
 import jdk.jshell.Snippet;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -38,6 +39,12 @@ public class RerunCommand extends BaseCommand {
 
         List<Snippet> snippets = commandProcessor.matches(parameters);
 
-        commandProcessor.getSession().getSnippetProcessor().process(snippets);
+        if (snippets.isEmpty()) {
+            commandProcessor.getSession().getFeedback()
+                    .commandFailure(FXResourceBundle.getBundle().getString​("noSuchSnippet") + "\n");
+        } else {
+
+            commandProcessor.getSession().getSnippetProcessor().process(snippets);
+        }
     }
 }

@@ -11,23 +11,22 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import dev.jshfx.base.sys.FileManager;
+import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
 import dev.jshfx.jfx.scene.control.ConsoleModel;
 import dev.jshfx.jfx.scene.control.SplitConsolePane;
-import dev.jshfx.base.jshell.Feedback.Mode;
-import dev.jshfx.base.sys.FileManager;
-import dev.jshfx.j.util.json.JsonUtils;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.stage.Window;
 import jdk.jshell.JShell;
 import jdk.jshell.JShell.Subscription;
-import jdk.jshell.execution.LocalExecutionControlProvider;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Status;
-import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SnippetEvent;
+import jdk.jshell.SourceCodeAnalysis.Documentation;
+import jdk.jshell.execution.LocalExecutionControlProvider;
 
 public class Session {
 
@@ -58,12 +57,12 @@ public class Session {
         this.console = console;
         this.consoleModel = console.getConsoleModel();
         this.taskQueuer = taskQueuer;
-
-        feedback = new Feedback(consoleModel);
+        
         commandProcessor = new CommandProcessor(this);
         snippetProcessor = new SnippetProcessor(this);
         env = loadEnv();
         settings = loadSettings();
+        feedback = new Feedback(consoleModel, settings);
         idGenerator = new IdGenerator();
         reset();
         setListener();
@@ -159,7 +158,7 @@ public class Session {
 
     public void reloadEnv(Env env) {
         setEnv(env);
-        reload(Mode.SILENT);
+        reload();
     }
 
     public Settings loadSettings() {
@@ -189,7 +188,7 @@ public class Session {
     public void reset() {
         snippetsById.clear();
         snippetsByName.clear();
-        feedback.setMode(Mode.SILENT);
+
         buildJShell();
         setListener();
         if (settings.isLoadDefault()) {
@@ -205,16 +204,10 @@ public class Session {
         }
 
         startSnippetMaxIndex = idGenerator.getMaxId();
-        feedback.setMode(Mode.NORMAL);
     }
 
     public void reload() {
-        reload(Mode.NORMAL);
-    }
 
-    private void reload(Mode mode) {
-
-        feedback.setMode(mode);
         List<Entry<Snippet, Status>> snippets = jshell.snippets()
                 .filter(s -> jshell.status(s) == Status.VALID || jshell.status(s) == Status.DROPPED)
                 .map(s -> new SimpleEntry<>(s, jshell.status(s))).collect(Collectors.toList());
@@ -227,8 +220,6 @@ public class Session {
                 commandProcessor.drop(newSnippets);
             }
         });
-
-        feedback.setMode(Mode.NORMAL);
     }
 
     private void buildJShell() {
@@ -305,9 +296,7 @@ public class Session {
     }
 
     public void processBatch(String input) {
-        feedback.setCached(true);
         process(input);
-        feedback.flush();
     }
 
     private void process(String input) {

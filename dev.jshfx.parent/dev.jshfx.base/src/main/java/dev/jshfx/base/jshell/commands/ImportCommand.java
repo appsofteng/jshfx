@@ -18,6 +18,6 @@ public class ImportCommand extends BaseCommand {
     public void run() {
         String imports = commandProcessor.getSession().getJshell().imports().map(SnippetUtils::toString).sorted().collect(Collectors.joining("\n"));
 
-        commandProcessor.getSession().getFeedback().normaln(imports);
+        commandProcessor.getSession().getFeedback().commandResult(imports + "\n").flush();
     }
 }

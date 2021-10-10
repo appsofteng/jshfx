@@ -37,7 +37,7 @@ public class OpenCommand extends BaseCommand {
 					throw new RuntimeException(e);
 				}
 			} else {
-				commandProcessor.getSession().getFeedback().normal(FXResourceBundle.getBundle().getString​("msg.fileNotFound", file));
+				commandProcessor.getSession().getFeedback().commandResult(FXResourceBundle.getBundle().getString​("msg.fileNotFound", file)).flush();
 			}
 		} else {
 			super.run();

@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import dev.jshfx.fxmisc.richtext.TextStyleSpans;
-import dev.jshfx.jfx.scene.control.ConsoleModel;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import jdk.jshell.DeclarationSnippet;
 import jdk.jshell.EvalException;
@@ -28,7 +26,7 @@ public class SnippetProcessor extends Processor {
 
     @Override
     public void process(String input) {
-        getSession().getTaskQueuer().add(() ->  getSnippetEvents(input));
+        getSession().getTaskQueuer().add(() ->  getSnippetEvents(input)).setOnSucceeded(e -> session.getFeedback().flush());
 
     }
 
@@ -49,16 +47,14 @@ public class SnippetProcessor extends Processor {
                 continue;
             } else if (info.completeness() == Completeness.DEFINITELY_INCOMPLETE) {
                 if (i == lines.length - 1) {
-                    session.getFeedback().normaln(FXResourceBundle.getBundle().getString​("definitelyIncomplete") + "  " + sb.toString().strip(),
-                            ConsoleModel.ERROR_STYLE);
+                    session.getFeedback().snippetError(FXResourceBundle.getBundle().getString​("definitelyIncomplete") + "  " + sb.toString().strip() + "\n");
                 }
                 continue;
             } else if (info.completeness() == Completeness.EMPTY) {
                 sb.delete(0, sb.length());
                 continue;
             } else if (info.completeness() == Completeness.UNKNOWN) {
-                session.getFeedback().normaln(FXResourceBundle.getBundle().getString​("unknown") + "  " + sb.toString().strip(),
-                        ConsoleModel.ERROR_STYLE);
+                session.getFeedback().snippetError(FXResourceBundle.getBundle().getString​("unknown") + "  " + sb.toString().strip() + "\n");
                 sb.delete(0, sb.length());
                 continue;
             }
@@ -67,7 +63,7 @@ public class SnippetProcessor extends Processor {
             sb.delete(0, sb.length()).append(info.remaining());
             List<SnippetEvent> snippetEvents = session.getJshell().eval(source);
             allSnippetEvents.addAll(snippetEvents);
-            snippetEvents.forEach(e -> session.getFeedback().normal(getOutput(e)));
+            snippetEvents.forEach(e -> getOutput(e));
         }
 
         return allSnippetEvents;
@@ -75,37 +71,39 @@ public class SnippetProcessor extends Processor {
 
     public void process(List<Snippet> snippets) {
 
-        if (snippets.isEmpty()) {
-            session.getFeedback().normaln(FXResourceBundle.getBundle().getString​("noSuchSnippet"), ConsoleModel.COMMENT_STYLE);
-        }
-
         for (Snippet snippet : snippets) {
-            session.getFeedback().normaln(snippet.source().strip());
+            session.getFeedback().commandResult(snippet.source().strip() + "\n");
             List<SnippetEvent> snippetEvents = session.getJshell().eval(snippet.source());
-            snippetEvents.forEach(e -> session.getFeedback().normal(getOutput(e)));
+            snippetEvents.forEach(e -> getOutput(e));
         }
     }
 
-    private TextStyleSpans getOutput(SnippetEvent event) {
+    private void getOutput(SnippetEvent event) {
 
         String message = "";
-        String type = ConsoleModel.COMMENT_STYLE;
 
         if (event.exception() != null) {
-            type = ConsoleModel.ERROR_STYLE;
             message = getExceptionMessage(event);
+            message = message.strip() + "\n";
+            session.getFeedback().snippetError(message);
         } else if (event.status() == Status.REJECTED) {
-            type = ConsoleModel.ERROR_STYLE;
             message = getRejectedMessage(event);
+            message = message.strip() + "\n";
+            session.getFeedback().snippetError(message);
         } else {
-            message = getSuccessMessage(event);
+            message = getVerboseSuccessMessage(event);
+            message = message.strip() + "\n";
+            session.getFeedback().snippetVerbose(message);
+            
+            Snippet snippet = event.snippet();
+            String value = event.value();
+
+            if (snippet.kind() == Kind.EXPRESSION || snippet.subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
+                message = SnippetUtils.toString(snippet, value, session.getJshell()).stripTrailing() + "\n";
+                message = message.strip() + "\n";
+                session.getFeedback().snippetExpression(message);
+            }
         }
-
-        message = message.strip() + "\n";
-
-        TextStyleSpans o = new TextStyleSpans(message, type);
-
-        return o;
     }
 
     private String getExceptionMessage(SnippetEvent event) {
@@ -140,7 +138,7 @@ public class SnippetProcessor extends Processor {
         return sb.toString();
     }
 
-    private String getSuccessMessage(SnippetEvent event) {
+    private String getVerboseSuccessMessage(SnippetEvent event) {
 
         if (event.previousStatus() == event.status() || event.previousStatus() == Status.RECOVERABLE_DEFINED
                 || event.previousStatus() == Status.RECOVERABLE_NOT_DEFINED) {

@@ -64,6 +64,6 @@ public class MethodCommand extends BaseCommand {
                     .collect(Collectors.joining());
         }
 
-        commandProcessor.getSession().getFeedback().normal(result);
+        commandProcessor.getSession().getFeedback().commandResult(result).flush();
     }
 }

@@ -1,7 +1,6 @@
 package dev.jshfx.base.jshell.commands;
 
 import dev.jshfx.base.jshell.CommandProcessor;
-import dev.jshfx.jfx.scene.control.ConsoleModel;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import picocli.CommandLine.Command;
 
@@ -15,7 +14,7 @@ public class ReloadCommand extends BaseCommand {
     @Override
     public void run() {
 
-        commandProcessor.getSession().getFeedback().normaln(FXResourceBundle.getBundle().getString​("reloadingState"), ConsoleModel.COMMENT_STYLE);
+        commandProcessor.getSession().getFeedback().commandSuccess(FXResourceBundle.getBundle().getString​("reloadingState") + "\n");
         commandProcessor.getSession().reload();
     }
 }

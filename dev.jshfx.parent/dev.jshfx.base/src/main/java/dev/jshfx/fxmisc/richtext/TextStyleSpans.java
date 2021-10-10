@@ -37,4 +37,9 @@ public class TextStyleSpans {
     public StyleSpans<Collection<String>> getStyleSpans() {
         return styleSpans;
     }
+    
+    @Override
+    public String toString() {
+        return getText();
+    }
 }

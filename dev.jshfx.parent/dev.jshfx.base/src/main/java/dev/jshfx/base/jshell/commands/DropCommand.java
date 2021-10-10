@@ -5,7 +5,6 @@ import java.util.List;
 
 import dev.jshfx.base.jshell.CommandProcessor;
 import dev.jshfx.base.jshell.SnippetUtils;
-import dev.jshfx.jfx.scene.control.ConsoleModel;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Status;
@@ -32,17 +31,19 @@ public class DropCommand extends BaseCommand {
         StringBuilder sb = new StringBuilder();
         snippets.forEach(s -> {
             if (commandProcessor.getSession().getJshell().status(s) == Status.VALID) {
-                sb.append(FXResourceBundle.getBundle().getString​("dropped") + SnippetUtils.toString(s, commandProcessor.getSession().getJshell()));
+                commandProcessor.getSession().getFeedback().commandSuccess(FXResourceBundle.getBundle().getString​("dropped")
+                        + SnippetUtils.toString(s, commandProcessor.getSession().getJshell()));
                 commandProcessor.getSession().getJshell().drop(s);
             } else {
-                sb.append(FXResourceBundle.getBundle().getString​("notValid") + SnippetUtils.toString(s, commandProcessor.getSession().getJshell()));
+                commandProcessor.getSession().getFeedback()
+                        .commandFailure(FXResourceBundle.getBundle().getString​("notValid")
+                                + SnippetUtils.toString(s, commandProcessor.getSession().getJshell())).flush();
             }
         });
 
         if (sb.length() == 0) {
-            sb.append(FXResourceBundle.getBundle().getString​("noSuchSnippet") + "\n");
+            commandProcessor.getSession().getFeedback()
+                    .commandFailure(FXResourceBundle.getBundle().getString​("noSuchSnippet") + "\n").flush();
         }
-
-        commandProcessor.getSession().getFeedback().normal(sb.toString(), ConsoleModel.COMMENT_STYLE);
     }
 }

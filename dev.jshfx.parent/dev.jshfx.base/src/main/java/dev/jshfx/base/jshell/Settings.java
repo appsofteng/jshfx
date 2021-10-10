@@ -5,11 +5,20 @@ import java.util.List;
 
 public class Settings {
 
+    private String feedbackMode = Feedback.NORMAL;
     private boolean loadDefault;
     private boolean loadPrinting;
     private boolean loadScripts;
     private List<String> startupScripts = new ArrayList<>();
 
+    public String getFeedbackMode() {
+        return feedbackMode;
+    }
+    
+    public void setFeedbackMode(String feedbackMode) {
+        this.feedbackMode = feedbackMode;
+    }
+    
     public boolean isLoadDefault() {
         return loadDefault;
     }
