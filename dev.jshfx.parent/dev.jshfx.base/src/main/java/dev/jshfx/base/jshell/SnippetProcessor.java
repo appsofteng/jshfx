@@ -26,18 +26,16 @@ public class SnippetProcessor extends Processor {
 
     @Override
     public void process(String input) {
-        getSession().getTaskQueuer().add(() ->  getSnippetEvents(input)).setOnSucceeded(e -> session.getFeedback().flush());
+        getSession().getTaskQueuer().add(() -> analyseAndEvaluate(input));
 
     }
 
-    public List<SnippetEvent> getSnippetEvents(String input) {
+    private void analyseAndEvaluate(String input) {
 
         SourceCodeAnalysis sourceAnalysis = session.getJshell().sourceCodeAnalysis();
 
         String[] lines = input.split("\n");
         StringBuffer sb = new StringBuffer();
-
-        List<SnippetEvent> allSnippetEvents = new ArrayList<>();
 
         for (int i = 0; i < lines.length; i++) {
             sb.append(lines[i]).append("\n");
@@ -47,14 +45,16 @@ public class SnippetProcessor extends Processor {
                 continue;
             } else if (info.completeness() == Completeness.DEFINITELY_INCOMPLETE) {
                 if (i == lines.length - 1) {
-                    session.getFeedback().snippetError(FXResourceBundle.getBundle().getString​("definitelyIncomplete") + "  " + sb.toString().strip() + "\n");
+                    session.getFeedback().snippetError(FXResourceBundle.getBundle().getString​("definitelyIncomplete")
+                            + "  " + sb.toString().strip() + "\n");
                 }
                 continue;
             } else if (info.completeness() == Completeness.EMPTY) {
                 sb.delete(0, sb.length());
                 continue;
             } else if (info.completeness() == Completeness.UNKNOWN) {
-                session.getFeedback().snippetError(FXResourceBundle.getBundle().getString​("unknown") + "  " + sb.toString().strip() + "\n");
+                session.getFeedback().snippetError(
+                        FXResourceBundle.getBundle().getString​("unknown") + "  " + sb.toString().strip() + "\n");
                 sb.delete(0, sb.length());
                 continue;
             }
@@ -62,23 +62,40 @@ public class SnippetProcessor extends Processor {
             String source = info.source();
             sb.delete(0, sb.length()).append(info.remaining());
             List<SnippetEvent> snippetEvents = session.getJshell().eval(source);
-            allSnippetEvents.addAll(snippetEvents);
-            snippetEvents.forEach(e -> getOutput(e));
+            snippetEvents.forEach(e -> setFeedback(e));
         }
 
-        return allSnippetEvents;
+        session.getFeedback().flush();
     }
 
-    public void process(List<Snippet> snippets) {
+    public List<SnippetEvent> process(Snippet snippet) {
+
+        session.getFeedback().commandResult(snippet.source().strip() + "\n");
+        List<SnippetEvent> snippetEvents = session.getJshell().eval(snippet.source());
+        snippetEvents.forEach(e -> setFeedback(e));
+
+        session.getFeedback().flush();
+
+        return snippetEvents;
+    }
+
+    public List<SnippetEvent> process(List<Snippet> snippets) {
+
+        List<SnippetEvent> allSnippetEvents = new ArrayList<>();
 
         for (Snippet snippet : snippets) {
             session.getFeedback().commandResult(snippet.source().strip() + "\n");
             List<SnippetEvent> snippetEvents = session.getJshell().eval(snippet.source());
-            snippetEvents.forEach(e -> getOutput(e));
+            allSnippetEvents.addAll(snippetEvents);
+            snippetEvents.forEach(e -> setFeedback(e));
         }
+
+        session.getFeedback().flush();
+
+        return allSnippetEvents;
     }
 
-    private void getOutput(SnippetEvent event) {
+    private void setFeedback(SnippetEvent event) {
 
         String message = "";
 
@@ -94,14 +111,13 @@ public class SnippetProcessor extends Processor {
             message = getVerboseSuccessMessage(event);
             message = message.strip() + "\n";
             session.getFeedback().snippetVerbose(message);
-            
             Snippet snippet = event.snippet();
-            String value = event.value();
 
             if (snippet.kind() == Kind.EXPRESSION || snippet.subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
-                message = SnippetUtils.toString(snippet, value, session.getJshell()).stripTrailing() + "\n";
-                message = message.strip() + "\n";
                 session.getFeedback().snippetExpression(message);
+            } else if (snippet.kind() == Kind.TYPE_DECL || snippet.kind() == Kind.METHOD
+                    || snippet.kind() == Kind.VAR) {
+                session.getFeedback().snippetDeclaration(message);
             }
         }
     }
@@ -130,7 +146,8 @@ public class SnippetProcessor extends Processor {
             }
             sb.append(d.getMessage(null)).append("\n");
 
-            String errorLine = SnippetUtils.getErrorLine(event.snippet().source(), (int) d.getStartPosition(), (int) d.getEndPosition());
+            String errorLine = SnippetUtils.getErrorLine(event.snippet().source(), (int) d.getStartPosition(),
+                    (int) d.getEndPosition());
 
             sb.append(errorLine).append("\n");
         });
@@ -164,7 +181,8 @@ public class SnippetProcessor extends Processor {
             Snippet snippet = event.snippet();
 
             if (snippet != null && snippet instanceof DeclarationSnippet) {
-                String dependencies = session.getJshell().unresolvedDependencies((DeclarationSnippet)snippet).collect(Collectors.joining(", "));
+                String dependencies = session.getJshell().unresolvedDependencies((DeclarationSnippet) snippet)
+                        .collect(Collectors.joining(", "));
                 dependency = ", " + FXResourceBundle.getBundle().getString​("undeclared", dependencies);
             }
         }

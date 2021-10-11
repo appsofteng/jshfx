@@ -214,7 +214,7 @@ public class Session {
         reset();
 
         snippets.forEach(s -> {
-            var newSnippets = snippetProcessor.getSnippetEvents(s.getKey().source()).stream().map(SnippetEvent::snippet)
+            var newSnippets = snippetProcessor.process(s.getKey()).stream().map(SnippetEvent::snippet)
                     .collect(Collectors.toList());
             if (s.getValue() == Status.DROPPED) {
                 commandProcessor.drop(newSnippets);
