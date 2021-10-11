@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
@@ -25,6 +26,8 @@ public class Feedback {
     private static final String SNIPPET_ERROR = "Snippet Error";    
     private static final String UPDATE = "Update";
 
+    public static final Set<String> MODES = Set.of(CONCISE, NORMAL, SILENT, VERBOSE);
+    
     private static final Map<String, List<String>> MAPPING = Map.of(VERBOSE,
             List.of(UPDATE, COMMAND_SUCCESS, COMMAND_RESULT, COMMAND_FAILURE, SNIPPET_VERBOSE,
                     SNIPPET_ERROR),
@@ -41,7 +44,7 @@ public class Feedback {
         this.consoleModel = consoleModel;
         this.settings = settings;
     }
-
+    
     public Feedback commandResult(String message) {
 
         add(COMMAND_RESULT, message);

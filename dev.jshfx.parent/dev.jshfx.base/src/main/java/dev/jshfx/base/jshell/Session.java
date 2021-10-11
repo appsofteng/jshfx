@@ -162,12 +162,19 @@ public class Session {
     }
 
     public Settings loadSettings() {
-        return JsonUtils.get().fromJson(FileManager.SET_FILE, Settings.class, new Settings());
+        return JsonUtils.getWithFormatting().fromJson(FileManager.SET_FILE, Settings.class, new Settings());
     }
 
+    public void saveSettings() {
+        JsonUtils.get().toJson(settings, FileManager.SET_FILE);
+    }
+    
+    public Settings getSettings() {
+        return settings;
+    }
+    
     public void setSettings(Settings settings) {
         this.settings = settings;
-        JsonUtils.get().toJson(settings, FileManager.SET_FILE);
     }
 
     private void setListener() {
