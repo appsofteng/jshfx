@@ -32,23 +32,33 @@ import dev.jshfx.base.jshell.commands.TypeCommand;
 import dev.jshfx.base.jshell.commands.VarCommand;
 import dev.jshfx.jfx.scene.control.ConsoleModel;
 import dev.jshfx.jfx.util.FXResourceBundle;
+import dev.jshfx.jx.tools.Lexer;
+import dev.jshfx.jx.tools.Token;
 import jdk.jshell.Snippet;
 import picocli.CommandLine;
 
 public class CommandProcessor extends Processor {
 
+    public static final String OPTION_SEPARATOR = " ";
 	private static final List<String> PRIVILEGED_COMMANDS = List.of(ExitCommand.EXIT_COMMAND, StopCommand.STOP_COMMAND);
 	static final String COMMAND_PATTERN = "^/[\\w!?\\-]*( .*)*$";
+    private static final String COMMANDS_FILE = "commands";
 	private CommandLine commandLine;
 	private PrintWriter out;
 	private DropCommand dropCommand;
 	private CompletableFuture<CommandLine> future;
+	private Lexer lexer;
 
 	CommandProcessor(Session session) {
 		super(session);
 
+		lexer = Lexer.get(COMMANDS_FILE);
 		future = CompletableFuture.supplyAsync(this::createCommands).thenApplyAsync(this::loadDoc);
 	}
+	
+	public Lexer getLexer() {
+        return lexer;
+    }
 
 	private CommandLine createCommands() {
 		var os = session.getConsoleModel().getOut(ConsoleModel.HELP_STYLE);
@@ -145,14 +155,14 @@ public class CommandProcessor extends Processor {
 	@Override
 	void process(String input) {
 
-		String[] args = input.split(" +");
+	    List<String> args = lexer.tokenize(input).stream().map(Token::getValue).collect(Collectors.toCollection(() -> new ArrayList<>()));
+	    
+		if (args.size() > 0) {
 
-		if (args.length > 0) {
-
-			args = RerunCommand.setIfMatches(args);
+			RerunCommand.setIfMatches(args);
 		}
 
-		String[] arguments = args;
+		String[] arguments = args.toArray(new String[0]);
 
 		if (PRIVILEGED_COMMANDS.stream().anyMatch(c -> input.startsWith(c))) {
 			getSession().getTaskQueuer().add(Session.PRIVILEDGED_TASK_QUEUE, () -> getCommandLine().execute(arguments));

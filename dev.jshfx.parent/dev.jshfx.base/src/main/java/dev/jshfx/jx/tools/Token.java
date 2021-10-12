@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Token {
 
+    private int index;
     private int start;
     private int end;
     private String type;
@@ -16,7 +17,8 @@ public class Token {
     public Token() {
     }
 
-    public Token(int start, int end, String type, String value) {
+    public Token(int index, int start, int end, String type, String value) {
+        this.index = index;
         this.start = start;
         this.end = end;
         this.type = type;
@@ -25,6 +27,10 @@ public class Token {
         resetStyle();
     }
 
+    public int getIndex() {
+        return index;
+    }
+    
     public int getStart() {
         return start;
     }
@@ -80,5 +86,10 @@ public class Token {
     public void resetStyle() {
         style.clear();
         style.add(type.toLowerCase());
+    }
+    
+    @Override
+    public String toString() {
+        return getValue();
     }
 }

@@ -1,0 +1,4 @@
+JSHELLCOMMAND,STRING
+[{(\[<]
+(?<JSHELLCOMMAND>[/\w!?-]+)
+|(?<STRING>"(?:[^"\\]|\\.)*+")

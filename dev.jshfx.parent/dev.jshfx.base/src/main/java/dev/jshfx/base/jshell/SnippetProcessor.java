@@ -62,17 +62,19 @@ public class SnippetProcessor extends Processor {
             String source = info.source();
             sb.delete(0, sb.length()).append(info.remaining());
             List<SnippetEvent> snippetEvents = session.getJshell().eval(source);
-            snippetEvents.forEach(e -> setFeedback(e));
+            snippetEvents.forEach(e -> setFeedback(e, false));
         }
 
         session.getFeedback().flush();
     }
 
-    public List<SnippetEvent> process(Snippet snippet) {
+    public List<SnippetEvent> process(Snippet snippet, boolean quiet) {
 
-        session.getFeedback().commandResult(snippet.source().strip() + "\n");
+        if (!quiet) {
+            session.getFeedback().commandResult(snippet.source().strip() + "\n");
+        }
         List<SnippetEvent> snippetEvents = session.getJshell().eval(snippet.source());
-        snippetEvents.forEach(e -> setFeedback(e));
+        snippetEvents.forEach(e -> setFeedback(e, quiet));
 
         session.getFeedback().flush();
 
@@ -87,7 +89,7 @@ public class SnippetProcessor extends Processor {
             session.getFeedback().commandResult(snippet.source().strip() + "\n");
             List<SnippetEvent> snippetEvents = session.getJshell().eval(snippet.source());
             allSnippetEvents.addAll(snippetEvents);
-            snippetEvents.forEach(e -> setFeedback(e));
+            snippetEvents.forEach(e -> setFeedback(e, false));
         }
 
         session.getFeedback().flush();
@@ -95,7 +97,7 @@ public class SnippetProcessor extends Processor {
         return allSnippetEvents;
     }
 
-    private void setFeedback(SnippetEvent event) {
+    private void setFeedback(SnippetEvent event, boolean quiet) {
 
         String message = "";
 
@@ -107,7 +109,7 @@ public class SnippetProcessor extends Processor {
             message = getRejectedMessage(event);
             message = message.strip() + "\n";
             session.getFeedback().snippetError(message);
-        } else {
+        } else if (!quiet) {
             message = getVerboseSuccessMessage(event);
             message = message.strip() + "\n";
             session.getFeedback().snippetVerbose(message);

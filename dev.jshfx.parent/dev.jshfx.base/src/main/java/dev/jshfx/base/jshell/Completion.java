@@ -14,6 +14,8 @@ import dev.jshfx.fxmisc.richtext.CompletionItem;
 import dev.jshfx.fxmisc.richtext.DocRef;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.jx.tools.JavadocUtils;
+import dev.jshfx.jx.tools.Token;
+import javafx.application.Platform;
 import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.QualifiedNames;
 import picocli.AutoComplete;
@@ -29,38 +31,45 @@ public class Completion {
 
     public Collection<CompletionItem> getCompletionItems(CodeArea inputArea) {
 
-        return inputArea.getText().isBlank() || CommandProcessor.isCommand(inputArea.getText()) ? getCommandCompletionItems(inputArea)
+        return inputArea.getText().isBlank() || CommandProcessor.isCommand(inputArea.getText())
+                ? getCommandCompletionItems(inputArea)
                 : getCodeCompletionItems(inputArea);
     }
 
     private Collection<CompletionItem> getCommandCompletionItems(CodeArea inputArea) {
-        String[] args = inputArea.getText().strip().split(" +");
+        String input = inputArea.getText();
         int caretPosition = inputArea.getCaretPosition();
-        int argsPosition = (int) inputArea.getText().substring(0, caretPosition).chars().filter(i -> i != 32).count();
-        int argIndex = 0;
+        List<String> arguments = session.getCommandProcessor().getLexer().tokenize(input, caretPosition).stream()
+                .map(Token::getValue).collect(Collectors.toList());
+        Token tokenOnCaret = session.getCommandProcessor().getLexer().getTokenOnCaretPosition();
+        
+        int argIndex = arguments.size() - 1;;
         int positionInArg = 0;
-
-        int length = 0;
-        for (int i = 0; i < args.length; i++) {
-            length += args[i].length();
-
-            if (length >= argsPosition) {
-                argIndex = i;
-                positionInArg = argsPosition - (length - args[i].length());
-                break;
-            }
+        
+        if (tokenOnCaret != null) {
+            argIndex = tokenOnCaret.getIndex();
+            positionInArg = caretPosition - tokenOnCaret.getStart();
+        } else if (argIndex >= 0) {
+            arguments.add("");
+            argIndex++;
         }
 
         List<CharSequence> candidates = new ArrayList<>();
-        int anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args, argIndex, positionInArg,
-                caretPosition, candidates);
+        String[] args = arguments.toArray(new String[0]);
 
-        if (candidates.size() == 1 && candidates.get(0).length() == 0 && args.length > 0) {
-            args = new String[] { args[0], "" };
-            argIndex = 1;
+        int anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args,
+                argIndex, positionInArg, caretPosition, candidates);
+
+        if (candidates.size() == 1 && candidates.get(0).length() == 0 && arguments.size() > 0) {
+            Platform.runLater(() ->  inputArea.insertText(inputArea.getCaretPosition(), " "));
+           
+            caretPosition++;
+            arguments.add("");
+            argIndex++;
             positionInArg = 0;
-            anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args, argIndex, positionInArg,
-                    caretPosition, candidates);
+            args = arguments.toArray(new String[0]);
+            anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args,
+                    argIndex, positionInArg, caretPosition, candidates);
         }
 
         String arg = args[argIndex];
@@ -76,7 +85,8 @@ public class Completion {
             String name = arg.substring(0, positionInArg) + candidate;
             String docCode = args.length <= 1 ? name : (args[0] + "." + name);
 
-            items.add(new CommandCompletionItem(inputArea, anchor, candidate.toString(), name, docCode, this::getCommandHelp));
+            items.add(new CommandCompletionItem(inputArea, anchor, candidate.toString(), name, docCode,
+                    this::getCommandHelp));
         }
 
         return items;
@@ -84,13 +94,14 @@ public class Completion {
 
     private String getCommandHelp(DocRef docRef) {
         String help = "";
-        CommandLine subcommand = session.getCommandProcessor().getCommandLine().getSubcommands().get(docRef.getDocCode());
+        CommandLine subcommand = session.getCommandProcessor().getCommandLine().getSubcommands()
+                .get(docRef.getDocCode());
 
         if (subcommand != null) {
             help = "<pre>" + subcommand.getUsageMessage() + "</pre>";
         } else {
             help = FXResourceBundle.getBundle().getStringOrDefault(docRef.getDocCode(),
-            		FXResourceBundle.getBundle().getStringOrDefault(docRef.getSignature(), ""));
+                    FXResourceBundle.getBundle().getStringOrDefault(docRef.getSignature(), ""));
         }
 
         return help;
@@ -105,10 +116,8 @@ public class Completion {
         int[] anchor = new int[1];
 
         Set<SuggestionCompletionItem> suggestionItems = session.getJshell().sourceCodeAnalysis()
-                .completionSuggestions(code, cursor, anchor)
-                .stream()
-                .map(s -> new SuggestionCompletionItem(inputArea, code, s, anchor))
-                .collect(Collectors.toSet());
+                .completionSuggestions(code, cursor, anchor).stream()
+                .map(s -> new SuggestionCompletionItem(inputArea, code, s, anchor)).collect(Collectors.toSet());
 
         for (SuggestionCompletionItem item : suggestionItems) {
 
@@ -119,8 +128,8 @@ public class Completion {
                 items.add(item);
             } else {
                 items.addAll(docs.stream()
-                        .map(d -> new SuggestionCompletionItem(inputArea, item.getSuggestion(), item.getAnchor(), item.getDocRef().getDocCode(),
-                                d.signature(), this::loadDocumentation))
+                        .map(d -> new SuggestionCompletionItem(inputArea, item.getSuggestion(), item.getAnchor(),
+                                item.getDocRef().getDocCode(), d.signature(), this::loadDocumentation))
                         .collect(Collectors.toSet()));
             }
         }
@@ -130,11 +139,10 @@ public class Completion {
         QualifiedNames qualifiedNames = session.getJshell().sourceCodeAnalysis().listQualifiedNames(code, cursor);
 
         if (!qualifiedNames.isResolvable()) {
-            Set<CompletionItem> names = qualifiedNames.getNames()
-                    .stream()
-                    .map(n -> new QualifiedNameCompletionItem(i -> session.getConsoleView().enter(i) , n, this::loadDocumentation))
-                    .sorted()
-                    .collect(Collectors.toSet());
+            Set<CompletionItem> names = qualifiedNames.getNames().stream()
+                    .map(n -> new QualifiedNameCompletionItem(i -> session.getConsoleView().enter(i), n,
+                            this::loadDocumentation))
+                    .sorted().collect(Collectors.toSet());
 
             items.addAll(names);
         }

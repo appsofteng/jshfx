@@ -51,6 +51,10 @@ public class Lexer {
     public Token getTokenOnCaretPosition() {
         return tokenOnCaretPosition;
     }
+    
+    public static Lexer get(String fileName) {
+        return get(fileName, "");
+    }
 
     public static Lexer get(String fileName, String language) {
         Lexer lexer = null;
@@ -77,6 +81,19 @@ public class Lexer {
 
         return lexer;
     }
+    
+    public List<Token> tokenize(String input) {
+        
+        return tokenize(input, 0);
+    }
+    
+    public List<Token> tokenize(String input, int caretPosition) {
+        List<Token> tokens = new ArrayList<>();
+        
+        tokenize(input, caretPosition, (le, t) -> tokens.add(t));
+        
+        return tokens;
+    }
 
     public int tokenize(String input, int caretPosition, BiConsumer<Integer, Token> consumer) {
         Matcher matcher = pattern.matcher(input);
@@ -84,10 +101,11 @@ public class Lexer {
         tokens.clear();
         tokenStack.clear();
         tokenOnCaretPosition = null;
+        int index = 0;
 
         while (matcher.find()) {
             String type = groups.stream().filter(g -> matcher.group(g) != null).findFirst().orElse("");
-            Token token = new Token(matcher.start(), matcher.end(), type, matcher.group());
+            Token token = new Token(index++, matcher.start(), matcher.end(), type, matcher.group());
 
             if (token.isOnCaretPosition(caretPosition)) {
                 tokenOnCaretPosition = token;

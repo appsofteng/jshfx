@@ -85,7 +85,7 @@ public class ShellPane extends Part {
                 if (c.wasAdded()) {
                     List<? extends TextStyleSpans> added = new ArrayList<>(c.getAddedSubList());
                     for (TextStyleSpans span : added) {
-                        session.processBatch(span.getText());
+                        session.process(span.getText());
                     }
                 }
             }

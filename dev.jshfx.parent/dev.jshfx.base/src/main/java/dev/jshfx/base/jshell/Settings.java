@@ -1,53 +1,50 @@
 package dev.jshfx.base.jshell;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class Settings {
 
+    public static final String DEFAULT = "DEFAULT";
+    public static final String PRINTING = "PRINTING";
+    public static final Map<String,String> PREDEFINED_STARTUP_FILES = Map.of(DEFAULT, "start-default.txt", PRINTING, "start-printing.txt");
     private String feedbackMode = Feedback.NORMAL;
-    private boolean loadDefault;
-    private boolean loadPrinting;
-    private boolean loadScripts;
-    private List<String> startupScripts = new ArrayList<>();
+    private boolean loadStartupFiles;
+    private Set<String> predefinedStartupFiles = new HashSet<>();
+    private Set<String> startupFiles = new HashSet<>();
 
     public String getFeedbackMode() {
         return feedbackMode;
     }
-    
+
     public void setFeedbackMode(String feedbackMode) {
         this.feedbackMode = feedbackMode;
     }
-    
-    public boolean isLoadDefault() {
-        return loadDefault;
+
+    public Set<String> getPredefinedStartupFiles() {
+        return predefinedStartupFiles;
     }
 
-    public void setLoadDefault(boolean loadDefault) {
-        this.loadDefault = loadDefault;
+    public void setPredefinedStartupFiles(Set<String> predefinedStartupFiles) {
+        this.predefinedStartupFiles = predefinedStartupFiles;
     }
 
-    public boolean isLoadPrinting() {
-        return loadPrinting;
+    public boolean isLoadStartupFiles() {
+        return loadStartupFiles;
     }
 
-    public void setLoadPrinting(boolean loadPrinting) {
-        this.loadPrinting = loadPrinting;
+    public void setLoadStartupFiles(boolean value) {
+        this.loadStartupFiles = value;
     }
 
-    public boolean isLoadScripts() {
-        return loadScripts;
+    public Set<String> getStartupFiles() {
+        return startupFiles;
     }
 
-    public void setLoadScripts(boolean loadScripts) {
-        this.loadScripts = loadScripts;
-    }
-
-    public List<String> getStartupScripts() {
-        return startupScripts;
-    }
-
-    public void setStartupScripts(List<String> startupScripts) {
-        this.startupScripts = startupScripts;
+    public void setStartupFiles(Set<String> startupScripts) {
+        this.startupFiles = startupScripts;
     }
 }

@@ -45,6 +45,11 @@ public class Feedback {
         this.settings = settings;
     }
     
+    public boolean isValid(String mode) {
+        return MODES.contains(mode);
+    }
+    
+    
     public Feedback commandResult(String message) {
 
         add(COMMAND_RESULT, message);

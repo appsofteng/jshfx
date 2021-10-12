@@ -50,6 +50,7 @@ public class Session {
     private int startSnippetMaxIndex;
     private Map<String, Snippet> snippetsById = new HashMap<>();
     private Map<String, List<Snippet>> snippetsByName = new HashMap<>();
+    private List<Entry<Snippet, Status>> restoreSnippets = new ArrayList<>();
     private Subscription subscription;
 
     public Session(SplitConsolePane console, TaskQueuer taskQueuer) {
@@ -57,7 +58,7 @@ public class Session {
         this.console = console;
         this.consoleModel = console.getConsoleModel();
         this.taskQueuer = taskQueuer;
-        
+
         commandProcessor = new CommandProcessor(this);
         snippetProcessor = new SnippetProcessor(this);
         env = loadEnv();
@@ -74,12 +75,12 @@ public class Session {
 
     public static void closeCommon() {
 
-	        if (commonJshell != null) {
+        if (commonJshell != null) {
 
-	            commonJshell.stop();
-	            commonJshell.close();         
-	        }       
-	    }
+            commonJshell.stop();
+            commonJshell.close();
+        }
+    }
 
     public ReadOnlyBooleanProperty closedProperty() {
         return closed;
@@ -158,7 +159,7 @@ public class Session {
 
     public void reloadEnv(Env env) {
         setEnv(env);
-        reload();
+        reload(true);
     }
 
     public Settings loadSettings() {
@@ -168,11 +169,11 @@ public class Session {
     public void saveSettings() {
         JsonUtils.get().toJson(settings, FileManager.SET_FILE);
     }
-    
+
     public Settings getSettings() {
         return settings;
     }
-    
+
     public void setSettings(Settings settings) {
         this.settings = settings;
     }
@@ -193,35 +194,41 @@ public class Session {
     }
 
     public void reset() {
+        restoreSnippets = jshell.snippets()
+                .filter(s -> Integer.parseInt(s.id()) > commandProcessor.getSession().getStartSnippetMaxIndex())
+                .filter(s -> jshell.status(s) == Status.VALID || jshell.status(s) == Status.DROPPED)
+                .map(s -> new SimpleEntry<>(s, jshell.status(s))).collect(Collectors.toList());
+        restart();
+    }
+    
+    private void restart() {
         snippetsById.clear();
         snippetsByName.clear();
 
         buildJShell();
         setListener();
-        if (settings.isLoadDefault()) {
-            loadDefault();
-        }
 
-        if (settings.isLoadPrinting()) {
-            loadPrinting();
-        }
-
-        if (settings.isLoadScripts()) {
-            loadStartupScripts();
+        if (settings.isLoadStartupFiles()) {
+            loadPredefinedStartupFiles();
+            loadStartupFiles();
         }
 
         startSnippetMaxIndex = idGenerator.getMaxId();
     }
 
-    public void reload() {
-
-        List<Entry<Snippet, Status>> snippets = jshell.snippets()
-                .filter(s -> jshell.status(s) == Status.VALID || jshell.status(s) == Status.DROPPED)
-                .map(s -> new SimpleEntry<>(s, jshell.status(s))).collect(Collectors.toList());
+    public void reload(boolean quiet) {
         reset();
+        reloadSnippets(quiet);
+    }
+    
+    public void restore(boolean quiet) {
+        restart();
+        reloadSnippets(quiet);
+    }
 
-        snippets.forEach(s -> {
-            var newSnippets = snippetProcessor.process(s.getKey()).stream().map(SnippetEvent::snippet)
+    private void reloadSnippets(boolean quiet) {
+        restoreSnippets.forEach(s -> {
+            var newSnippets = snippetProcessor.process(s.getKey(), quiet).stream().map(SnippetEvent::snippet)
                     .collect(Collectors.toList());
             if (s.getValue() == Status.DROPPED) {
                 commandProcessor.drop(newSnippets);
@@ -270,26 +277,33 @@ public class Session {
         closed.set(true);
     }
 
-    public void loadDefault() {
+    public void loadPredefinedStartupFile(String file) {
         try {
-            JShellUtils.loadSnippets(jshell, getClass().getResourceAsStream("start-default.txt"));
+
+            JShellUtils.loadSnippets(jshell,
+                    getClass().getResourceAsStream(Settings.PREDEFINED_STARTUP_FILES.get(file)));
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void loadPrinting() {
-
+    public void loadPredefinedStartupFiles() {
         try {
-            JShellUtils.loadSnippets(jshell, getClass().getResourceAsStream("start-printing.txt"));
+
+            for (String file : settings.getPredefinedStartupFiles()) {
+                JShellUtils.loadSnippets(jshell,
+                        getClass().getResourceAsStream(Settings.PREDEFINED_STARTUP_FILES.get(file)));
+            }
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void loadStartupScripts() {
+    private void loadStartupFiles() {
 
-        for (String file : settings.getStartupScripts()) {
+        for (String file : settings.getStartupFiles()) {
             Path path = Path.of(file);
             if (Files.exists(path)) {
                 try {
@@ -302,11 +316,7 @@ public class Session {
         }
     }
 
-    public void processBatch(String input) {
-        process(input);
-    }
-
-    private void process(String input) {
+    public void process(String input) {
 
         if (input.isBlank()) {
             return;

@@ -6,7 +6,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Spec;
 
 public abstract class BaseCommand  implements Runnable {
-
+    
     protected CommandProcessor commandProcessor;
 
     @Option(names = {"-h", "--help"}, usageHelp = true, descriptionKey = "-h")

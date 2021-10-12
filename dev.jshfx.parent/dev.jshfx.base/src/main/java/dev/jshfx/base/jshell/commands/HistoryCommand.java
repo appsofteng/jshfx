@@ -16,6 +16,6 @@ public class HistoryCommand extends BaseCommand {
     public void run() {
         String result = commandProcessor.getSession().getHistory().stream().collect(Collectors.joining("\n"));
 
-        commandProcessor.getSession().getFeedback().commandResult(result + "\n");
+        commandProcessor.getSession().getFeedback().commandResult(result + "\n").flush();
     }
 }

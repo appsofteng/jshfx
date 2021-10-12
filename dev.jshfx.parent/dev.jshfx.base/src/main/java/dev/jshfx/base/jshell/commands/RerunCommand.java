@@ -21,17 +21,12 @@ public class RerunCommand extends BaseCommand {
         super(commandProcessor);
     }
 
-    public static String[] setIfMatches(String[] args) {
-        String[] newArgs = args;
+    public static void setIfMatches(List<String> args) {
 
-        if (args[0].matches("/(\\d+|\\d+-\\d+)( (\\d+|\\d+-\\d+|\\w+))*")) {
-            newArgs = new String[args.length + 1];
-            System.arraycopy(args, 0, newArgs, 1, args.length);
-            newArgs[0] = RERUN_COMMAND;
-            newArgs[1] = args[0].substring(1);
+        if (args.get(0).matches("/(\\d+|\\d+-\\d+)( (\\d+|\\d+-\\d+|\\w+))*")) {            
+            args.set(0, args.get(0).substring(1));
+            args.add(0, RERUN_COMMAND);
         }
-
-        return newArgs;
     }
 
     @Override
