@@ -17,6 +17,9 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<ojfxVersion>17.0.0.1</ojfxVersion>
 		<picocliVersion>4.6.1</picocliVersion>
+		<mavenVersion>3.8.3</mavenVersion>
+		<mavenResolverVersion>1.7.2</mavenResolverVersion>
+		<slf4jVersion>1.7.32</slf4jVersion>
 		<javafx.platform>win</javafx.platform>
 		<scriptExtension>bat</scriptExtension>
 		<pathSeparator>;</pathSeparator>
@@ -84,6 +87,61 @@
 				<groupId>info.picocli</groupId>
 				<artifactId>picocli</artifactId>
 				<version>${picocliVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven.resolver</groupId>
+				<artifactId>maven-resolver-api</artifactId>
+				<version>${mavenResolverVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven.resolver</groupId>
+				<artifactId>maven-resolver-spi</artifactId>
+				<version>${mavenResolverVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven.resolver</groupId>
+				<artifactId>maven-resolver-util</artifactId>
+				<version>${mavenResolverVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven.resolver</groupId>
+				<artifactId>maven-resolver-impl</artifactId>
+				<version>${mavenResolverVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven.resolver</groupId>
+				<artifactId>maven-resolver-connector-basic</artifactId>
+				<version>${mavenResolverVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven.resolver</groupId>
+				<artifactId>maven-resolver-transport-file</artifactId>
+				<version>${mavenResolverVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven.resolver</groupId>
+				<artifactId>maven-resolver-transport-http</artifactId>
+				<version>${mavenResolverVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven</groupId>
+				<artifactId>maven-resolver-provider</artifactId>
+				<version>${mavenVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven</groupId>
+				<artifactId>maven-model-builder</artifactId>
+				<version>${mavenVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4jVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-simple</artifactId>
+				<version>${slf4jVersion}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

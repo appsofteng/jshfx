@@ -18,75 +18,81 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 @Command(name = "/env")
 public class EnvCommand extends BaseCommand {
 
-	public EnvCommand(CommandProcessor commandProcessor) {
-		super(commandProcessor);
-	}
+    @Option(names = "-gui", descriptionKey = "/env.-gui")
+    private boolean gui;
 
-	@Override
-	public void run() {
+    public EnvCommand(CommandProcessor commandProcessor) {
+        super(commandProcessor);
+    }
 
-		Platform.runLater(() -> {
+    @Override
+    public void run() {
 
-			Dialog<Void> dialog = new Dialog<>();
-			dialog.initOwner(commandProcessor.getSession().getWindow());
-			dialog.setTitle(FXResourceBundle.getBundle().getString​("environment"));
-			EnvBox envBox = new EnvBox(getEnvs());
-			DialogPane dialogPane = dialog.getDialogPane();
-			dialogPane.setContent(envBox);
-			ButtonType resetdButtonType = new ButtonType(FXResourceBundle.getBundle().getString​("reset"),
-					ButtonData.OK_DONE);
-			ButtonType reloadButtonType = new ButtonType(FXResourceBundle.getBundle().getString​("reload"),
-					ButtonData.APPLY);
-			ButtonType cancelButtonType = new ButtonType(FXResourceBundle.getBundle().getString​("cancel"),
-					ButtonData.CANCEL_CLOSE);
-			dialogPane.getButtonTypes().addAll(resetdButtonType, reloadButtonType, cancelButtonType);
-			final Button reset = (Button) dialogPane.lookupButton(resetdButtonType);
-			reset.setOnAction(e -> {
-				dialog.close();
-				resetEnvs(envBox.getEnv(), envBox.getEnvs());
-			});
-			final Button reload = (Button) dialogPane.lookupButton(reloadButtonType);
-			reload.setOnAction(e -> {
-				dialog.close();
-				reloadEnvs(envBox.getEnv(), envBox.getEnvs());
-			});
-			final Button cancel = (Button) dialogPane.lookupButton(cancelButtonType);
-			cancel.setOnAction(e -> dialog.close());
+        if (gui) {
+            Platform.runLater(() -> {
 
-			dialog.showAndWait();
+                Dialog<Void> dialog = new Dialog<>();
+                dialog.initOwner(commandProcessor.getSession().getWindow());
+                dialog.setTitle(FXResourceBundle.getBundle().getString​("environment"));
+                EnvBox envBox = new EnvBox(getEnvs());
+                DialogPane dialogPane = dialog.getDialogPane();
+                dialogPane.setContent(envBox);
+                ButtonType resetdButtonType = new ButtonType(FXResourceBundle.getBundle().getString​("reset"),
+                        ButtonData.OK_DONE);
+                ButtonType reloadButtonType = new ButtonType(FXResourceBundle.getBundle().getString​("reload"),
+                        ButtonData.APPLY);
+                ButtonType cancelButtonType = new ButtonType(FXResourceBundle.getBundle().getString​("cancel"),
+                        ButtonData.CANCEL_CLOSE);
+                dialogPane.getButtonTypes().addAll(resetdButtonType, reloadButtonType, cancelButtonType);
+                final Button reset = (Button) dialogPane.lookupButton(resetdButtonType);
+                reset.setOnAction(e -> {
+                    dialog.close();
+                    resetEnvs(envBox.getEnv(), envBox.getEnvs());
+                });
+                final Button reload = (Button) dialogPane.lookupButton(reloadButtonType);
+                reload.setOnAction(e -> {
+                    dialog.close();
+                    reloadEnvs(envBox.getEnv(), envBox.getEnvs());
+                });
+                final Button cancel = (Button) dialogPane.lookupButton(cancelButtonType);
+                cancel.setOnAction(e -> dialog.close());
 
-		});
-	}
+                dialog.showAndWait();
 
-	private ObservableList<Env> getEnvs() {
-		ObservableList<Env> envs = FXCollections.observableArrayList();
-		envs.add(commandProcessor.getSession().loadEnv());
+            });
+        }
+    }
 
-		List<Env> envsList = JsonUtils.get().fromJson(FileManager.ENVS_FILE, new ArrayList<Env>() {
-		}.getClass().getGenericSuperclass(), new ArrayList<>());
-		envs.addAll(envsList);
+    private ObservableList<Env> getEnvs() {
+        ObservableList<Env> envs = FXCollections.observableArrayList();
+        envs.add(commandProcessor.getSession().loadEnv());
 
-		return envs;
-	}
+        List<Env> envsList = JsonUtils.get().fromJson(FileManager.ENVS_FILE, new ArrayList<Env>() {
+        }.getClass().getGenericSuperclass(), new ArrayList<>());
+        envs.addAll(envsList);
 
-	private void resetEnvs(Env env, ObservableList<Env> envs) {
+        return envs;
+    }
 
-		commandProcessor.getSession().resetEnv(env);
-		saveEnvs(env, envs);
+    private void resetEnvs(Env env, ObservableList<Env> envs) {
 
-	}
+        commandProcessor.getSession().resetEnv(env);
+        saveEnvs(env, envs);
 
-	private void reloadEnvs(Env env, ObservableList<Env> envs) {
-		commandProcessor.getSession().reloadEnv(env);
-		saveEnvs(env, envs);
-	}
+    }
 
-	private void saveEnvs(Env env, ObservableList<Env> envs) {
-		envs.remove(env);
-		JsonUtils.get().toJson(envs, FileManager.ENVS_FILE);
-	}
+    private void reloadEnvs(Env env, ObservableList<Env> envs) {
+        commandProcessor.getSession().reloadEnv(env);
+        saveEnvs(env, envs);
+    }
+
+    private void saveEnvs(Env env, ObservableList<Env> envs) {
+        envs.remove(env);
+        JsonUtils.get().toJson(envs, FileManager.ENVS_FILE);
+    }
 }

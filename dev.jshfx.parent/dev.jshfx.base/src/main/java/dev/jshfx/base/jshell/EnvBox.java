@@ -41,6 +41,7 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.StringConverter;
@@ -67,7 +68,8 @@ public class EnvBox extends VBox {
         this.envs = envs;
         this.env = envs.get(0);
         FXCollections.sort(envs);
-        systemModuleReferences = ModuleFinder.ofSystem().findAll().stream().filter(r -> !r.descriptor().packages().isEmpty())
+        systemModuleReferences = ModuleFinder.ofSystem().findAll().stream()
+                .filter(r -> !r.descriptor().packages().isEmpty())
                 .collect(Collectors.toMap(r -> r.descriptor().name(), r -> r));
         setGraphics();
         setEnv();
@@ -124,17 +126,19 @@ public class EnvBox extends VBox {
 
         TableColumn<ExportItem, String> sourceColumn = new TableColumn<>();
         sourceColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("sourceModule"));
-        sourceColumn.setCellValueFactory(
-                f -> LU.of((() -> JavaBeanStringPropertyBuilder.create().bean(f.getValue()).name("sourceModule").build())));
+        sourceColumn.setCellValueFactory(f -> LU
+                .of((() -> JavaBeanStringPropertyBuilder.create().bean(f.getValue()).name("sourceModule").build())));
         sourceColumn.setCellFactory(f -> {
-            TextFieldTableCell<ExportItem, String> cell = new AutoCompleteTextFieldTableCell<>(new DefaultStringConverter(), exportModules) {
+            TextFieldTableCell<ExportItem, String> cell = new AutoCompleteTextFieldTableCell<>(
+                    new DefaultStringConverter(), exportModules) {
 
                 public void commitEdit(String newValue) {
 
                     if (exportModules.contains(newValue)) {
 
                         super.commitEdit(newValue);
-                        getTableRow().getItem().setPackageName(exportModuleReferences.get(newValue).descriptor().packages().iterator().next());
+                        getTableRow().getItem().setPackageName(
+                                exportModuleReferences.get(newValue).descriptor().packages().iterator().next());
                         getTableView().refresh();
                     } else {
                         cancelEdit();
@@ -147,13 +151,14 @@ public class EnvBox extends VBox {
 
         TableColumn<ExportItem, String> packageColumn = new TableColumn<>();
         packageColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("package"));
-        packageColumn.setCellValueFactory(
-                f -> LU.of(() -> JavaBeanStringPropertyBuilder.create().bean(f.getValue()).name("packageName").build()));
+        packageColumn.setCellValueFactory(f -> LU
+                .of(() -> JavaBeanStringPropertyBuilder.create().bean(f.getValue()).name("packageName").build()));
         packageColumn.setCellFactory(c -> {
 
             ChoiceBoxTableCell<ExportItem, String> cell = new ChoiceBoxTableCell<>() {
                 public void startEdit() {
-                    if (getTableRow() != null && getTableRow().getItem() != null && getTableRow().getItem().getSourceModule() != null) {
+                    if (getTableRow() != null && getTableRow().getItem() != null
+                            && getTableRow().getItem().getSourceModule() != null) {
                         ModuleReference mref = exportModuleReferences.get(getTableRow().getItem().getSourceModule());
                         Set<String> packages = mref == null ? Set.of() : mref.descriptor().packages();
                         getItems().setAll(packages);
@@ -166,13 +171,15 @@ public class EnvBox extends VBox {
 
         TableColumn<ExportItem, Collection<String>> targetColumn = new TableColumn<>();
         targetColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("targetModules"));
-        targetColumn.setCellValueFactory(
-                f -> LU.of(() -> JavaBeanObjectPropertyBuilder.create().bean(f.getValue()).name("targetModules").build()));
-        targetColumn.setCellFactory(CheckComboBoxTableCell.forTableColumn(new CollectionStringConverter(), exportModules));
+        targetColumn.setCellValueFactory(f -> LU
+                .of(() -> JavaBeanObjectPropertyBuilder.create().bean(f.getValue()).name("targetModules").build()));
+        targetColumn
+                .setCellFactory(CheckComboBoxTableCell.forTableColumn(new CollectionStringConverter(), exportModules));
 
         exportView.getColumns().addAll(sourceColumn, packageColumn, targetColumn);
 
-        getChildren().addAll(envBox, classpath, classpathView, modulepath, modulepathView, addModuleView, addExports, exportView);
+        getChildren().addAll(envBox, classpath, classpathView, modulepath, modulepathView, addModuleView, addExports,
+                exportView);
     }
 
     private void setBehavior() {
@@ -230,10 +237,11 @@ public class EnvBox extends VBox {
                 if (c.wasAdded() || c.wasRemoved()) {
                     env.getAddModules().clear();
                     env.getAddModules().addAll(addModuleView.getTargetItems());
-                    env.setModuleLocations(env.getAddModules().stream()
-                            .filter(m -> modulePathModuleReferences.get(m) != null)
-                            .filter(m -> modulePathModuleReferences.get(m).location().isPresent())
-                            .map(m -> new File(modulePathModuleReferences.get(m).location().get()).toString()).collect(Collectors.toList()));
+                    env.setModuleLocations(
+                            env.getAddModules().stream().filter(m -> modulePathModuleReferences.get(m) != null)
+                                    .filter(m -> modulePathModuleReferences.get(m).location().isPresent())
+                                    .map(m -> new File(modulePathModuleReferences.get(m).location().get()).toString())
+                                    .collect(Collectors.toList()));
                 }
             }
         });
@@ -242,16 +250,16 @@ public class EnvBox extends VBox {
     private void setClassPathContextMenu() {
         MenuItem add = new MenuItem(FXResourceBundle.getBundle().getString​("addLibs"));
         add.setOnAction(e -> {
-			FileChooser fileChooser = new FileChooser();
-			fileChooser.setTitle(FXResourceBundle.getBundle().getString​("classpath"));
-			fileChooser.getExtensionFilters().addAll(new ExtensionFilter("JAR", "*.jar"));
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle(FXResourceBundle.getBundle().getString​("classpath"));
+            fileChooser.getExtensionFilters().addAll(new ExtensionFilter("JAR", "*.jar"));
 
-			List<File> selectedFiles = fileChooser.showOpenMultipleDialog(getScene().getWindow());
+            List<File> selectedFiles = fileChooser.showOpenMultipleDialog(getScene().getWindow());
 
-			if (selectedFiles != null) {
-				classpathView.getItems().addAll(selectedFiles.stream().map(f -> f.toString())
-						.filter(p -> !env.getClassPath().contains(p)).collect(Collectors.toList()));
-			}        	
+            if (selectedFiles != null) {
+                classpathView.getItems().addAll(selectedFiles.stream().map(f -> f.toString())
+                        .filter(p -> !env.getClassPath().contains(p)).collect(Collectors.toList()));
+            }
         });
 
         MenuItem removeSelection = new MenuItem(FXResourceBundle.getBundle().getString​("removeSelection"));
@@ -261,7 +269,8 @@ public class EnvBox extends VBox {
         });
 
         MenuItem copySelection = new MenuItem(FXResourceBundle.getBundle().getString​("copyPathToClipboard"));
-        copySelection.disableProperty().bind(Bindings.size(classpathView.getSelectionModel().getSelectedIndices()).isNotEqualTo(1));
+        copySelection.disableProperty()
+                .bind(Bindings.size(classpathView.getSelectionModel().getSelectedIndices()).isNotEqualTo(1));
         copySelection.setOnAction(e -> {
             Clipboard clipboard = Clipboard.getSystemClipboard();
             ClipboardContent content = new ClipboardContent();
@@ -277,27 +286,29 @@ public class EnvBox extends VBox {
 
         MenuItem addDirectory = new MenuItem(FXResourceBundle.getBundle().getString​("addDirectory"));
         addDirectory.setOnAction(e -> {
-			FileChooser fileChooser = new FileChooser();
-			fileChooser.setTitle(FXResourceBundle.getBundle().getString​("modulepath"));
-			fileChooser.getExtensionFilters().addAll(new ExtensionFilter("JAR", "*.jar"));
+            DirectoryChooser dirChooser = new DirectoryChooser();
+            dirChooser.setTitle(FXResourceBundle.getBundle().getString​("modulepath"));
 
-			List<File> selectedFiles = fileChooser.showOpenMultipleDialog(getScene().getWindow());
+            File selectedDir = dirChooser.showDialog(getScene().getWindow());
 
-			if (selectedFiles != null) {
-				modulepathView.getItems()
-                .addAll(selectedFiles.stream().map(f -> f.toString()).filter(p -> !env.getModulePath().contains(p))
-                        .collect(Collectors.toList()));
-			}         
+            if (selectedDir != null) {
+                String name = selectedDir.toString();
+                if (!env.getModulePath().contains(name)) {
+                    modulepathView.getItems().add(name);
+                }
+            }
         });
 
         MenuItem removeSelection = new MenuItem(FXResourceBundle.getBundle().getString​("removeSelection"));
-        removeSelection.disableProperty().bind(modulepathView.getSelectionModel().selectedIndexProperty().isEqualTo(-1));
+        removeSelection.disableProperty()
+                .bind(modulepathView.getSelectionModel().selectedIndexProperty().isEqualTo(-1));
         removeSelection.setOnAction(e -> {
             modulepathView.getItems().removeAll(modulepathView.getSelectionModel().getSelectedItems());
         });
 
         MenuItem copySelection = new MenuItem(FXResourceBundle.getBundle().getString​("copyPathToClipboard"));
-        copySelection.disableProperty().bind(Bindings.size(modulepathView.getSelectionModel().getSelectedIndices()).isNotEqualTo(1));
+        copySelection.disableProperty()
+                .bind(Bindings.size(modulepathView.getSelectionModel().getSelectedIndices()).isNotEqualTo(1));
         copySelection.setOnAction(e -> {
             Clipboard clipboard = Clipboard.getSystemClipboard();
             ClipboardContent content = new ClipboardContent();
@@ -314,8 +325,9 @@ public class EnvBox extends VBox {
         MenuItem add = new MenuItem(FXResourceBundle.getBundle().getString​("addExport"));
         add.disableProperty().bind(javafx.beans.binding.Bindings.size(exportModules).lessThan(2));
         add.setOnAction(e -> {
-            exportView.getItems().add(
-                    new ExportItem(exportModules.get(0), exportModuleReferences.get(exportModules.get(0)).descriptor().packages().iterator().next(),
+            exportView.getItems()
+                    .add(new ExportItem(exportModules.get(0),
+                            exportModuleReferences.get(exportModules.get(0)).descriptor().packages().iterator().next(),
                             exportModules.get(1)));
         });
 
@@ -359,16 +371,14 @@ public class EnvBox extends VBox {
 
     private void setModules() {
         modulePathModuleReferences = getModulePathModuleReferences();
-        addModuleView.getSourceItems().setAll(modulePathModuleReferences.keySet()
-                .stream()
-                .filter(m -> !addModuleView.getTargetItems().contains(m))
-                .sorted()
-                .collect(Collectors.toList()));
+        addModuleView.getSourceItems().setAll(modulePathModuleReferences.keySet().stream()
+                .filter(m -> !addModuleView.getTargetItems().contains(m)).sorted().collect(Collectors.toList()));
 
         addModuleView.getTargetItems().removeIf(m -> !modulePathModuleReferences.keySet().contains(m));
 
-        exportModuleReferences = new HashMap<>(modulePathModuleReferences.values().stream().filter(r -> !r.descriptor().packages().isEmpty())
-                .collect(Collectors.toMap(r -> r.descriptor().name(), r -> r)));
+        exportModuleReferences = new HashMap<>(
+                modulePathModuleReferences.values().stream().filter(r -> !r.descriptor().packages().isEmpty())
+                        .collect(Collectors.toMap(r -> r.descriptor().name(), r -> r)));
         exportModuleReferences.putAll(systemModuleReferences);
         exportModules.setAll(exportModuleReferences.keySet());
 

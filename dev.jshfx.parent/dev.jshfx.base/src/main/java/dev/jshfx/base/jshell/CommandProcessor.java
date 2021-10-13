@@ -25,6 +25,7 @@ import dev.jshfx.base.jshell.commands.OpenCommand;
 import dev.jshfx.base.jshell.commands.ReloadCommand;
 import dev.jshfx.base.jshell.commands.RerunCommand;
 import dev.jshfx.base.jshell.commands.ResetCommand;
+import dev.jshfx.base.jshell.commands.ResolveCommand;
 import dev.jshfx.base.jshell.commands.SaveCommand;
 import dev.jshfx.base.jshell.commands.SetCommand;
 import dev.jshfx.base.jshell.commands.StopCommand;
@@ -83,6 +84,7 @@ public class CommandProcessor extends Processor {
 				.addSubcommand(new CachingCommandLine(new ReloadCommand(this)))
 				.addSubcommand(new CachingCommandLine(new RerunCommand(this)))
 				.addSubcommand(new CachingCommandLine(new ResetCommand(this)))
+				.addSubcommand(new CachingCommandLine(new ResolveCommand(this)))
 				.addSubcommand(new CachingCommandLine(new SaveCommand(this)))
 				.addSubcommand(new CachingCommandLine(new SetCommand(this)))
 				.addSubcommand(new CachingCommandLine(new StopCommand(this)))

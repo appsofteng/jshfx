@@ -122,12 +122,6 @@ public class SplitConsolePane extends BorderPane {
 			}
 		});
 
-		outputArea.focusedProperty().addListener((v, o, n) -> {
-			if (n) {
-				inputArea.requestFocus();
-			}
-		});
-
 		getOutput().addListener((Change<? extends TextStyleSpans> c) -> {
 
 			while (c.next()) {

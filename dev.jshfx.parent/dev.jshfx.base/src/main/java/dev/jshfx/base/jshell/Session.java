@@ -65,7 +65,7 @@ public class Session {
         settings = loadSettings();
         feedback = new Feedback(consoleModel, settings);
         idGenerator = new IdGenerator();
-        reset();
+        restart();
         setListener();
     }
 

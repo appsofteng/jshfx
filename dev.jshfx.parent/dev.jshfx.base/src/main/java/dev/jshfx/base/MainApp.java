@@ -5,6 +5,7 @@ import org.controlsfx.glyphfont.GlyphFontRegistry;
 import dev.jshfx.base.jshell.Session;
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.base.sys.PreferenceManager;
+import dev.jshfx.base.sys.RepositoryManager;
 import dev.jshfx.base.sys.ResourceManager;
 import dev.jshfx.base.sys.TaskManager;
 import dev.jshfx.base.ui.RootPane;
@@ -33,6 +34,7 @@ public class MainApp extends Application {
 		FXResourceBundle.setDefaultCaller(MainApp.class);
 		ResourceManager.get().setCaller(MainApp.class);		
 		PreferenceManager.get().init();
+		RepositoryManager.get().init();
 	}
 
 	@Override
