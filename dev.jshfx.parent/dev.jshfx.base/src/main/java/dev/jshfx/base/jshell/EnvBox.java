@@ -5,6 +5,7 @@ import java.lang.module.ModuleFinder;
 import java.lang.module.ModuleReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -241,7 +242,7 @@ public class EnvBox extends VBox {
                             env.getAddModules().stream().filter(m -> modulePathModuleReferences.get(m) != null)
                                     .filter(m -> modulePathModuleReferences.get(m).location().isPresent())
                                     .map(m -> new File(modulePathModuleReferences.get(m).location().get()).toString())
-                                    .collect(Collectors.toList()));
+                                    .collect(Collectors.toSet()));
                 }
             }
         });
@@ -343,9 +344,9 @@ public class EnvBox extends VBox {
 
     private void setEnv() {
         env.getClassPath().removeIf(p -> Files.notExists(Path.of(p)));
-        classpathView.setItems(FXCollections.observableList(env.getClassPath()));
+        classpathView.setItems(FXCollections.observableList(new ArrayList<>(env.getClassPath())));
         env.getModulePath().removeIf(p -> Files.notExists(Path.of(p)));
-        modulepathView.setItems(FXCollections.observableList(env.getModulePath()));
+        modulepathView.setItems(FXCollections.observableList(new ArrayList<>(env.getModulePath())));
 
         addModuleView.getTargetItems().setAll(env.getAddModules());
 
@@ -384,7 +385,7 @@ public class EnvBox extends VBox {
 
         env.getAddExports().removeIf(e -> !exportModules.contains(e.getSourceModule())
                 || e.getTargetModules().removeIf(t -> !exportModules.contains(t)) && e.getTargetModules().isEmpty());
-        exportView.setItems(FXCollections.observableList(env.getAddExports()));
+        exportView.setItems(FXCollections.observableList(new ArrayList<>(env.getAddExports())));
 
         FXCollections.sort(exportModules);
     }

@@ -44,6 +44,7 @@ public class Actions {
     private Action outputAreaClearAction;
 
     private Action submitAction;
+    private Action evalAction;
     private Action historyUpAction;
     private Action historyDownAction;
 
@@ -135,10 +136,15 @@ public class Actions {
             }
         });
 
-        submitAction = new Action(e -> rootPane.getSelectedShell().getConsolePane().enter());
+        submitAction = new Action(e -> rootPane.getSelectedShell().getConsolePane().submit());
         FXResourceBundle.getBundle().put(submitAction.textProperty(), "submit");
         FXResourceBundle.getBundle().put(submitAction.longTextProperty(), "submit");
         submitAction.setAccelerator(KeyCombination.keyCombination("Shift+Enter"));
+        
+        evalAction = new Action(e -> rootPane.getSelectedShell().getConsolePane().eval());
+        FXResourceBundle.getBundle().put(evalAction.textProperty(), "evaluate");
+        FXResourceBundle.getBundle().put(evalAction.longTextProperty(), "evaluate");
+        evalAction.setAccelerator(KeyCombination.keyCombination("Ctrl+E"));
 
         historyUpAction = new Action(e -> rootPane.getSelectedShell().getConsolePane().historyUp());
         FXResourceBundle.getBundle().put(historyUpAction.textProperty(), "historyUp");
@@ -198,7 +204,7 @@ public class Actions {
         var menu = getContextMenu(area);
         var actions = List.of(inputAreaCopyAction, inputAreaCutAction, inputAreaPasteAction, inputAreaSelectAllAction,
                 inputAreaClearAction, ActionUtils.ACTION_SEPARATOR, inputAreaUndoAction, inputAreaReduAction,
-                ActionUtils.ACTION_SEPARATOR, submitAction, historyUpAction, historyDownAction,
+                ActionUtils.ACTION_SEPARATOR, submitAction, evalAction, historyUpAction, historyDownAction,
                 ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction, insertSaveFilePathAction,
                 ActionUtils.ACTION_SEPARATOR, codeCompletionAction);
         ActionUtils.updateContextMenu(menu, actions);
@@ -206,6 +212,8 @@ public class Actions {
         Nodes.addInputMap(area, sequence(
                 consume(keyPressed(submitAction.getAccelerator()).onlyIf(e -> !submitAction.isDisabled()),
                         e -> submitAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+                consume(keyPressed(evalAction.getAccelerator()).onlyIf(e -> !evalAction.isDisabled()),
+                        e -> evalAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
                 consume(keyPressed(historyUpAction.getAccelerator()).onlyIf(e -> !historyUpAction.isDisabled()),
                         e -> historyUpAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
                 consume(keyPressed(historyDownAction.getAccelerator()).onlyIf(e -> !historyDownAction.isDisabled()),

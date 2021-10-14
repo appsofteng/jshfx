@@ -1,9 +1,7 @@
 package dev.jshfx.base.jshell.commands;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.resolution.ArtifactResolutionException;
 
 import dev.jshfx.base.jshell.CommandProcessor;
 import dev.jshfx.base.sys.RepositoryManager;
@@ -27,12 +25,22 @@ public class ResolveCommand extends BaseCommand {
         if (coords != null && !coords.isEmpty()) {
             
             try {
-                List<Artifact> artifacts = RepositoryManager.get().resolve(coords);
-
-                artifacts.forEach(artifact -> System.out.println(artifact + " resolved to  " + artifact.getFile()));
+                List<String> artifacts = new ArrayList<>();
                 
-            } catch (ArtifactResolutionException e) {
-                commandProcessor.getSession().getFeedback().commandFailure(FXResourceBundle.getBundle().getString​("msg.resolution.failure", coords));
+                for (String coord : coords) {
+                    if (coord.endsWith(".xml")) {
+                        RepositoryManager.get().resolvePom(coord, artifacts);
+                    } else {
+                        RepositoryManager.get().resolve(coord, artifacts);
+                    }
+                }
+
+                commandProcessor.getSession().getFeedback().commandSuccess(FXResourceBundle.getBundle().getString​("msg.resolution.success")).flush();
+                
+                commandProcessor.getSession().addToClasspath(artifacts);
+                
+            } catch (Exception e) {
+                commandProcessor.getSession().getFeedback().commandFailure(FXResourceBundle.getBundle().getString​("msg.resolution.failure", coords)).flush();
             }
         }
     }

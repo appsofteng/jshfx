@@ -12,10 +12,10 @@ public class SuggestionCompletionItem extends CompletionItem {
 
     private CodeArea codeArea;
     private final Suggestion suggestion;
-    private final int[] anchor;
+    private final int anchor;
     private String label = "";
 
-    public SuggestionCompletionItem(CodeArea codeArea, String code, Suggestion suggestion, int[] anchor) {
+    public SuggestionCompletionItem(CodeArea codeArea, String code, Suggestion suggestion, int anchor) {
         super(new DocRef(getDocCode(code, suggestion, anchor), ""));
         this.codeArea = codeArea;
         this.suggestion = suggestion;
@@ -23,7 +23,7 @@ public class SuggestionCompletionItem extends CompletionItem {
         setLabel();
     }
 
-    public SuggestionCompletionItem(CodeArea codeArea, Suggestion suggestion, int[] anchor, String docCode,
+    public SuggestionCompletionItem(CodeArea codeArea, Suggestion suggestion, int anchor, String docCode,
             String signature, Function<DocRef, String> documentation) {
         super(new DocRef(docCode, signature, documentation));
         this.codeArea = codeArea;
@@ -32,13 +32,13 @@ public class SuggestionCompletionItem extends CompletionItem {
         setLabel();
     }
 
-    private static String getDocCode(String code, Suggestion suggestion, int[] anchor) {
+    private static String getDocCode(String code, Suggestion suggestion, int anchor) {
         int i = suggestion.continuation().lastIndexOf("(");
         String docCode = null;
         if (i > 0) {
-           docCode = code.substring(0, anchor[0]) + suggestion.continuation().substring(0, i + 1);
+           docCode = code.substring(0, anchor) + suggestion.continuation().substring(0, i + 1);
         } else {
-            docCode = code.substring(0, anchor[0]) + suggestion.continuation();
+            docCode = code.substring(0, anchor) + suggestion.continuation();
         }
 
         return docCode;
@@ -53,7 +53,7 @@ public class SuggestionCompletionItem extends CompletionItem {
         return suggestion;
     }
 
-    public int[] getAnchor() {
+    public int getAnchor() {
         return anchor;
     }
 
@@ -65,7 +65,7 @@ public class SuggestionCompletionItem extends CompletionItem {
             completion += ")";
         }
 
-        codeArea.replaceText(anchor[0], codeArea.getCaretPosition(), completion);
+        codeArea.replaceText(anchor, codeArea.getCaretPosition(), completion);
     }
 
     @Override

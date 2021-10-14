@@ -2,7 +2,9 @@ package dev.jshfx.base.jshell;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.json.bind.annotation.JsonbTransient;
@@ -10,15 +12,15 @@ import jakarta.json.bind.annotation.JsonbTransient;
 public class Env implements Comparable<Env> {
 
     private String name;
-    private List<String> classPath = new ArrayList<>();
-    private List<String> modulePath = new ArrayList<>();
-    private List<String> addModules = new ArrayList<>();
-    private List<String> moduleLocations = new ArrayList<>();
-    private List<ExportItem> addExports = new ArrayList<>();
+    private Set<String> classPath = new HashSet<>();
+    private Set<String> modulePath = new HashSet<>();
+    private Set<String> addModules = new HashSet<>();
+    private Set<String> moduleLocations = new HashSet<>();
+    private Set<ExportItem> addExports = new HashSet<>();
 
     public Env() {
     }
-
+    
     public Env(String name) {
         this.name = name;
     }
@@ -26,48 +28,48 @@ public class Env implements Comparable<Env> {
     public String getName() {
         return name;
     }
-
+    
     public void setName(String name) {
         this.name = name;
     }
-
-    public List<String> getClassPath() {
+    
+    public Set<String> getClassPath() {
         return classPath;
     }
     
-    public void setClassPath(List<String> classPath) {
+    public void setClassPath(Set<String> classPath) {
 		this.classPath = classPath;
 	}
 
-    public List<String> getModulePath() {
+    public Set<String> getModulePath() {
         return modulePath;
     }
     
-    public void setModulePath(List<String> modulePath) {
+    public void setModulePath(Set<String> modulePath) {
 		this.modulePath = modulePath;
 	}
 
-    public List<String> getAddModules() {
+    public Set<String> getAddModules() {
         return addModules;
     }
     
-    public void setAddModules(List<String> addModules) {
+    public void setAddModules(Set<String> addModules) {
 		this.addModules = addModules;
 	}
 
-    public List<String> getModuleLocations() {
+    public Set<String> getModuleLocations() {
         return moduleLocations;
     }
 
-    public void setModuleLocations(List<String> moduleLocations) {
+    public void setModuleLocations(Set<String> moduleLocations) {
         this.moduleLocations = moduleLocations;
     }
 
-    public List<ExportItem> getAddExports() {
+    public Set<ExportItem> getAddExports() {
         return addExports;
     }
     
-    public void setAddExports(List<ExportItem> addExports) {
+    public void setAddExports(Set<ExportItem> addExports) {
 		this.addExports = addExports;
 	}
 

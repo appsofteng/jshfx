@@ -20,229 +20,249 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
+import javafx.scene.control.IndexRange;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
 
 public class SplitConsolePane extends BorderPane {
 
-	private static final int HISTORY_LIMIT = 100;
-	private static final int OUTPUT_AREA_LIMIT = 1500;
-	private ConsoleModel consoleModel;
-	private CodeArea inputArea = new CodeArea();
-	private CodeArea outputArea = new CodeArea();
-	private ObservableList<String> history = FXCollections.observableArrayList();
-	private int historyIndex;
-	private BooleanProperty historyStartReached = new SimpleBooleanProperty();
-	private BooleanProperty historyEndReached = new SimpleBooleanProperty();
-	private List<String> styleFilter;
-	private final ReadOnlyBooleanWrapper edited = new ReadOnlyBooleanWrapper();
+    private static final int HISTORY_LIMIT = 100;
+    private static final int OUTPUT_AREA_LIMIT = 1500;
+    private ConsoleModel consoleModel;
+    private CodeArea inputArea = new CodeArea();
+    private CodeArea outputArea = new CodeArea();
+    private ObservableList<String> history = FXCollections.observableArrayList();
+    private int historyIndex;
+    private BooleanProperty historyStartReached = new SimpleBooleanProperty();
+    private BooleanProperty historyEndReached = new SimpleBooleanProperty();
+    private List<String> styleFilter;
+    private final ReadOnlyBooleanWrapper edited = new ReadOnlyBooleanWrapper();
 
-	public SplitConsolePane() {
-		this(new ConsoleModel(), List.of(), List.of());
-	}
+    public SplitConsolePane() {
+        this(new ConsoleModel(), List.of(), List.of());
+    }
 
-	public SplitConsolePane(List<String> history, List<String> styleFilter) {
-		this(new ConsoleModel(), history, styleFilter);
-	}
+    public SplitConsolePane(List<String> history, List<String> styleFilter) {
+        this(new ConsoleModel(), history, styleFilter);
+    }
 
-	public SplitConsolePane(ConsoleModel consoleModel) {
-		this(consoleModel, List.of(), List.of());
-	}
+    public SplitConsolePane(ConsoleModel consoleModel) {
+        this(consoleModel, List.of(), List.of());
+    }
 
-	public SplitConsolePane(ConsoleModel consoleModel, List<String> history, List<String> styleFilter) {
-		this.consoleModel = consoleModel;
-		this.history.addAll(history);
-		this.styleFilter = styleFilter;
-		historyIndex = history.size();
-		historyStartReached.set(historyIndex == 0);
-		historyEndReached.set(historyIndex == history.size());
-		setGraphics();
-		setBehavior();
-	}
+    public SplitConsolePane(ConsoleModel consoleModel, List<String> history, List<String> styleFilter) {
+        this.consoleModel = consoleModel;
+        this.history.addAll(history);
+        this.styleFilter = styleFilter;
+        historyIndex = history.size();
+        historyStartReached.set(historyIndex == 0);
+        historyEndReached.set(historyIndex == history.size());
+        setGraphics();
+        setBehavior();
+    }
 
-	public boolean isEdited() {
-		return edited.get();
-	}
+    public boolean isEdited() {
+        return edited.get();
+    }
 
-	public ReadOnlyBooleanProperty editedProperty() {
-		return edited.getReadOnlyProperty();
-	}
+    public ReadOnlyBooleanProperty editedProperty() {
+        return edited.getReadOnlyProperty();
+    }
 
-	public ConsoleModel getConsoleModel() {
-		return consoleModel;
-	}
+    public ConsoleModel getConsoleModel() {
+        return consoleModel;
+    }
 
-	public ObservableList<String> getHistory() {
-		return history;
-	}
+    public ObservableList<String> getHistory() {
+        return history;
+    }
 
-	private ObservableList<TextStyleSpans> getInput() {
-		return consoleModel.getInput();
-	}
+    private ObservableList<TextStyleSpans> getInput() {
+        return consoleModel.getInput();
+    }
 
-	private ObservableList<TextStyleSpans> getOutput() {
-		return consoleModel.getOutput();
-	}
+    private ObservableList<TextStyleSpans> getOutput() {
+        return consoleModel.getOutput();
+    }
 
-	public CodeArea getInputArea() {
-		return inputArea;
-	}
+    public CodeArea getInputArea() {
+        return inputArea;
+    }
 
-	public CodeArea getOutputArea() {
-		return outputArea;
-	}
+    public CodeArea getOutputArea() {
+        return outputArea;
+    }
 
-	private void setGraphics() {
-		outputArea.setEditable(false);
-		outputArea.setFocusTraversable(false);
+    private void setGraphics() {
+        outputArea.setEditable(false);
+        outputArea.setFocusTraversable(false);
 
-		SplitPane splitPane = new SplitPane(new VirtualizedScrollPane<>(inputArea),
-				new VirtualizedScrollPane<>(outputArea));
-		splitPane.setOrientation(Orientation.VERTICAL);
-		splitPane.setDividerPositions(0.8f);
+        SplitPane splitPane = new SplitPane(new VirtualizedScrollPane<>(inputArea),
+                new VirtualizedScrollPane<>(outputArea));
+        splitPane.setOrientation(Orientation.VERTICAL);
+        splitPane.setDividerPositions(0.8f);
 
-		setCenter(splitPane);
-		// The style must be add explicitly.
-		getStylesheets().add(getUserAgentStylesheet());
-	}
+        setCenter(splitPane);
+        // The style must be add explicitly.
+        getStylesheets().add(getUserAgentStylesheet());
+    }
 
-	@Override
-	public String getUserAgentStylesheet() {
-		return getClass().getResource("console.css").toExternalForm();
-	}
+    @Override
+    public String getUserAgentStylesheet() {
+        return getClass().getResource("console.css").toExternalForm();
+    }
 
-	private void setBehavior() {
+    private void setBehavior() {
 
-		inputArea.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> edited.set((Boolean) n));
-		inputArea.textProperty().addListener((v, o, n) -> edited.set(true));
+        inputArea.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> edited.set((Boolean) n));
+        inputArea.textProperty().addListener((v, o, n) -> edited.set(true));
 
-		inputArea.sceneProperty().addListener((v, o, n) -> {
-			if (n != null) {
-				inputArea.requestFocus();
-			}
-		});
+        inputArea.sceneProperty().addListener((v, o, n) -> {
+            if (n != null) {
+                inputArea.requestFocus();
+            }
+        });
 
-		getOutput().addListener((Change<? extends TextStyleSpans> c) -> {
+        getOutput().addListener((Change<? extends TextStyleSpans> c) -> {
 
-			while (c.next()) {
+            while (c.next()) {
 
-				if (c.wasAdded()) {
-					List<? extends TextStyleSpans> added = new ArrayList<>(c.getAddedSubList());
+                if (c.wasAdded()) {
+                    List<? extends TextStyleSpans> added = new ArrayList<>(c.getAddedSubList());
 
-					Platform.runLater(() -> {
-						for (TextStyleSpans span : added) {
-							outputArea.appendText(span.getText());
-							int from = outputArea.getLength() - span.getStyleSpans().length();
-							outputArea.setStyleSpans(from, span.getStyleSpans());
-						}
+                    Platform.runLater(() -> {
+                        for (TextStyleSpans span : added) {
+                            outputArea.appendText(span.getText());
+                            int from = outputArea.getLength() - span.getStyleSpans().length();
+                            outputArea.setStyleSpans(from, span.getStyleSpans());
+                        }
 
-						int paragraphCount = outputArea.getParagraphs().size();
-						if (paragraphCount > OUTPUT_AREA_LIMIT) {
-							int lastExtraParagraph = paragraphCount - OUTPUT_AREA_LIMIT - 1;
-							outputArea.deleteText(0, 0, lastExtraParagraph,
-									outputArea.getParagraph(lastExtraParagraph).length());
-						}
+                        int paragraphCount = outputArea.getParagraphs().size();
+                        if (paragraphCount > OUTPUT_AREA_LIMIT) {
+                            int lastExtraParagraph = paragraphCount - OUTPUT_AREA_LIMIT - 1;
+                            outputArea.deleteText(0, 0, lastExtraParagraph,
+                                    outputArea.getParagraph(lastExtraParagraph).length());
+                        }
 
-						outputArea.moveTo(outputArea.getLength());
-						outputArea.requestFollowCaret();
-					});
-				}
-			}
-		});
-	}
+                        outputArea.moveTo(outputArea.getLength());
+                        outputArea.requestFollowCaret();
+                    });
+                }
+            }
+        });
+    }
 
-	public void enter() {
+    public void submit() {
+        enter();
 
-		// Null char may come from clipboard.
-		if (inputArea.getText().contains("\0")) {
-			inputArea.replaceText(inputArea.getText().replace("\0", ""));
-		}
+        if (inputArea.getSelectedText().isEmpty()) {
+            inputArea.clear();
+        } else {
+            inputArea.replaceSelection("");
+        }
+    }
 
-		if (!consoleModel.isReadFromPipe() && outputArea.getLength() > 0 && !outputArea.getText().endsWith("\n\n")) {
-			outputArea.appendText("\n");
-		}
+    public void eval() {
+        enter();
+    }
 
-		inputArea.appendText("\n");
+    private void enter() {
+        String text = inputArea.getSelectedText();
+        IndexRange selection = inputArea.getSelection();
+        int from = 0;
 
-		TextStyleSpans span = new TextStyleSpans(inputArea.getText(), filterStyles());
+        if (text == null || text.isEmpty()) {
+            text = inputArea.getText();
+        } else {
+            from = selection.getStart();
+        }
 
-		history.add(span.getText().strip());
+        // Null char may come from clipboard.
+//        if (text.contains("\0")) {
+//            text.replace("\0", "");
+//        }
 
-		if (history.size() > HISTORY_LIMIT) {
-			history.remove(0);
-		}
+        if (!consoleModel.isReadFromPipe() && outputArea.getLength() > 0 && !outputArea.getText().endsWith("\n\n")) {
+            outputArea.appendText("\n");
+        }
 
-		historyIndex = history.size();
-		historyStartReached.set(historyIndex == 0);
-		historyEndReached.set(historyIndex == history.size());
+        TextStyleSpans span = new TextStyleSpans(text, filterStyles(from, text.length()));         
 
-		inputArea.clear();
+        history.add(span.getText().strip());
 
-		getInput().add(span);
-	}
+        if (history.size() > HISTORY_LIMIT) {
+            history.remove(0);
+        }
 
-	public void enter(String input) {
-		if (outputArea.getLength() > 0 && !outputArea.getText().endsWith("\n\n")) {
-			outputArea.appendText("\n");
-		}
+        historyIndex = history.size();
+        historyStartReached.set(historyIndex == 0);
+        historyEndReached.set(historyIndex == history.size());
 
-		getInput().add(new TextStyleSpans(input));
-	}
+        getInput().add(span);
+    }
 
-	private StyleSpans<Collection<String>> filterStyles() {
-		StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+    public void submit(String input) {
+        if (outputArea.getLength() > 0 && !outputArea.getText().endsWith("\n\n")) {
+            outputArea.appendText("\n");
+        }
 
-		inputArea.getStyleSpans(0, inputArea.getText().length()).forEach(s -> {
-			if (s.getStyle().contains("block-delimiter-match")) {
-				var n = s.getStyle().stream().filter(c -> !styleFilter.contains(c)).collect(Collectors.toList());
-				spansBuilder.add(n, s.getLength());
-			} else {
-				spansBuilder.add(s);
-			}
-		});
+        getInput().add(new TextStyleSpans(input));
+    }
 
-		var styleSpans = spansBuilder.create();
+    private StyleSpans<Collection<String>> filterStyles(int from, int length) {
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
 
-		return styleSpans;
-	}
+        inputArea.getStyleSpans(from, from + length).forEach(s -> {
+            if (s.getStyle().contains("block-delimiter-match")) {
+                var n = s.getStyle().stream().filter(c -> !styleFilter.contains(c)).collect(Collectors.toList());
+                spansBuilder.add(n, s.getLength());
+            } else {
+                spansBuilder.add(s);
+            }
+        });
 
-	public void historyUp() {
+        var styleSpans = spansBuilder.create();
 
-		if (historyIndex > 0 && historyIndex <= history.size()) {
-			historyIndex--;
-			String text = history.get(historyIndex);
-			inputArea.replaceText(text);
-			historyStartReached.set(historyIndex == 0);
-			historyEndReached.set(historyIndex == history.size());
-		}
-	}
+        return styleSpans;
+    }
 
-	public void historyDown() {
+    public void historyUp() {
 
-		if (historyIndex >= 0 && historyIndex < history.size() - 1) {
-			historyIndex++;
-			String text = history.get(historyIndex);
-			inputArea.replaceText(text);
-		} else {
-			inputArea.replaceText("");
-			historyIndex = history.size();
-		}
+        if (historyIndex > 0 && historyIndex <= history.size()) {
+            historyIndex--;
+            String text = history.get(historyIndex);
+            inputArea.replaceText(text);
+            historyStartReached.set(historyIndex == 0);
+            historyEndReached.set(historyIndex == history.size());
+        }
+    }
 
-		historyStartReached.set(historyIndex == 0);
-		historyEndReached.set(historyIndex == history.size());
+    public void historyDown() {
 
-	}
+        if (historyIndex >= 0 && historyIndex < history.size() - 1) {
+            historyIndex++;
+            String text = history.get(historyIndex);
+            inputArea.replaceText(text);
+        } else {
+            inputArea.replaceText("");
+            historyIndex = history.size();
+        }
 
-	public ReadOnlyBooleanProperty historyStartReachedProperty() {
-		return historyStartReached;
-	}
+        historyStartReached.set(historyIndex == 0);
+        historyEndReached.set(historyIndex == history.size());
 
-	public ReadOnlyBooleanProperty historyEndReachedProperty() {
-		return historyEndReached;
-	}
-	
-	public void dispose() {
-		inputArea.dispose();
-		outputArea.dispose();
-	}
+    }
+
+    public ReadOnlyBooleanProperty historyStartReachedProperty() {
+        return historyStartReached;
+    }
+
+    public ReadOnlyBooleanProperty historyEndReachedProperty() {
+        return historyEndReached;
+    }
+
+    public void dispose() {
+        inputArea.dispose();
+        outputArea.dispose();
+    }
 }

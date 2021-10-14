@@ -134,6 +134,8 @@ public class CompletionPopup extends Tooltip {
                 } else {
                     docPopup.hide();
                 }
+            } else {
+                docPopup.hide();
             }
         });
     }

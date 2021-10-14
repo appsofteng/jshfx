@@ -10,6 +10,7 @@
 	<modules>
 		<module>dev.jshfx.base</module>
 		<module>dev.jshfx.fonts</module>
+		<module>dev.jshfx.util</module>
 	</modules>
 
 	<properties>
@@ -37,6 +38,11 @@
 			<dependency>
 				<groupId>dev.jshfx</groupId>
 				<artifactId>dev.jshfx.fonts</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.jshfx</groupId>
+				<artifactId>dev.jshfx.util</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -166,6 +172,11 @@
 							</path>
 						</annotationProcessorPaths>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>3.2.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

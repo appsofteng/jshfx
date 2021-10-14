@@ -42,10 +42,11 @@ public class Completion {
         List<String> arguments = session.getCommandProcessor().getLexer().tokenize(input, caretPosition).stream()
                 .map(Token::getValue).collect(Collectors.toList());
         Token tokenOnCaret = session.getCommandProcessor().getLexer().getTokenOnCaretPosition();
-        
-        int argIndex = arguments.size() - 1;;
+
+        int argIndex = arguments.size() - 1;
+        ;
         int positionInArg = 0;
-        
+
         if (tokenOnCaret != null) {
             argIndex = tokenOnCaret.getIndex();
             positionInArg = caretPosition - tokenOnCaret.getStart();
@@ -61,8 +62,8 @@ public class Completion {
                 argIndex, positionInArg, caretPosition, candidates);
 
         if (candidates.size() == 1 && candidates.get(0).length() == 0 && arguments.size() > 0) {
-            Platform.runLater(() ->  inputArea.insertText(inputArea.getCaretPosition(), " "));
-           
+            Platform.runLater(() -> inputArea.insertText(inputArea.getCaretPosition(), " "));
+
             caretPosition++;
             arguments.add("");
             argIndex++;
@@ -110,19 +111,20 @@ public class Completion {
     private Collection<CompletionItem> getCodeCompletionItems(CodeArea inputArea) {
         List<CompletionItem> items = new ArrayList<>();
 
-        String code = inputArea.getText();
-        int cursor = inputArea.getCaretPosition();
+        String code = inputArea.getParagraph(inputArea.getCurrentParagraph()).getText();
+        int cursor = inputArea.getCaretColumn();
 
         int[] anchor = new int[1];
 
         Set<SuggestionCompletionItem> suggestionItems = session.getJshell().sourceCodeAnalysis()
                 .completionSuggestions(code, cursor, anchor).stream()
-                .map(s -> new SuggestionCompletionItem(inputArea, code, s, anchor)).collect(Collectors.toSet());
+                .map(s -> new SuggestionCompletionItem(inputArea, inputArea.getText(), s,
+                        anchor[0] + inputArea.getCaretPosition() - inputArea.getCaretColumn()))
+                .collect(Collectors.toSet());
 
         for (SuggestionCompletionItem item : suggestionItems) {
-
             List<Documentation> docs = Session.documentation(item.getDocRef().getDocCode(),
-                    item.getDocRef().getDocCode().length(), false);
+                    item.getDocRef().getDocCode().length(), false);  
 
             if (docs.isEmpty()) {
                 items.add(item);
@@ -140,7 +142,7 @@ public class Completion {
 
         if (!qualifiedNames.isResolvable()) {
             Set<CompletionItem> names = qualifiedNames.getNames().stream()
-                    .map(n -> new QualifiedNameCompletionItem(i -> session.getConsoleView().enter(i), n,
+                    .map(n -> new QualifiedNameCompletionItem(i -> session.getConsoleView().submit(i), n,
                             this::loadDocumentation))
                     .sorted().collect(Collectors.toSet());
 

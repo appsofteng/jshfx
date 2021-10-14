@@ -27,13 +27,7 @@ module dev.jshfx.base {
     
     requires com.github.javaparser.core;
     requires info.picocli;
-    requires org.apache.maven.resolver;
-    requires org.apache.maven.resolver.impl;
-    requires maven.resolver.provider;
-    requires org.apache.maven.resolver.spi;
-    requires org.apache.maven.resolver.connector.basic;
-    requires org.apache.maven.resolver.transport.file;
-    requires org.apache.maven.resolver.transport.http;
+    requires dev.jshfx.util;
 	
     exports dev.jshfx.j.util.prefs;
     

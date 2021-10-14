@@ -61,8 +61,8 @@ public class Session {
 
         commandProcessor = new CommandProcessor(this);
         snippetProcessor = new SnippetProcessor(this);
-        env = loadEnv();
         settings = loadSettings();
+        env = loadEnv();
         feedback = new Feedback(consoleModel, settings);
         idGenerator = new IdGenerator();
         restart();
@@ -143,23 +143,27 @@ public class Session {
         System.setOut(consoleModel.getOut());
     }
 
+    public Env getEnv() {
+        return env;
+    }
+
+    public void addToClasspath(List<String> paths) {
+        env.getClassPath().addAll(paths);
+        paths.forEach(p -> jshell.addToClasspath(p));
+    }
+
     public Env loadEnv() {
-        return JsonUtils.get().fromJson(FileManager.ENV_FILE, Env.class, new Env("default"));
+        return JsonUtils.get().fromJson(FileManager.get().getEnvFile(settings.getEnv()), Env.class,
+                new Env(settings.getEnv()));
     }
 
-    private void setEnv(Env env) {
-        this.env = env;
-        JsonUtils.get().toJson(env, FileManager.ENV_FILE);
+    public void saveEnv() {
+        settings.setEnv(env.getName());
+        JsonUtils.get().toJson(env, FileManager.get().getEnvFile(settings.getEnv()));
     }
 
-    public void resetEnv(Env env) {
-        setEnv(env);
-        reset();
-    }
-
-    public void reloadEnv(Env env) {
-        setEnv(env);
-        reload(true);
+    public Settings getSettings() {
+        return settings;
     }
 
     public Settings loadSettings() {
@@ -168,14 +172,6 @@ public class Session {
 
     public void saveSettings() {
         JsonUtils.get().toJson(settings, FileManager.SET_FILE);
-    }
-
-    public Settings getSettings() {
-        return settings;
-    }
-
-    public void setSettings(Settings settings) {
-        this.settings = settings;
     }
 
     private void setListener() {
@@ -200,7 +196,7 @@ public class Session {
                 .map(s -> new SimpleEntry<>(s, jshell.status(s))).collect(Collectors.toList());
         restart();
     }
-    
+
     private void restart() {
         snippetsById.clear();
         snippetsByName.clear();
@@ -220,7 +216,7 @@ public class Session {
         reset();
         reloadSnippets(quiet);
     }
-    
+
     public void restore(boolean quiet) {
         restart();
         reloadSnippets(quiet);
