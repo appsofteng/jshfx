@@ -16,109 +16,121 @@ import javafx.scene.paint.Color;
 
 public final class PreferenceManager extends Manager {
 
-	private static final PreferenceManager INSTANCE = new PreferenceManager();
+    public static final String DEFAULT_ENV_NAME = "env";
 
-	private static final String DEFAULT_THEME_COLOR = "#ecececff";
-	private StringProperty themeColorStyle = new SimpleStringProperty();
-	private ObservableList<Color> customColors;
+    private static final PreferenceManager INSTANCE = new PreferenceManager();
 
-	private PreferenceManager() {
-	}
+    private static final String DEFAULT_THEME_COLOR = "#ecececff";
+    private StringProperty themeColorStyle = new SimpleStringProperty();
+    private ObservableList<Color> customColors;
 
-	public static PreferenceManager get() {
-		return INSTANCE;
-	}
+    private PreferenceManager() {
+    }
 
-	@Override
-	public void init() throws Exception {
-		System.setProperty(FilePreferencesFactory.DEFAULT_SYSTEM_PREFERENCES_PROPERTY,
-				FileManager.DEFAULT_PREFS_FILE.toString());
-		System.setProperty(FilePreferencesFactory.SYSTEM_PREFERENCES_PROPERTY, FileManager.USER_PREFS_FILE.toString());
-		System.setProperty(FilePreferencesFactory.DEFAULT_USER_PREFERENCES_PROPERTY,
-				FileManager.DEFAULT_PREFS_FILE.toString());
-		System.setProperty(FilePreferencesFactory.USER_PREFERENCES_PROPERTY, FileManager.USER_PREFS_FILE.toString());
-		System.setProperty("java.util.prefs.PreferencesFactory", FilePreferencesFactory.class.getName());
+    public static PreferenceManager get() {
+        return INSTANCE;
+    }
 
-		FXResourceBundle.setLocale(getLocale());
-		setThemeColorStyle(getThemeColorString());
-	}
+    @Override
+    public void init() throws Exception {
+        System.setProperty(FilePreferencesFactory.DEFAULT_SYSTEM_PREFERENCES_PROPERTY,
+                FileManager.DEFAULT_PREFS_FILE.toString());
+        System.setProperty(FilePreferencesFactory.SYSTEM_PREFERENCES_PROPERTY, FileManager.USER_PREFS_FILE.toString());
+        System.setProperty(FilePreferencesFactory.DEFAULT_USER_PREFERENCES_PROPERTY,
+                FileManager.DEFAULT_PREFS_FILE.toString());
+        System.setProperty(FilePreferencesFactory.USER_PREFERENCES_PROPERTY, FileManager.USER_PREFS_FILE.toString());
+        System.setProperty("java.util.prefs.PreferencesFactory", FilePreferencesFactory.class.getName());
 
-	private String getLocale() {
-		return Preferences.userRoot().node("/region").get("locale", "en");
-	}
+        FXResourceBundle.setLocale(getLocale());
+        setThemeColorStyle(getThemeColorString());
+    }
 
-	private String getThemeColorString() {
-		return Preferences.userRoot().node("/theme").get("color", DEFAULT_THEME_COLOR);
-	}
+    private String getLocale() {
+        return Preferences.userRoot().node("/region").get("locale", "en");
+    }
 
-	public Color getThemeColor() {
-		return Color.web(getThemeColorString());
-	}
+    private String getThemeColorString() {
+        return Preferences.userRoot().node("/theme").get("color", DEFAULT_THEME_COLOR);
+    }
 
-	public void setThemeColor(Color value) {
-		var str = value.toString().replace("0x", "#");
-		Preferences.userRoot().node("/theme").put("color", str);
-		setThemeColorStyle(str);
-	}
+    public Color getThemeColor() {
+        return Color.web(getThemeColorString());
+    }
 
-	public List<Color> getCustomThemeColors() {
-		String colorString = Preferences.userRoot().node("/theme").get("colors", "[]");
-		List<String> colorStrings = JsonUtils.get().fromJson(colorString, List.class);
-		if (!colorStrings.contains(DEFAULT_THEME_COLOR)) {
-			colorStrings.add(0, DEFAULT_THEME_COLOR);
-		}
+    public void setThemeColor(Color value) {
+        var str = value.toString().replace("0x", "#");
+        Preferences.userRoot().node("/theme").put("color", str);
+        setThemeColorStyle(str);
+    }
 
-		var colors = colorStrings.stream().map(c -> Color.web(c)).collect(Collectors.toList());
+    public List<Color> getCustomThemeColors() {
+        String colorString = Preferences.userRoot().node("/theme").get("colors", "[]");
+        List<String> colorStrings = JsonUtils.get().fromJson(colorString, List.class);
+        if (!colorStrings.contains(DEFAULT_THEME_COLOR)) {
+            colorStrings.add(0, DEFAULT_THEME_COLOR);
+        }
 
-		return colors;
-	}
+        var colors = colorStrings.stream().map(c -> Color.web(c)).collect(Collectors.toList());
 
-	public void setCustomThemeColors(List<Color> value) {
-		var colorStrings = value.stream().map(color -> color.toString().replace("0x", "#"))
-				.collect(Collectors.toList());
-		String string = JsonUtils.get().toJson(colorStrings);
-		Preferences.userRoot().node("/theme").put("colors", string);
-	}
+        return colors;
+    }
 
-	private void setThemeColorStyle(String value) {
-		themeColorStyle.set(String.format("-fx-base: %s;", value));
-	}
+    public void setCustomThemeColors(List<Color> value) {
+        var colorStrings = value.stream().map(color -> color.toString().replace("0x", "#"))
+                .collect(Collectors.toList());
+        String string = JsonUtils.get().toJson(colorStrings);
+        Preferences.userRoot().node("/theme").put("colors", string);
+    }
 
-	public StringProperty themeColorStyleProperty() {
-		return themeColorStyle;
-	}
+    private void setThemeColorStyle(String value) {
+        themeColorStyle.set(String.format("-fx-base: %s;", value));
+    }
 
-	public ObservableList<Color> getCustomColors() {
+    public StringProperty themeColorStyleProperty() {
+        return themeColorStyle;
+    }
 
-		if (customColors == null) {
-			String colorString = Preferences.userRoot().node("/scene").get("colors", "[]");
-			List<String> colorStrings = JsonUtils.get().fromJson(colorString, List.class);
-			customColors = FXCollections
-					.observableArrayList(colorStrings.stream().map(c -> Color.web(c)).collect(Collectors.toList()));
-		}
+    public ObservableList<Color> getCustomColors() {
 
-		return customColors;
-	}
+        if (customColors == null) {
+            String colorString = Preferences.userRoot().node("/scene").get("colors", "[]");
+            List<String> colorStrings = JsonUtils.get().fromJson(colorString, List.class);
+            customColors = FXCollections
+                    .observableArrayList(colorStrings.stream().map(c -> Color.web(c)).collect(Collectors.toList()));
+        }
 
-	public void setCustomColors(List<Color> value) {
-		customColors.setAll(value);
-		var colorStrings = value.stream().map(color -> color.toString().replace("0x", "#"))
-				.collect(Collectors.toList());
-		String string = JsonUtils.get().toJson(colorStrings);
-		Preferences.userRoot().node("/scene").put("colors", string);
-	}
+        return customColors;
+    }
 
-	public Path getInitialDirectory() {
-		return Path.of(System.getProperty("user.home"));
-	}
-	
-	public Path getLatestDir() {
-		String dir = Preferences.userRoot().node("/sys").get("latestDir", System.getProperty("user.home"));
-		
-		return Path.of(dir);
-	}
-	
-	public void setLatestDir(Path dir) {
-		Preferences.userRoot().node("/sys").put("latestDir", dir.toString());
-	}
+    public void setCustomColors(List<Color> value) {
+        customColors.setAll(value);
+        var colorStrings = value.stream().map(color -> color.toString().replace("0x", "#"))
+                .collect(Collectors.toList());
+        String string = JsonUtils.get().toJson(colorStrings);
+        Preferences.userRoot().node("/scene").put("colors", string);
+    }
+
+    public String getEnv() {
+        String name = Preferences.userRoot().node("/jshell").get("env", DEFAULT_ENV_NAME);
+
+        return name;
+    }
+    
+    public void setEnv(String name) {
+        Preferences.userRoot().node("/jshell").put("env", name);
+    }
+
+    public Path getInitialDirectory() {
+        return Path.of(System.getProperty("user.home"));
+    }
+
+    public Path getLatestDir() {
+        String dir = Preferences.userRoot().node("/sys").get("latestDir", System.getProperty("user.home"));
+
+        return Path.of(dir);
+    }
+
+    public void setLatestDir(Path dir) {
+        Preferences.userRoot().node("/sys").put("latestDir", dir.toString());
+    }
 }

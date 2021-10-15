@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import dev.jshfx.base.sys.FileManager;
+import dev.jshfx.base.sys.PreferenceManager;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
 import dev.jshfx.jfx.scene.control.ConsoleModel;
@@ -153,13 +154,13 @@ public class Session {
     }
 
     public Env loadEnv() {
-        return JsonUtils.get().fromJson(FileManager.get().getEnvFile(settings.getEnv()), Env.class,
-                new Env(settings.getEnv()));
+        return JsonUtils.get().fromJson(FileManager.get().getEnvFile(PreferenceManager.get().getEnv()), Env.class,
+                new Env(PreferenceManager.DEFAULT_ENV_NAME));
     }
 
     public void saveEnv() {
-        settings.setEnv(env.getName());
-        JsonUtils.get().toJson(env, FileManager.get().getEnvFile(settings.getEnv()));
+        PreferenceManager.get().setEnv(env.getName());
+        JsonUtils.get().toJson(env, FileManager.get().getEnvFile(env.getName()));
     }
 
     public Settings getSettings() {

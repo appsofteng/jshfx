@@ -10,7 +10,12 @@ public class QualifiedNameCompletionItem extends CompletionItem {
 
     private final Consumer<String> input;
 
-    public QualifiedNameCompletionItem(Consumer<String> input, String signature, Function<DocRef, String> documentation) {
+    public QualifiedNameCompletionItem(String signature, Function<DocRef, String> documentation) {
+        this(i -> {}, signature, documentation);
+    }
+
+    public QualifiedNameCompletionItem(Consumer<String> input, String signature,
+            Function<DocRef, String> documentation) {
         super(new DocRef(signature, signature, documentation));
         this.input = input;
     }

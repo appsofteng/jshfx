@@ -11,15 +11,11 @@ public class DocRef {
     protected Function<DocRef, String> documentation;
 
     public DocRef(String docCode) {
-        this(docCode, docCode, dr -> "");
+        this(docCode, "", dr -> "");
     }
 
     public DocRef(String docCode, Function<DocRef, String> documentation) {
-        this(docCode, docCode, documentation);
-    }
-
-    public DocRef(String docCode, String signature) {
-        this(docCode, signature, dr -> "");
+        this(docCode, "", documentation);
     }
 
     public DocRef(String docCode, String signature, Function<DocRef, String> documentation) {

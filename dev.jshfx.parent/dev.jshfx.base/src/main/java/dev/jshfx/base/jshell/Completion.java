@@ -5,8 +5,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
+
+import jdk.jshell.ImportSnippet;
 
 import org.fxmisc.richtext.CodeArea;
 
@@ -18,6 +19,7 @@ import dev.jshfx.jx.tools.Token;
 import javafx.application.Platform;
 import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.QualifiedNames;
+import jdk.jshell.SourceCodeAnalysis.Suggestion;
 import picocli.AutoComplete;
 import picocli.CommandLine;
 
@@ -44,7 +46,7 @@ public class Completion {
         Token tokenOnCaret = session.getCommandProcessor().getLexer().getTokenOnCaretPosition();
 
         int argIndex = arguments.size() - 1;
-        ;
+
         int positionInArg = 0;
 
         if (tokenOnCaret != null) {
@@ -109,47 +111,84 @@ public class Completion {
     }
 
     private Collection<CompletionItem> getCodeCompletionItems(CodeArea inputArea) {
+
         List<CompletionItem> items = new ArrayList<>();
 
-        String code = inputArea.getParagraph(inputArea.getCurrentParagraph()).getText();
-        int cursor = inputArea.getCaretColumn();
+        int[] relativeAnchor = new int[1];
+        StringBuffer relativeInput = new StringBuffer();
+        int relativeCursor = inputArea.getCaretColumn();
 
-        int[] anchor = new int[1];
+        for (int i = inputArea.getCurrentParagraph(); i >= 0; i--) {
+            String text = inputArea.getParagraph(i).getText();
+            relativeInput.insert(0, text);
+            if (i < inputArea.getCurrentParagraph()) {
+                relativeCursor += text.length();
+            }
 
-        Set<SuggestionCompletionItem> suggestionItems = session.getJshell().sourceCodeAnalysis()
-                .completionSuggestions(code, cursor, anchor).stream()
-                .map(s -> new SuggestionCompletionItem(inputArea, inputArea.getText(), s,
-                        anchor[0] + inputArea.getCaretPosition() - inputArea.getCaretColumn()))
-                .collect(Collectors.toSet());
+            List<Suggestion> suggestions = session.getJshell().sourceCodeAnalysis()
+                    .completionSuggestions(relativeInput.toString(), relativeCursor, relativeAnchor);
 
-        for (SuggestionCompletionItem item : suggestionItems) {
-            List<Documentation> docs = Session.documentation(item.getDocRef().getDocCode(),
-                    item.getDocRef().getDocCode().length(), false);  
+            if (!suggestions.isEmpty()) {
 
-            if (docs.isEmpty()) {
-                items.add(item);
-            } else {
-                items.addAll(docs.stream()
-                        .map(d -> new SuggestionCompletionItem(inputArea, item.getSuggestion(), item.getAnchor(),
-                                item.getDocRef().getDocCode(), d.signature(), this::loadDocumentation))
-                        .collect(Collectors.toSet()));
+                int absoluteAnchor = inputArea.getCaretPosition() - (relativeCursor - relativeAnchor[0]);
+
+                for (Suggestion suggestion : suggestions) {
+                    String docInput = getDocInput(relativeInput.toString(), suggestion, relativeAnchor[0]);
+                    List<Documentation> docs = Session.documentation(docInput, docInput.length(), false);
+
+                    if (docs.isEmpty()) {
+                        List<String> fullnames = getImportedFullNames(suggestion.continuation());
+
+                        if (!fullnames.isEmpty()) {
+                            fullnames.forEach(
+                                    n -> items.add(new SuggestionCompletionItem(inputArea, suggestion, absoluteAnchor,
+                                            new DocRef(n, n, this::loadDocumentation))));
+                        } else {
+
+                            items.add(new SuggestionCompletionItem(inputArea, suggestion, absoluteAnchor,
+                                    new DocRef(docInput)));
+                        }
+                    } else {
+                        docs.forEach(d -> items.add(new SuggestionCompletionItem(inputArea, suggestion, absoluteAnchor,
+                                new DocRef(docInput, d.signature(), this::loadDocumentation))));
+                    }
+                }
+
+                break;
+            }
+
+            QualifiedNames qualifiedNames = session.getJshell().sourceCodeAnalysis()
+                    .listQualifiedNames(relativeInput.toString(), relativeCursor);
+
+            if (!qualifiedNames.isResolvable()) {
+                qualifiedNames.getNames().forEach(
+                        n -> items.add(new QualifiedNameCompletionItem(it -> session.getConsoleView().submit(it), n,
+                                this::loadDocumentation)));
+
+                break;
             }
         }
 
         Collections.sort(items);
 
-        QualifiedNames qualifiedNames = session.getJshell().sourceCodeAnalysis().listQualifiedNames(code, cursor);
+        return items;
+    }
 
-        if (!qualifiedNames.isResolvable()) {
-            Set<CompletionItem> names = qualifiedNames.getNames().stream()
-                    .map(n -> new QualifiedNameCompletionItem(i -> session.getConsoleView().submit(i), n,
-                            this::loadDocumentation))
-                    .sorted().collect(Collectors.toSet());
-
-            items.addAll(names);
+    private String getDocInput(String input, Suggestion suggestion, int anchor) {
+        int i = suggestion.continuation().lastIndexOf("(");
+        String docInput = null;
+        if (i > 0) {
+            docInput = input.substring(0, anchor) + suggestion.continuation().substring(0, i + 1);
+        } else {
+            docInput = input.substring(0, anchor) + suggestion.continuation();
         }
 
-        return items;
+        return docInput;
+    }
+
+    private List<String> getImportedFullNames(String name) {
+        return session.getJshell().imports().map(ImportSnippet::fullname).filter(n -> n.matches(".*\\." + name + "\\w*"))
+                .collect(Collectors.toList());
     }
 
     public String loadDocumentation(DocRef docRef) {

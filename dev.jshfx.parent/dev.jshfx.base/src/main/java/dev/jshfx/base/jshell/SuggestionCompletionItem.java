@@ -1,7 +1,5 @@
 package dev.jshfx.base.jshell;
 
-import java.util.function.Function;
-
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jshfx.fxmisc.richtext.CompletionItem;
@@ -15,33 +13,12 @@ public class SuggestionCompletionItem extends CompletionItem {
     private final int anchor;
     private String label = "";
 
-    public SuggestionCompletionItem(CodeArea codeArea, String code, Suggestion suggestion, int anchor) {
-        super(new DocRef(getDocCode(code, suggestion, anchor), ""));
+    public SuggestionCompletionItem(CodeArea codeArea, Suggestion suggestion, int anchor, DocRef docRef) {
+        super(docRef);
         this.codeArea = codeArea;
         this.suggestion = suggestion;
         this.anchor = anchor;
         setLabel();
-    }
-
-    public SuggestionCompletionItem(CodeArea codeArea, Suggestion suggestion, int anchor, String docCode,
-            String signature, Function<DocRef, String> documentation) {
-        super(new DocRef(docCode, signature, documentation));
-        this.codeArea = codeArea;
-        this.suggestion = suggestion;
-        this.anchor = anchor;
-        setLabel();
-    }
-
-    private static String getDocCode(String code, Suggestion suggestion, int anchor) {
-        int i = suggestion.continuation().lastIndexOf("(");
-        String docCode = null;
-        if (i > 0) {
-           docCode = code.substring(0, anchor) + suggestion.continuation().substring(0, i + 1);
-        } else {
-            docCode = code.substring(0, anchor) + suggestion.continuation();
-        }
-
-        return docCode;
     }
 
     private void setLabel() {
