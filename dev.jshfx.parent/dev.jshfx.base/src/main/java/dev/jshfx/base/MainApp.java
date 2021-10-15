@@ -54,7 +54,7 @@ public class MainApp extends Application {
 
 	@Override
 	public void stop() throws Exception {
-	    Session.closeCommon();
+	    Session.closeCommonJShell();
 		root.dispose();
 		TaskManager.get().stop();
 	}

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import jdk.jshell.DeclarationSnippet;
 import jdk.jshell.EvalException;
+import jdk.jshell.ImportSnippet;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Kind;
 import jdk.jshell.Snippet.Status;
@@ -98,6 +99,10 @@ public class SnippetProcessor extends Processor {
     }
 
     private void setFeedback(SnippetEvent event, boolean quiet) {
+        
+        if (event.snippet() instanceof ImportSnippet) {
+            session.getCommonJShell().eval(event.snippet().source());
+        }
 
         String message = "";
 

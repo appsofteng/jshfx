@@ -7,7 +7,7 @@
     -fx-font-weight: bold;
 }
 .styled-text-area .parenopen, .styled-text-area .parenclose {
-    -fx-fill: tomato;
+    -fx-fill: lime;
     -fx-font-weight: bold;
 }
 .styled-text-area .bracketopen, .styled-text-area .bracketclose {

@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import jdk.jshell.ImportSnippet;
-
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jshfx.fxmisc.richtext.CompletionItem;
@@ -33,14 +31,16 @@ public class Completion {
 
     public Collection<CompletionItem> getCompletionItems(CodeArea inputArea) {
 
-        return inputArea.getText().isBlank() || CommandProcessor.isCommand(inputArea.getText())
+        String currentParagraph = inputArea.getParagraph(inputArea.getCurrentParagraph()).getText();
+        
+        return inputArea.getText().isBlank() || CommandProcessor.isCommand(currentParagraph)
                 ? getCommandCompletionItems(inputArea)
                 : getCodeCompletionItems(inputArea);
     }
 
     private Collection<CompletionItem> getCommandCompletionItems(CodeArea inputArea) {
-        String input = inputArea.getText();
-        int caretPosition = inputArea.getCaretPosition();
+        String input = inputArea.getParagraph(inputArea.getCurrentParagraph()).getText();
+        int caretPosition = inputArea.getCaretColumn();
         List<String> arguments = session.getCommandProcessor().getLexer().tokenize(input, caretPosition).stream()
                 .map(Token::getValue).collect(Collectors.toList());
         Token tokenOnCaret = session.getCommandProcessor().getLexer().getTokenOnCaretPosition();
@@ -78,6 +78,7 @@ public class Completion {
         String arg = args[argIndex];
 
         List<CompletionItem> items = new ArrayList<>();
+        int absoluteAnchor = inputArea.getCaretPosition() - (inputArea.getCaretColumn() - anchor);
 
         for (CharSequence candidate : candidates) {
 
@@ -87,8 +88,8 @@ public class Completion {
 
             String name = arg.substring(0, positionInArg) + candidate;
             String docCode = args.length <= 1 ? name : (args[0] + "." + name);
-
-            items.add(new CommandCompletionItem(inputArea, anchor, candidate.toString(), name, docCode,
+            
+            items.add(new CommandCompletionItem(inputArea, absoluteAnchor, candidate.toString(), name, docCode,
                     this::getCommandHelp));
         }
 
@@ -137,17 +138,10 @@ public class Completion {
                     List<Documentation> docs = Session.documentation(docInput, docInput.length(), false);
 
                     if (docs.isEmpty()) {
-                        List<String> fullnames = getImportedFullNames(suggestion.continuation());
 
-                        if (!fullnames.isEmpty()) {
-                            fullnames.forEach(
-                                    n -> items.add(new SuggestionCompletionItem(inputArea, suggestion, absoluteAnchor,
-                                            new DocRef(n, n, this::loadDocumentation))));
-                        } else {
+                        items.add(new SuggestionCompletionItem(inputArea, suggestion, absoluteAnchor,
+                                new DocRef(docInput)));
 
-                            items.add(new SuggestionCompletionItem(inputArea, suggestion, absoluteAnchor,
-                                    new DocRef(docInput)));
-                        }
                     } else {
                         docs.forEach(d -> items.add(new SuggestionCompletionItem(inputArea, suggestion, absoluteAnchor,
                                 new DocRef(docInput, d.signature(), this::loadDocumentation))));
@@ -161,11 +155,13 @@ public class Completion {
                     .listQualifiedNames(relativeInput.toString(), relativeCursor);
 
             if (!qualifiedNames.isResolvable()) {
-                qualifiedNames.getNames().forEach(
-                        n -> items.add(new QualifiedNameCompletionItem(it -> session.getConsoleView().submit(it), n,
-                                this::loadDocumentation)));
+                if (!qualifiedNames.getNames().isEmpty()) {
+                    qualifiedNames.getNames().forEach(
+                            n -> items.add(new QualifiedNameCompletionItem(it -> session.getConsoleView().submit(it), n,
+                                    this::loadDocumentation)));
 
-                break;
+                    break;
+                }
             }
         }
 
@@ -184,11 +180,6 @@ public class Completion {
         }
 
         return docInput;
-    }
-
-    private List<String> getImportedFullNames(String name) {
-        return session.getJshell().imports().map(ImportSnippet::fullname).filter(n -> n.matches(".*\\." + name + "\\w*"))
-                .collect(Collectors.toList());
     }
 
     public String loadDocumentation(DocRef docRef) {

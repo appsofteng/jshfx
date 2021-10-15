@@ -33,8 +33,7 @@ public class Session {
 
     public static final String PRIVILEDGED_TASK_QUEUE = "priviledged-task-queue";
 
-    private static JShell commonJshell = JShell.builder().executionEngine(new LocalExecutionControlProvider(), null)
-            .build();
+    private static JShell commonJshell;
 
     private BooleanProperty closed = new SimpleBooleanProperty();
     private Env env;
@@ -68,19 +67,34 @@ public class Session {
         idGenerator = new IdGenerator();
         restart();
         setListener();
+        switchCommonJShell();
+    }
+
+    public JShell getCommonJShell() {
+        return commonJshell;
     }
 
     public static List<Documentation> documentation(String input, int cursor, boolean computeJavadoc) {
         return commonJshell.sourceCodeAnalysis().documentation(input, cursor, computeJavadoc);
     }
 
-    public static void closeCommon() {
+    public static void closeCommonJShell() {
 
         if (commonJshell != null) {
 
             commonJshell.stop();
             commonJshell.close();
         }
+    }
+    
+    public void switchCommonJShell() {
+        closeCommonJShell();
+        String[] options = env.getOptions();
+        commonJshell = JShell.builder().executionEngine(new LocalExecutionControlProvider(), null)
+                .compilerOptions(options).remoteVMOptions(options)
+                .build();
+        env.getClassPath().forEach(p-> commonJshell.addToClasspath(p));
+        jshell.imports().forEach(i -> commonJshell.eval(i.source()));
     }
 
     public ReadOnlyBooleanProperty closedProperty() {
@@ -142,6 +156,7 @@ public class Session {
     public void setIO() {
         System.setErr(consoleModel.getErr());
         System.setOut(consoleModel.getOut());
+        switchCommonJShell();
     }
 
     public Env getEnv() {
@@ -150,7 +165,10 @@ public class Session {
 
     public void addToClasspath(List<String> paths) {
         env.getClassPath().addAll(paths);
-        paths.forEach(p -> jshell.addToClasspath(p));
+        paths.forEach(p -> {
+            jshell.addToClasspath(p);
+            commonJshell.addToClasspath(p);
+        });
     }
 
     public Env loadEnv() {
@@ -191,11 +209,22 @@ public class Session {
     }
 
     public void reset() {
-        restoreSnippets = jshell.snippets()
-                .filter(s -> Integer.parseInt(s.id()) > commandProcessor.getSession().getStartSnippetMaxIndex())
-                .filter(s -> jshell.status(s) == Status.VALID || jshell.status(s) == Status.DROPPED)
-                .map(s -> new SimpleEntry<>(s, jshell.status(s))).collect(Collectors.toList());
+        setRestoreSnippets();
         restart();
+        switchCommonJShell();
+    }
+
+    public void reload(boolean quiet) {
+        setRestoreSnippets();
+        restart();
+        reloadSnippets(quiet);
+        switchCommonJShell();
+    }
+
+    public void restore(boolean quiet) {
+        restart();
+        reloadSnippets(quiet);
+        switchCommonJShell();
     }
 
     private void restart() {
@@ -212,17 +241,14 @@ public class Session {
 
         startSnippetMaxIndex = idGenerator.getMaxId();
     }
-
-    public void reload(boolean quiet) {
-        reset();
-        reloadSnippets(quiet);
+    
+    private void setRestoreSnippets() {
+        restoreSnippets = jshell.snippets()
+                .filter(s -> Integer.parseInt(s.id()) > commandProcessor.getSession().getStartSnippetMaxIndex())
+                .filter(s -> jshell.status(s) == Status.VALID || jshell.status(s) == Status.DROPPED)
+                .map(s -> new SimpleEntry<>(s, jshell.status(s))).collect(Collectors.toList());
     }
-
-    public void restore(boolean quiet) {
-        restart();
-        reloadSnippets(quiet);
-    }
-
+    
     private void reloadSnippets(boolean quiet) {
         restoreSnippets.forEach(s -> {
             var newSnippets = snippetProcessor.process(s.getKey(), quiet).stream().map(SnippetEvent::snippet)

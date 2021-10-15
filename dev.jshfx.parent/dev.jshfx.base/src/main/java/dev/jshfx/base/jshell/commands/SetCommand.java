@@ -38,7 +38,7 @@ public class SetCommand extends BaseCommand {
             if (commandProcessor.getSession().getFeedback().isValid(feedback)) {
                 commandProcessor.getSession().getSettings().setFeedbackMode(feedback);
                 commandProcessor.getSession().getFeedback()
-                        .commandSuccess(FXResourceBundle.getBundle().getString​("msg.feedback.mode", feedback));
+                        .commandSuccess(FXResourceBundle.getBundle().getString​("msg.feedback.mode", feedback)).flush();
             } else {
                 commandProcessor.getSession().getFeedback()
                         .commandFailure(FXResourceBundle.getBundle().getString​("msg.feedback.invalidMode", feedback));

@@ -2,6 +2,7 @@ package dev.jshfx.jfx.scene.control;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -186,7 +187,7 @@ public class SplitConsolePane extends BorderPane {
             outputArea.appendText("\n");
         }
 
-        TextStyleSpans span = new TextStyleSpans(text, filterStyles(from, text.length()));         
+        TextStyleSpans span = new TextStyleSpans(text + "\n", filterStyles(from, text.length()));  
 
         history.add(span.getText().strip());
 
@@ -221,6 +222,8 @@ public class SplitConsolePane extends BorderPane {
             }
         });
 
+        // For extra new line
+        spansBuilder.add(Collections.emptyList(), 1);
         var styleSpans = spansBuilder.create();
 
         return styleSpans;
