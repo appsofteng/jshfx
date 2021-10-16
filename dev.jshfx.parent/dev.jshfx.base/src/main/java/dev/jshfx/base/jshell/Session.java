@@ -270,7 +270,6 @@ public class Session {
             // Create the analysis before putting on the class path.
             jshell.sourceCodeAnalysis();
             env.getClassPath().forEach(p -> jshell.addToClasspath(p));
-            env.getModuleLocations().forEach(p -> jshell.addToClasspath(p));
             idGenerator.setJshell(jshell);
 
         } catch (Exception e) {

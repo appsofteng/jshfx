@@ -15,7 +15,6 @@ public class Env implements Comparable<Env> {
     private Set<String> classPath = new HashSet<>();
     private Set<String> modulePath = new HashSet<>();
     private Set<String> addModules = new HashSet<>();
-    private Set<String> moduleLocations = new HashSet<>();
     private Set<ExportItem> addExports = new HashSet<>();
 
     public Env() {
@@ -56,14 +55,6 @@ public class Env implements Comparable<Env> {
     public void setAddModules(Set<String> addModules) {
 		this.addModules = addModules;
 	}
-
-    public Set<String> getModuleLocations() {
-        return moduleLocations;
-    }
-
-    public void setModuleLocations(Set<String> moduleLocations) {
-        this.moduleLocations = moduleLocations;
-    }
 
     public Set<ExportItem> getAddExports() {
         return addExports;

@@ -1,5 +1,6 @@
 package dev.jshfx.base.ui;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -166,18 +167,32 @@ public class ShellPane extends Part {
 
     public void insertDirPath() {
         var dir = FileDialogUtils.getDirectory(getScene().getWindow());
-
+        var joining = getJoining();
+        
         dir.ifPresent(d -> {
-            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), d.toString() + " ");
+            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), joining.prefix() + d.toString() + joining.delimiter());
         });
     }
 
     public void insertFilePaths() {
         var files = FileDialogUtils.getJavaFiles(getScene().getWindow());
-
+        var joining = getJoining();
+        
         files.forEach(f -> {
-            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), f.toString() + " ");
+            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), joining.prefix() + f.toString() + joining.delimiter());
         });
+    }
+    
+    record Joining(String prefix, String delimiter) {}
+    
+    private Joining getJoining() {
+        int end = consolePane.getInputArea().getCaretPosition();
+        int start = end > 0 ? end - 1 : 0;
+        String caretChar = consolePane.getInputArea().getText(start, end);  
+        String delimiter = caretChar.matches("\\s |^$") ? " " : "";
+        String prefix = delimiter.isEmpty() ? File.pathSeparator : "";
+        
+        return new Joining(prefix, delimiter);
     }
 
     public void insertSaveFilePaths() {
