@@ -35,7 +35,7 @@ public class Feedback {
             CONCISE, List.of(COMMAND_RESULT, COMMAND_FAILURE, SNIPPET_EXPRESSION, SNIPPET_ERROR), SILENT,
             List.of(COMMAND_RESULT, COMMAND_FAILURE, SNIPPET_ERROR));
 
-    private Map<String, List<TextStyleSpans>> feedback = new HashMap<>();
+    private List<FeedbackItem> feedback = new ArrayList<>();
 
     private ConsoleModel consoleModel;
     private Settings settings;
@@ -97,13 +97,13 @@ public class Feedback {
 
     private void add(String type, String message) {
 
-        feedback.computeIfAbsent(type, k -> new ArrayList<>()).add(new TextStyleSpans(message));
+        feedback.add(new FeedbackItem(type, new TextStyleSpans(message)));
 
     }
     
     private void add(String type, String message, String style) {
 
-        feedback.computeIfAbsent(type, k -> new ArrayList<>()).add(new TextStyleSpans(message, style));
+        feedback.add(new FeedbackItem(type, new TextStyleSpans(message, style)));
     }
     
     public void flush() {
@@ -113,37 +113,10 @@ public class Feedback {
     }
 
     private List<TextStyleSpans> getFeedback() {
-        return MAPPING.get(settings.getFeedbackMode()).stream()
-                .flatMap(m -> feedback.getOrDefault(m, List.of()).stream()).collect(Collectors.toList());
+        return feedback.stream().filter(i-> MAPPING.get(settings.getFeedbackMode()).contains(i.type()))
+                .map(FeedbackItem::message)
+                .collect(Collectors.toList());
     }
-
-//    public void normal(String message) {
-//        if (mode.ordinal() >= Mode.NORMAL.ordinal()) {
-//            normal(new TextStyleSpans(message));
-//        }
-//    }
-//
-//    public void normaln(String message) {
-//        normal(message + "\n");
-//    }
-//
-//    public void normal(String message, String style) {
-//        if (mode.ordinal() >= Mode.NORMAL.ordinal()) {
-//            normal(new TextStyleSpans(message, style));
-//        }
-//    }
-//
-//    public void normaln(String message, String style) {
-//        normal(message + "\n", style);
-//    }
-//
-//    public void normal(TextStyleSpans span) {
-//        if (mode.ordinal() >= Mode.NORMAL.ordinal()) {
-//            if (cached) {
-//                cache.add(span);
-//            } else {
-//                consoleModel.addNewLineOutput(span);
-//            }
-//        }
-//    }
+    
+    record FeedbackItem(String type, TextStyleSpans message) {}
 }
