@@ -44,7 +44,9 @@ public class Actions {
     private Action outputAreaClearAction;
 
     private Action submitAction;
+    private Action submitLineAction;
     private Action evalAction;
+    private Action evalLineAction;
     private Action historyUpAction;
     private Action historyDownAction;
 
@@ -140,11 +142,21 @@ public class Actions {
         FXResourceBundle.getBundle().put(submitAction.textProperty(), "submit");
         FXResourceBundle.getBundle().put(submitAction.longTextProperty(), "submit");
         submitAction.setAccelerator(KeyCombination.keyCombination("Shift+Enter"));
-        
-        evalAction = new Action(e -> rootPane.getSelectedShell().getConsolePane().eval());
+
+        submitLineAction = new Action(e -> rootPane.getSelectedShell().getConsolePane().submitLine());
+        FXResourceBundle.getBundle().put(submitLineAction.textProperty(), "submitLine");
+        FXResourceBundle.getBundle().put(submitLineAction.longTextProperty(), "submitLine");
+        submitLineAction.setAccelerator(KeyCombination.keyCombination("Ctrl+Enter"));
+
+        evalAction = new Action(e -> rootPane.getSelectedShell().eval());
         FXResourceBundle.getBundle().put(evalAction.textProperty(), "evaluate");
         FXResourceBundle.getBundle().put(evalAction.longTextProperty(), "evaluate");
         evalAction.setAccelerator(KeyCombination.keyCombination("Ctrl+E"));
+
+        evalLineAction = new Action(e -> rootPane.getSelectedShell().evalLine());
+        FXResourceBundle.getBundle().put(evalLineAction.textProperty(), "evaluateLine");
+        FXResourceBundle.getBundle().put(evalLineAction.longTextProperty(), "evaluateLine");
+        evalLineAction.setAccelerator(KeyCombination.keyCombination("Alt+E"));
 
         historyUpAction = new Action(e -> rootPane.getSelectedShell().getConsolePane().historyUp());
         FXResourceBundle.getBundle().put(historyUpAction.textProperty(), "historyUp");
@@ -204,16 +216,21 @@ public class Actions {
         var menu = getContextMenu(area);
         var actions = List.of(inputAreaCopyAction, inputAreaCutAction, inputAreaPasteAction, inputAreaSelectAllAction,
                 inputAreaClearAction, ActionUtils.ACTION_SEPARATOR, inputAreaUndoAction, inputAreaReduAction,
-                ActionUtils.ACTION_SEPARATOR, submitAction, evalAction, historyUpAction, historyDownAction,
-                ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction, insertSaveFilePathAction,
-                ActionUtils.ACTION_SEPARATOR, codeCompletionAction);
+                ActionUtils.ACTION_SEPARATOR, submitAction, submitLineAction, evalAction, evalLineAction,
+                ActionUtils.ACTION_SEPARATOR, historyUpAction, historyDownAction, ActionUtils.ACTION_SEPARATOR,
+                insertDirPathAction, insertFilePathAction, insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR,
+                codeCompletionAction);
         ActionUtils.updateContextMenu(menu, actions);
 
         Nodes.addInputMap(area, sequence(
                 consume(keyPressed(submitAction.getAccelerator()).onlyIf(e -> !submitAction.isDisabled()),
                         e -> submitAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+                consume(keyPressed(submitLineAction.getAccelerator()).onlyIf(e -> !submitLineAction.isDisabled()),
+                        e -> submitLineAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
                 consume(keyPressed(evalAction.getAccelerator()).onlyIf(e -> !evalAction.isDisabled()),
                         e -> evalAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+                consume(keyPressed(evalLineAction.getAccelerator()).onlyIf(e -> !evalLineAction.isDisabled()),
+                        e -> evalLineAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
                 consume(keyPressed(historyUpAction.getAccelerator()).onlyIf(e -> !historyUpAction.isDisabled()),
                         e -> historyUpAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
                 consume(keyPressed(historyDownAction.getAccelerator()).onlyIf(e -> !historyDownAction.isDisabled()),

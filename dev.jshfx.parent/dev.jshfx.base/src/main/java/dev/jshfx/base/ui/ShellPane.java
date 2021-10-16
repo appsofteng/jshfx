@@ -128,6 +128,30 @@ public class ShellPane extends Part {
         }
     }
 
+    public void eval() {
+        String text = consolePane.getInputArea().getSelectedText();
+
+        if (text == null || text.isEmpty()) {
+            text = consolePane.getInputArea().getText();
+        }
+
+        eval(text);
+    }
+
+    public void evalLine() {
+        String text = consolePane.getInputArea().getParagraph(consolePane.getInputArea().getCurrentParagraph())
+                .getText();
+        eval(text);
+    }
+
+    private void eval(String text) {
+        if (consolePane.getOutputArea().getLength() > 0 && !consolePane.getOutputArea().getText().endsWith("\n")) {
+            consolePane.getOutputArea().appendText("\n");
+        }
+
+        session.process(text);
+    }
+
     public Session getSession() {
         return session;
     }
