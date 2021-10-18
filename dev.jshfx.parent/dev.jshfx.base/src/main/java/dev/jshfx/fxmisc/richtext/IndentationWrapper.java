@@ -34,6 +34,7 @@ public class IndentationWrapper<T extends GenericStyledArea<?,?,?>> extends Gene
         }
 
         getArea().insertText(getArea().getCaretPosition(), "\n" + indentation);
+        getArea().requestFollowCaret();
     }
 
     void insertIndentation() {

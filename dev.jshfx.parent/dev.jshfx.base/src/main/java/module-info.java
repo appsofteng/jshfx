@@ -17,7 +17,7 @@ module dev.jshfx.base {
 	requires org.controlsfx.controls;
 	
 	requires org.fxmisc.richtext;
-	requires flowless;
+	requires org.fxmisc.flowless;
 	requires reactfx;
     requires wellbehavedfx;
     requires org.fxmisc.undo;
