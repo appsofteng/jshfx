@@ -11,7 +11,7 @@ import dev.jshfx.jfx.util.FXResourceBundle;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
-@Command(name = "/set", separator = CommandProcessor.OPTION_SEPARATOR)
+@Command(name = "/set")
 public class SetCommand extends BaseCommand {
 
     @Option(names = "feedback", arity = "0..1", paramLabel = "<mode>", descriptionKey = "/set.feedback", completionCandidates = FeedbakcModes.class)

@@ -65,7 +65,7 @@ public class Feedback {
     
     public Feedback commandFailure(String message) {
 
-        add(COMMAND_FAILURE, message, ConsoleModel.COMMENT_STYLE);
+        add(COMMAND_FAILURE, message, ConsoleModel.ERROR_STYLE);
 
         return this;
     }

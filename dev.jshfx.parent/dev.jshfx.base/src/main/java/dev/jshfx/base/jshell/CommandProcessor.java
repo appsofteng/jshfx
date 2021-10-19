@@ -93,7 +93,7 @@ public class CommandProcessor extends Processor {
 				.addSubcommand(new CachingCommandLine(new VarCommand(this))).setOut(out)
 				.setErr(new PrintWriter(session.getConsoleModel().getErr(), true))
 				.setResourceBundle(FXResourceBundle.getBundle().getResourceBundle())
-				.setExecutionStrategy(strategy);
+				.setExecutionStrategy(strategy).setSeparator(OPTION_SEPARATOR);
 
 		return commandLine;
 	}

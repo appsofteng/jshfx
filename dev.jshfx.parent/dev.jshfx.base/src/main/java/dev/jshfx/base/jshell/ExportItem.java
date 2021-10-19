@@ -1,14 +1,16 @@
 package dev.jshfx.base.jshell;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ExportItem {
 
     private String sourceModule;
     private String packageName;
-    private List<String> targetModules = new ArrayList<>();
+    private Set<String> targetModules = new HashSet<>();
 
     public ExportItem() {
     }
@@ -19,7 +21,7 @@ public class ExportItem {
         targetModules.add(targetModule);
     }
 
-    public ExportItem(String sourceModule, String packageName, List<String> targetModules) {
+    public ExportItem(String sourceModule, String packageName, Set<String> targetModules) {
 
         this.sourceModule = sourceModule;
         this.packageName = packageName;
@@ -42,11 +44,11 @@ public class ExportItem {
         this.packageName = packageName;
     }
 
-    public List<String> getTargetModules() {
+    public Set<String> getTargetModules() {
         return targetModules;
     }
 
-    public void setTargetModules(List<String> targetModule) {
+    public void setTargetModules(Set<String> targetModule) {
         this.targetModules = targetModule;
     }
 
@@ -54,8 +56,53 @@ public class ExportItem {
         return targetModules.stream().collect(Collectors.joining(","));
     }
 
+    public static ExportItem parse(String input) {
+        ExportItem item = new ExportItem();
+        String[] parts = input.split("/");
+
+        if (parts.length == 2) {
+            item.setSourceModule(parts[0]);
+            parts = parts[1].split("=");
+
+            if (parts.length == 2) {
+                item.setPackageName(parts[0]);
+                parts = parts[1].split(",");
+                if (parts.length > 0) {
+                    item.getTargetModules().addAll(Arrays.asList(parts));
+                } else {
+                    throw new IllegalArgumentException(input);
+                }
+            } else {
+                throw new IllegalArgumentException(input);
+            }
+        } else {
+            throw new IllegalArgumentException(input);
+        }
+
+        return item;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        boolean result = false;
+        if (obj instanceof ExportItem other) {
+            result = Objects.equals(getSource(), other.getSource());
+        }
+        
+        return result;
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(getSource());
+    }
+
+    public String getSource() {
+        return sourceModule + "/" + packageName;
+    }
+    
     @Override
     public String toString() {
-        return sourceModule + "/" + packageName + "=" + getTargetModuleLabel();
+        return getSource() + "=" + getTargetModuleLabel();
     }
 }
