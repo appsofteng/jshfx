@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import dev.jshfx.jfx.util.FXResourceBundle;
+import javafx.concurrent.Task;
 import jdk.jshell.DeclarationSnippet;
 import jdk.jshell.EvalException;
 import jdk.jshell.ImportSnippet;
@@ -27,8 +28,9 @@ public class SnippetProcessor extends Processor {
 
     @Override
     public void process(String input) {
-        getSession().getTaskQueuer().add(() -> analyseAndEvaluate(input));
-
+        Task<Void> task = getSession().getTaskQueuer().add(() -> analyseAndEvaluate(input));
+        task.setOnSucceeded(e -> getSession().getTimer().stop());
+        task.setOnFailed(e -> getSession().getTimer().stop());
     }
 
     private void analyseAndEvaluate(String input) {

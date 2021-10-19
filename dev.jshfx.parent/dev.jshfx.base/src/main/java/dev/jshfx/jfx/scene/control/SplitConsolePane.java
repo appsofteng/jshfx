@@ -22,6 +22,7 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.control.IndexRange;
+import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
 
@@ -32,6 +33,7 @@ public class SplitConsolePane extends BorderPane {
     private ConsoleModel consoleModel;
     private CodeArea inputArea = new CodeArea();
     private CodeArea outputArea = new CodeArea();
+    private Label outputHeader = new Label();
     private ObservableList<String> history = FXCollections.observableArrayList();
     private int historyIndex;
     private BooleanProperty historyStartReached = new SimpleBooleanProperty();
@@ -93,13 +95,20 @@ public class SplitConsolePane extends BorderPane {
     public CodeArea getOutputArea() {
         return outputArea;
     }
+    
+    public Label getOutputHeader() {
+        return outputHeader;
+    }
 
     private void setGraphics() {
         outputArea.setEditable(false);
         outputArea.setFocusTraversable(false);
+        BorderPane output = new BorderPane(new VirtualizedScrollPane<>(outputArea));
+        output.setTop(outputHeader);
+        
 
         SplitPane splitPane = new SplitPane(new VirtualizedScrollPane<>(inputArea),
-                new VirtualizedScrollPane<>(outputArea));
+                output);
         splitPane.setOrientation(Orientation.VERTICAL);
         splitPane.setDividerPositions(0.8f);
 

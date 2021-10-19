@@ -35,6 +35,7 @@ import dev.jshfx.jfx.scene.control.ConsoleModel;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.jx.tools.Lexer;
 import dev.jshfx.jx.tools.Token;
+import javafx.concurrent.Task;
 import jdk.jshell.Snippet;
 import picocli.CommandLine;
 
@@ -166,11 +167,16 @@ public class CommandProcessor extends Processor {
 
 		String[] arguments = args.toArray(new String[0]);
 
+		Task<Void> task = null;
+		
 		if (PRIVILEGED_COMMANDS.stream().anyMatch(c -> input.startsWith(c))) {
-			getSession().getTaskQueuer().add(Session.PRIVILEDGED_TASK_QUEUE, () -> getCommandLine().execute(arguments));
+			task = getSession().getTaskQueuer().add(Session.PRIVILEDGED_TASK_QUEUE, () -> getCommandLine().execute(arguments));
 		} else {
-			getSession().getTaskQueuer().add(() -> getCommandLine().execute(arguments));
+			task = getSession().getTaskQueuer().add(() -> getCommandLine().execute(arguments));			
 		}
+		
+		task.setOnSucceeded(e -> getSession().getTimer().stop());
+		task.setOnFailed(e -> getSession().getTimer().stop());
 	}
 
 	static boolean isCommand(String input) {

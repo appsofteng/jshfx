@@ -67,6 +67,8 @@ public class ShellPane extends Part {
                 Bindings.createStringBinding(() -> createTitle(), path.nameProperty(), consolePane.editedProperty()));
         longTitle.bind(Bindings.createStringBinding(() -> path.getPath().toString(), path.pathProperty()));
 
+        consolePane.getOutputHeader().textProperty().bind(session.getTimer().textProperty());
+        
         sceneProperty().addListener((v, o, n) -> {
             if (n != null) {
                 session.setIO();

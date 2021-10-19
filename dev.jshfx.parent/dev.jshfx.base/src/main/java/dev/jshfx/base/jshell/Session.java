@@ -39,6 +39,7 @@ public class Session {
     private Env env;
     private Settings settings;
     private Feedback feedback;
+    private Timer timer = new Timer();
     private JShell jshell;
     private SplitConsolePane console;
     private TaskQueuer taskQueuer;
@@ -103,6 +104,10 @@ public class Session {
 
     public Feedback getFeedback() {
         return feedback;
+    }
+    
+    public Timer getTimer() {
+        return timer;
     }
 
     public JShell getJshell() {
@@ -339,7 +344,7 @@ public class Session {
     }
 
     public void process(String input) {
-
+        timer.start();
         if (input.isBlank()) {
             return;
         }
