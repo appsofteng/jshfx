@@ -12,8 +12,8 @@ import jakarta.json.bind.annotation.JsonbTransient;
 public class Env implements Comparable<Env> {
         
     private String name;
-    private Set<String> classPath = new HashSet<>();
-    private Set<String> modulePath = new HashSet<>();
+    private Set<String> classPaths = new HashSet<>();
+    private Set<String> modulePaths = new HashSet<>();
     private Set<String> addModules = new HashSet<>();
     private Set<ExportItem> addExports = new HashSet<>();
 
@@ -32,20 +32,20 @@ public class Env implements Comparable<Env> {
         this.name = name;
     }
     
-    public Set<String> getClassPath() {
-        return classPath;
+    public Set<String> getClassPaths() {
+        return classPaths;
     }
     
-    public void setClassPath(Set<String> classPath) {
-		this.classPath = classPath;
+    public void setClassPaths(Set<String> classPath) {
+		this.classPaths = classPath;
 	}
 
-    public Set<String> getModulePath() {
-        return modulePath;
+    public Set<String> getModulePaths() {
+        return modulePaths;
     }
     
-    public void setModulePath(Set<String> modulePath) {
-		this.modulePath = modulePath;
+    public void setModulePaths(Set<String> modulePath) {
+		this.modulePaths = modulePath;
 	}
 
     public Set<String> getAddModules() {
@@ -65,18 +65,27 @@ public class Env implements Comparable<Env> {
 	}
 
     @JsonbTransient
-    public String[] getOptions() {
+    public String getClassPath() {
+        return classPaths.stream().collect(Collectors.joining(File.pathSeparator));
+    }
+    
+    @JsonbTransient
+    public String getModulePath() {
+        return modulePaths.stream().collect(Collectors.joining(File.pathSeparator));
+    }
+    
+    private List<String> getOptionList() {
 
         List<String> options = new ArrayList<>();
 
-        if (!classPath.isEmpty()) {
+        if (!classPaths.isEmpty()) {
             options.add("--class-path");
-            options.add(classPath.stream().collect(Collectors.joining(File.pathSeparator)));
+            options.add(getClassPath());
         }
 
-        if (!modulePath.isEmpty()) {
+        if (!modulePaths.isEmpty()) {
             options.add("--module-path");
-            options.add(modulePath.stream().collect(Collectors.joining(File.pathSeparator)));
+            options.add(getModulePath());
         }
 
         if (!addModules.isEmpty()) {
@@ -91,12 +100,18 @@ public class Env implements Comparable<Env> {
             });
         }
 
-        return options.toArray(new String[] {});
+        return options;
+    }    
+    
+    @JsonbTransient
+    public String[] getOptions() {
+
+        return getOptionList().toArray(new String[] {});
     }
 
     @Override
     public String toString() {
-        return name;
+        return name + "\n" + getOptionList().stream().collect(Collectors.joining(" "));
     }
 
     @Override

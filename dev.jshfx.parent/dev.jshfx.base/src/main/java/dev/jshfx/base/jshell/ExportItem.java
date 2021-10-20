@@ -6,6 +6,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.json.bind.annotation.JsonbTransient;
+
 public class ExportItem {
 
     private String sourceModule;
@@ -52,10 +54,6 @@ public class ExportItem {
         this.targetModules = targetModule;
     }
 
-    public String getTargetModuleLabel() {
-        return targetModules.stream().collect(Collectors.joining(","));
-    }
-
     public static ExportItem parse(String input) {
         ExportItem item = new ExportItem();
         String[] parts = input.split("/");
@@ -97,12 +95,18 @@ public class ExportItem {
         return Objects.hash(getSource());
     }
 
+    @JsonbTransient
     public String getSource() {
         return sourceModule + "/" + packageName;
     }
     
+    @JsonbTransient
+    public String getTarget() {
+        return targetModules.stream().collect(Collectors.joining(","));
+    }
+    
     @Override
     public String toString() {
-        return getSource() + "=" + getTargetModuleLabel();
+        return getSource() + "=" + getTarget();
     }
 }

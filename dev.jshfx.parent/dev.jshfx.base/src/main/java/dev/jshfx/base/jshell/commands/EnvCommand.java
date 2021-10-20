@@ -7,16 +7,24 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import dev.jshfx.base.jshell.CommandProcessor;
+import dev.jshfx.base.jshell.Env;
 import dev.jshfx.base.jshell.ExportItem;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 @Command(name = "/env")
 public class EnvCommand extends BaseCommand {
 
+    @Parameters(arity = "0..*", descriptionKey = "/env.names", completionCandidates = EnvNames.class)
+    private List<String> names;
+
     @Option(names = "-retain", arity = "0..1", paramLabel = "<name>", descriptionKey = "/env.-retain", completionCandidates = EnvNames.class)
     private String retain;
+
+    @Option(names = "-delete", arity = "1..*", paramLabel = "<names>", descriptionKey = "/env.-delete", completionCandidates = EnvNames.class)
+    private List<String> delete;
 
     @Option(names = "--class-path", arity = "0..1", paramLabel = "<path>", descriptionKey = "/env.--class-path")
     private String classpath;
@@ -37,14 +45,34 @@ public class EnvCommand extends BaseCommand {
     @Override
     public void run() {
 
+        if (names != null && !names.isEmpty()) {
+            String envs = commandProcessor.getSession().getEnvs(names).stream().map(Env::toString)
+                    .collect(Collectors.joining("\n"));
+            commandProcessor.getSession().getFeedback().commandResult(envs).flush();
+            return;
+        }
+
+        if (delete != null && !delete.isEmpty()) {
+            try {
+                commandProcessor.getSession().deleteEnvs(delete);
+                commandProcessor.getSession().getFeedback()
+                .commandSuccess(FXResourceBundle.getBundle().getString​("msg.env.delete.success")).flush();
+            } catch (Exception e) {
+                commandProcessor.getSession().getFeedback()
+                .commandFailure(FXResourceBundle.getBundle().getString​("msg.env.delete.failure", e.getMessage()))
+                .flush();
+            }
+            return;
+        }
+
         if (classpath != null) {
             Set<String> paths = Set.copyOf(Arrays.asList(classpath.split(String.valueOf(File.pathSeparatorChar))));
-            commandProcessor.getSession().getEnv().setClassPath(paths);
+            commandProcessor.getSession().getEnv().setClassPaths(paths);
         }
 
         if (modulepath != null) {
             Set<String> paths = Set.copyOf(Arrays.asList(modulepath.split(String.valueOf(File.pathSeparatorChar))));
-            commandProcessor.getSession().getEnv().setModulePath(paths);
+            commandProcessor.getSession().getEnv().setModulePaths(paths);
         }
 
         if (addModules != null) {
@@ -56,13 +84,12 @@ public class EnvCommand extends BaseCommand {
                 Set<ExportItem> exports = addExports.stream().map(ExportItem::parse).collect(Collectors.toSet());
                 commandProcessor.getSession().getEnv().setAddExports(exports);
             } catch (IllegalArgumentException e) {
-                commandProcessor.getSession().getFeedback()
-                        .commandFailure(FXResourceBundle.getBundle().getString​("msg.env.adExports.failure.illegalArgument", e.getMessage()))
-                        .flush();
+                commandProcessor.getSession().getFeedback().commandFailure(FXResourceBundle.getBundle()
+                        .getString​("msg.env.adExports.failure.illegalArgument", e.getMessage())).flush();
             }
         }
 
-        if (retain != null) {
+        if (retain != null && (classpath != null || modulepath != null || addModules != null || addExports != null)) {
 
             if (retain.isEmpty()) {
                 commandProcessor.getSession().saveEnv();
@@ -78,6 +105,10 @@ public class EnvCommand extends BaseCommand {
                         .commandFailure(FXResourceBundle.getBundle().getString​("msg.env.save.failure.invalidName"))
                         .flush();
             }
+        } else {
+            String envs = commandProcessor.getSession().getEnvs().stream().map(Env::toString)
+                    .collect(Collectors.joining("\n"));
+            commandProcessor.getSession().getFeedback().commandResult(envs).flush();
         }
     }
 }

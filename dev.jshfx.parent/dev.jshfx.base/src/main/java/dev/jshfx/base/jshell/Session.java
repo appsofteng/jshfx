@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,14 +88,13 @@ public class Session {
             commonJshell.close();
         }
     }
-    
+
     public void switchCommonJShell() {
         closeCommonJShell();
         String[] options = env.getOptions();
         commonJshell = JShell.builder().executionEngine(new LocalExecutionControlProvider(), null)
-                .compilerOptions(options).remoteVMOptions(options)
-                .build();
-        env.getClassPath().forEach(p-> commonJshell.addToClasspath(p));
+                .compilerOptions(options).remoteVMOptions(options).build();
+        env.getClassPaths().forEach(p -> commonJshell.addToClasspath(p));
         jshell.imports().forEach(i -> commonJshell.eval(i.source()));
     }
 
@@ -105,7 +105,7 @@ public class Session {
     public Feedback getFeedback() {
         return feedback;
     }
-    
+
     public Timer getTimer() {
         return timer;
     }
@@ -169,7 +169,7 @@ public class Session {
     }
 
     public void addToClasspath(List<String> paths) {
-        env.getClassPath().addAll(paths);
+        env.getClassPaths().addAll(paths);
         paths.forEach(p -> {
             jshell.addToClasspath(p);
             commonJshell.addToClasspath(p);
@@ -177,13 +177,47 @@ public class Session {
     }
 
     public Env loadEnv() {
-        return JsonUtils.get().fromJson(FileManager.get().getEnvFile(PreferenceManager.get().getEnv()), Env.class,
-                new Env(PreferenceManager.DEFAULT_ENV_NAME));
+        return loadEnv(PreferenceManager.get().getEnv());
+    }
+
+    public List<Env> getEnvs() {
+
+        return getEnvs(FileManager.get().getEnvNames());
+    }
+
+    public List<Env> getEnvs(List<String> names) {
+        List<Env> envs = names.stream().map(n -> getEnv(n)).filter(e -> e != null)
+                .collect(Collectors.toCollection(() -> new ArrayList<>()));
+        Collections.sort(envs);
+
+        return envs;
+    }
+    
+    public void deleteEnvs(List<String> names) {
+        FileManager.get().deleteEnvs(names);
+    }
+    
+    private Env getEnv(String name) {
+
+        Env e = null;
+
+        if (name.equals(env.getName())) {
+            e = env;
+        } else {
+            e = loadEnv(name);
+        }
+
+        return e;
+    }
+
+    private Env loadEnv(String name) {
+
+        return JsonUtils.get().fromJson(FileManager.get().getEnvFile(name), Env.class, null);
     }
 
     public void saveEnv() {
         PreferenceManager.get().setEnv(env.getName());
-        JsonUtils.get().toJson(env, FileManager.get().getEnvFile(env.getName()));
+        JsonUtils.getWithFormatting().toJson(env, FileManager.get().getEnvFile(env.getName()));
     }
 
     public Settings getSettings() {
@@ -246,14 +280,14 @@ public class Session {
 
         startSnippetMaxIndex = idGenerator.getMaxId();
     }
-    
+
     private void setRestoreSnippets() {
         restoreSnippets = jshell.snippets()
                 .filter(s -> Integer.parseInt(s.id()) > commandProcessor.getSession().getStartSnippetMaxIndex())
                 .filter(s -> jshell.status(s) == Status.VALID || jshell.status(s) == Status.DROPPED)
                 .map(s -> new SimpleEntry<>(s, jshell.status(s))).collect(Collectors.toList());
     }
-    
+
     private void reloadSnippets(boolean quiet) {
         restoreSnippets.forEach(s -> {
             var newSnippets = snippetProcessor.process(s.getKey(), quiet).stream().map(SnippetEvent::snippet)
@@ -274,7 +308,7 @@ public class Session {
                     .err(consoleModel.getErr()).compilerOptions(options).remoteVMOptions(options).build();
             // Create the analysis before putting on the class path.
             jshell.sourceCodeAnalysis();
-            env.getClassPath().forEach(p -> jshell.addToClasspath(p));
+            env.getClassPaths().forEach(p -> jshell.addToClasspath(p));
             idGenerator.setJshell(jshell);
 
         } catch (Exception e) {

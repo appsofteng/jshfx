@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import dev.jshfx.base.Constants;
+import dev.jshfx.j.util.LU;
 
 public final class FileManager extends Manager {
 
@@ -66,6 +67,10 @@ public final class FileManager extends Manager {
         }
 
         return names;
+    }
+    
+    public void deleteEnvs(List<String> names) {
+        names.stream().map(n -> Path.of(USER_ENV_DIR + "/" + n + CONFIG_FILE_EXTENSION)).forEach(p -> LU.of(() -> Files.delete(p)));
     }
 
     private void uncaughtException(Thread thread, Throwable throwable) {

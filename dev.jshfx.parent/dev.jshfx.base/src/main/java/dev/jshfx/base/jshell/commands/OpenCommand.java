@@ -14,7 +14,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "/open")
 public class OpenCommand extends BaseCommand {
 
-	@Parameters(arity = "0..1", paramLabel = "file", descriptionKey = "/open.file", completionCandidates = FiletOptions.class)
+	@Parameters(arity = "0..1", descriptionKey = "/open.file", completionCandidates = FiletOptions.class)
 	private String file;
 
 	public OpenCommand(CommandProcessor commandProcessor) {
