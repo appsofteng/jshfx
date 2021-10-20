@@ -3,19 +3,13 @@ package dev.jshfx.base.jshell.commands;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.stream.Collectors;
 
 import dev.jshfx.base.jshell.CommandProcessor;
 import dev.jshfx.base.jshell.ExportItem;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.IParameterConsumer;
-import picocli.CommandLine.ITypeConverter;
-import picocli.CommandLine.Model.ArgSpec;
-import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 
 @Command(name = "/env")
@@ -33,8 +27,8 @@ public class EnvCommand extends BaseCommand {
     @Option(names = "--add-modules", arity = "0..*", paramLabel = "<module>", split = ",", descriptionKey = "/env.--add-modules")
     private List<String> addModules;
 
-    @Option(names = "--add-exports", arity = "0..*", paramLabel = "<module>/<package>=<target-module>", parameterConsumer =  ExportItemConsumer.class,  descriptionKey = "/env.--add-exports")
-    private Set<ExportItem> addExports;
+    @Option(names = "--add-exports", arity = "0..*", paramLabel = "<module>/<package>=<target-module>", descriptionKey = "/env.--add-exports")
+    private List<String> addExports;
 
     public EnvCommand(CommandProcessor commandProcessor) {
         super(commandProcessor);
@@ -58,10 +52,9 @@ public class EnvCommand extends BaseCommand {
         }
 
         if (addExports != null) {
-            commandProcessor.getSession().getEnv().setAddExports(addExports);
             try {
-//                Set<ExportItem> exports = addExports.stream().map(ExportItem::parse).collect(Collectors.toSet());
-//                commandProcessor.getSession().getEnv().setAddExports(exports);
+                Set<ExportItem> exports = addExports.stream().map(ExportItem::parse).collect(Collectors.toSet());
+                commandProcessor.getSession().getEnv().setAddExports(exports);
             } catch (IllegalArgumentException e) {
                 commandProcessor.getSession().getFeedback()
                         .commandFailure(FXResourceBundle.getBundle().getString​("msg.env.adExports.failure.illegalArgument", e.getMessage()))
@@ -86,15 +79,5 @@ public class EnvCommand extends BaseCommand {
                         .flush();
             }
         }
-    }
-    
-    public static class ExportItemConsumer implements IParameterConsumer {
-
-        @Override
-        public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec) {
-            Set<String> items = argSpec.getValue();
-            
-        }
-        
     }
 }
