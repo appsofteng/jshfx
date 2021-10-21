@@ -98,8 +98,10 @@ public class CompletionPopup extends Tooltip {
                 e.consume();
             } else if (e.getCode() == KeyCode.UP) {
                 selectPrevious();
+                e.consume();
             } else if (e.getCode() == KeyCode.DOWN) {
                 selectNext();
+                e.consume();
             }
         };
 

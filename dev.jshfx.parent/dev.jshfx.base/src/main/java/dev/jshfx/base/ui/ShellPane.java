@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.fxmisc.richtext.LineNumberFactory;
 
 import dev.jshfx.base.jshell.Completion;
+import dev.jshfx.base.jshell.JShellUtils;
 import dev.jshfx.base.jshell.Session;
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.fxmisc.richtext.CodeAreaWrappers;
@@ -25,6 +26,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
 import javafx.geometry.Bounds;
+import javafx.scene.control.IndexRange;
 
 public class ShellPane extends Part {
 
@@ -138,12 +140,13 @@ public class ShellPane extends Part {
             text = consolePane.getInputArea().getText();
         }
 
+        text = JShellUtils.joinCommandLines(text);
+        
         eval(text);
     }
 
     public void evalLine() {
-        String text = consolePane.getInputArea().getParagraph(consolePane.getInputArea().getCurrentParagraph())
-                .getText();
+        String text = JShellUtils.getCurrentLineSpan(consolePane.getInputArea()).text();
         eval(text);
     }
 
@@ -153,6 +156,38 @@ public class ShellPane extends Part {
         }
 
         session.process(text);
+    }
+    
+    public void submit() {
+        String text = consolePane.getInputArea().getSelectedText();
+        IndexRange selection = consolePane.getInputArea().getSelection();
+        int from = 0;
+
+        if (text == null || text.isEmpty()) {
+            text = consolePane.getInputArea().getText();
+        } else {
+            from = selection.getStart();
+        }
+        
+        String original = text;
+        
+        text = JShellUtils.joinCommandLines(text);
+        consolePane.submit(from, text, original);
+
+        if (consolePane.getInputArea().getSelectedText().isEmpty()) {
+            consolePane.getInputArea().clear();
+        } else {
+            consolePane.getInputArea().replaceSelection("");
+        }
+    }
+    
+    public void submitLine() {
+        var lineSpan = JShellUtils.getCurrentLineSpan(consolePane.getInputArea());
+        int from = consolePane.getInputArea().getAbsolutePosition(lineSpan.firstParagraphIndex(), 0);
+        
+        consolePane.submit(from, lineSpan.text(), lineSpan.originalText());        
+        
+        consolePane.getInputArea().deleteText(lineSpan.firstParagraphIndex(), 0, lineSpan.lastParagraphIndex(), consolePane.getInputArea().getParagraphLength(lineSpan.lastParagraphIndex()));
     }
 
     public Session getSession() {

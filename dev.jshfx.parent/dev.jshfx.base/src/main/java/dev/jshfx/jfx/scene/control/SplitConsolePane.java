@@ -162,37 +162,7 @@ public class SplitConsolePane extends BorderPane {
         });
     }
 
-    public void submit() {
-        String text = inputArea.getSelectedText();
-        IndexRange selection = inputArea.getSelection();
-        int from = 0;
-
-        if (text == null || text.isEmpty()) {
-            text = inputArea.getText();
-        } else {
-            from = selection.getStart();
-        }
-        
-        submit(from, text);
-
-        if (inputArea.getSelectedText().isEmpty()) {
-            inputArea.clear();
-        } else {
-            inputArea.replaceSelection("");
-        }
-    }
-    
-    public void submitLine() {
-        int currentParagraph = inputArea.getCurrentParagraph();
-        String text = inputArea.getParagraph(currentParagraph).getText();
-        int from = inputArea.getAbsolutePosition(currentParagraph, 0);
-        
-        submit(from, text);        
-        
-        inputArea.deleteText(currentParagraph, 0, currentParagraph, inputArea.getParagraphLength(currentParagraph));
-    }
-
-    private void submit(int from, String text) {
+    public void submit(int from, String text, String originalText) {
         
         // Null char may come from clipboard.
 //        if (text.contains("\0")) {
@@ -205,7 +175,7 @@ public class SplitConsolePane extends BorderPane {
 
         TextStyleSpans span = new TextStyleSpans(text + "\n", filterStyles(from, text.length()));  
 
-        history.add(span.getText().strip());
+        history.add(originalText);
 
         if (history.size() > HISTORY_LIMIT) {
             history.remove(0);

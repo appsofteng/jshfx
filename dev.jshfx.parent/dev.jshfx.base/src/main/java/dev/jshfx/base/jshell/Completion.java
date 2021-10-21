@@ -39,8 +39,9 @@ public class Completion {
     }
 
     private Collection<CompletionItem> getCommandCompletionItems(CodeArea inputArea) {
-        String input = inputArea.getParagraph(inputArea.getCurrentParagraph()).getText();
-        int caretPosition = inputArea.getCaretColumn();
+        var lineSpan = JShellUtils.getCurrentLineSpan(inputArea);
+        String input = lineSpan.text();
+        int caretPosition = lineSpan.caretPosition();
         List<String> arguments = session.getCommandProcessor().getLexer().tokenize(input, caretPosition).stream()
                 .map(Token::getValue).collect(Collectors.toList());
         Token tokenOnCaret = session.getCommandProcessor().getLexer().getTokenOnCaretPosition();
@@ -66,19 +67,18 @@ public class Completion {
         if (candidates.size() == 1 && candidates.get(0).length() == 0 && arguments.size() > 0) {
             Platform.runLater(() -> inputArea.insertText(inputArea.getCaretPosition(), " "));
 
-            caretPosition++;
             arguments.add("");
             argIndex++;
             positionInArg = 0;
             args = arguments.toArray(new String[0]);
             anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args,
-                    argIndex, positionInArg, caretPosition, candidates);
+                    argIndex, positionInArg, caretPosition + 1, candidates);
         }
 
         String arg = args[argIndex];
 
         List<CompletionItem> items = new ArrayList<>();
-        int absoluteAnchor = inputArea.getCaretPosition() - (inputArea.getCaretColumn() - anchor);
+        int absoluteAnchor = inputArea.getCaretPosition() - (caretPosition - anchor);
 
         for (CharSequence candidate : candidates) {
 

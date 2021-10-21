@@ -138,12 +138,12 @@ public class Actions {
             }
         });
 
-        submitAction = new Action(e -> rootPane.getSelectedShell().getConsolePane().submit());
+        submitAction = new Action(e -> rootPane.getSelectedShell().submit());
         FXResourceBundle.getBundle().put(submitAction.textProperty(), "submit");
         FXResourceBundle.getBundle().put(submitAction.longTextProperty(), "submit");
         submitAction.setAccelerator(KeyCombination.keyCombination("Shift+Enter"));
 
-        submitLineAction = new Action(e -> rootPane.getSelectedShell().getConsolePane().submitLine());
+        submitLineAction = new Action(e -> rootPane.getSelectedShell().submitLine());
         FXResourceBundle.getBundle().put(submitLineAction.textProperty(), "submitLine");
         FXResourceBundle.getBundle().put(submitLineAction.longTextProperty(), "submitLine");
         submitLineAction.setAccelerator(KeyCombination.keyCombination("Ctrl+Enter"));
