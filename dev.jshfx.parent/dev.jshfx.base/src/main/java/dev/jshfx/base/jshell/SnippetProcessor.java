@@ -125,7 +125,7 @@ public class SnippetProcessor extends Processor {
             if (snippet.kind() == Kind.EXPRESSION || snippet.subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
                 session.getFeedback().snippetExpression(message);
             } else if (snippet.kind() == Kind.TYPE_DECL || snippet.kind() == Kind.METHOD
-                    || snippet.kind() == Kind.VAR) {
+                    || snippet.kind() == Kind.VAR || snippet.kind() == Kind.IMPORT) {
                 session.getFeedback().snippetDeclaration(message);
             }
         }

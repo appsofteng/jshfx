@@ -119,6 +119,10 @@ public final class PreferenceManager extends Manager {
     public void setEnv(String name) {
         Preferences.userRoot().node("/jshell").put("env", name);
     }
+    
+    public void setDefaultEnv() {
+        Preferences.userRoot().node("/jshell").put("env", DEFAULT_ENV_NAME);
+    }
 
     public Path getInitialDirectory() {
         return Path.of(System.getProperty("user.home"));

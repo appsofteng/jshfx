@@ -68,7 +68,6 @@ public class Session {
         feedback = new Feedback(consoleModel, settings);
         idGenerator = new IdGenerator();
         restart();
-        setListener();
         switchCommonJShell();
     }
 
@@ -176,7 +175,7 @@ public class Session {
         });
     }
 
-    public Env loadEnv() {
+    private Env loadEnv() {
         return loadEnv(PreferenceManager.get().getEnv());
     }
 
@@ -186,33 +185,26 @@ public class Session {
     }
 
     public List<Env> getEnvs(List<String> names) {
-        List<Env> envs = names.stream().map(n -> getEnv(n)).filter(e -> e != null)
+        List<Env> envs = names.stream()
+                .filter(n -> !n.equals(env.getName()))
+                .map(n -> loadEnv(n))
                 .collect(Collectors.toCollection(() -> new ArrayList<>()));
         Collections.sort(envs);
+        envs.add(0, env);
 
         return envs;
     }
     
     public void deleteEnvs(List<String> names) {
         FileManager.get().deleteEnvs(names);
-    }
-    
-    private Env getEnv(String name) {
-
-        Env e = null;
-
-        if (name.equals(env.getName())) {
-            e = env;
-        } else {
-            e = loadEnv(name);
+        if (names.contains(PreferenceManager.get().getEnv())) {
+            PreferenceManager.get().setDefaultEnv();
         }
-
-        return e;
     }
 
     private Env loadEnv(String name) {
 
-        return JsonUtils.get().fromJson(FileManager.get().getEnvFile(name), Env.class, null);
+        return JsonUtils.get().fromJson(FileManager.get().getEnvFile(name), Env.class, new Env(name));
     }
 
     public void saveEnv() {

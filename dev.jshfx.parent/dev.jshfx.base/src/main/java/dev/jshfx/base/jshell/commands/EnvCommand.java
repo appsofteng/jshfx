@@ -56,11 +56,12 @@ public class EnvCommand extends BaseCommand {
             try {
                 commandProcessor.getSession().deleteEnvs(delete);
                 commandProcessor.getSession().getFeedback()
-                .commandSuccess(FXResourceBundle.getBundle().getString​("msg.env.delete.success")).flush();
+                        .commandSuccess(FXResourceBundle.getBundle().getString​("msg.env.delete.success")).flush();
             } catch (Exception e) {
                 commandProcessor.getSession().getFeedback()
-                .commandFailure(FXResourceBundle.getBundle().getString​("msg.env.delete.failure", e.getMessage()))
-                .flush();
+                        .commandFailure(
+                                FXResourceBundle.getBundle().getString​("msg.env.delete.failure", e.getMessage()))
+                        .flush();
             }
             return;
         }
@@ -89,7 +90,12 @@ public class EnvCommand extends BaseCommand {
             }
         }
 
-        if (retain != null && (classpath != null || modulepath != null || addModules != null || addExports != null)) {
+        if (classpath != null || modulepath != null || addModules != null || addExports != null) {
+            commandProcessor.getSession().reload(true);
+
+        }
+
+        if (retain != null) {
 
             if (retain.isEmpty()) {
                 commandProcessor.getSession().saveEnv();
@@ -105,7 +111,10 @@ public class EnvCommand extends BaseCommand {
                         .commandFailure(FXResourceBundle.getBundle().getString​("msg.env.save.failure.invalidName"))
                         .flush();
             }
-        } else {
+        }
+
+        if (classpath == null && modulepath == null && addModules == null && addExports == null && retain == null) {
+
             String envs = commandProcessor.getSession().getEnvs().stream().map(Env::toString)
                     .collect(Collectors.joining("\n"));
             commandProcessor.getSession().getFeedback().commandResult(envs).flush();
