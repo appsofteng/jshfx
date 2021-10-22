@@ -2,6 +2,7 @@ package dev.jshfx.base.jshell.commands;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -67,23 +68,27 @@ public class EnvCommand extends BaseCommand {
         }
 
         if (classpath != null) {
-            Set<String> paths = Set.copyOf(Arrays.asList(classpath.split(String.valueOf(File.pathSeparatorChar))));
-            commandProcessor.getSession().getEnv().setClassPaths(paths);
+            Collection<String> paths = classpath.isEmpty() ? Set.of() : Arrays.asList(classpath.split(String.valueOf(File.pathSeparatorChar)));
+            commandProcessor.getSession().getEnv().getClassPaths().clear();
+            commandProcessor.getSession().getEnv().getClassPaths().addAll(paths);
         }
 
         if (modulepath != null) {
-            Set<String> paths = Set.copyOf(Arrays.asList(modulepath.split(String.valueOf(File.pathSeparatorChar))));
-            commandProcessor.getSession().getEnv().setModulePaths(paths);
+            Collection<String> paths = modulepath.isEmpty() ? Set.of() : Arrays.asList(modulepath.split(String.valueOf(File.pathSeparatorChar)));
+            commandProcessor.getSession().getEnv().getModulePaths().clear();
+            commandProcessor.getSession().getEnv().getModulePaths().addAll(paths);
         }
 
         if (addModules != null) {
-            commandProcessor.getSession().getEnv().setAddModules(Set.copyOf(addModules));
+            commandProcessor.getSession().getEnv().getAddModules().clear();
+            commandProcessor.getSession().getEnv().getAddModules().addAll(addModules);
         }
 
         if (addExports != null) {
             try {
                 Set<ExportItem> exports = addExports.stream().map(ExportItem::parse).collect(Collectors.toSet());
-                commandProcessor.getSession().getEnv().setAddExports(exports);
+                commandProcessor.getSession().getEnv().getAddExports().clear();
+                commandProcessor.getSession().getEnv().getAddExports().addAll(exports);
             } catch (IllegalArgumentException e) {
                 commandProcessor.getSession().getFeedback().commandFailure(FXResourceBundle.getBundle()
                         .getString​("msg.env.adExports.failure.illegalArgument", e.getMessage())).flush();

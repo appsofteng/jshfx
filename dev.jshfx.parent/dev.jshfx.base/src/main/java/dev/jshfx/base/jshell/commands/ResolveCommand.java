@@ -1,19 +1,24 @@
 package dev.jshfx.base.jshell.commands;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import dev.jshfx.base.jshell.CommandProcessor;
 import dev.jshfx.base.sys.RepositoryManager;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 @Command(name = "/resolve")
 public class ResolveCommand extends BaseCommand {
 
-    @Parameters(paramLabel = "artifacts", descriptionKey = "/open.artifacts")
+    @Parameters(paramLabel = "<artifacts>", descriptionKey = "/resolve.artifacts")
     private List<String> coords;
+
+    @Option(names = "-set", descriptionKey = "/resolve.-set")
+    private boolean set;
 
     public ResolveCommand(CommandProcessor commandProcessor) {
         super(commandProcessor);
@@ -23,10 +28,10 @@ public class ResolveCommand extends BaseCommand {
     public void run() {
 
         if (coords != null && !coords.isEmpty()) {
-            
+
             try {
-                List<String> artifacts = new ArrayList<>();
-                
+                Set<String> artifacts = new HashSet<>();
+
                 for (String coord : coords) {
                     if (coord.endsWith(".xml")) {
                         RepositoryManager.get().resolvePom(coord, artifacts);
@@ -35,12 +40,21 @@ public class ResolveCommand extends BaseCommand {
                     }
                 }
 
-                commandProcessor.getSession().getFeedback().commandSuccess(FXResourceBundle.getBundle().getString​("msg.resolution.success")).flush();
-                
-                commandProcessor.getSession().addToClasspath(artifacts);
-                
+                commandProcessor.getSession().getFeedback()
+                        .commandSuccess(FXResourceBundle.getBundle().getString​("msg.resolution.success")).flush();
+
+                if (set) {
+                    commandProcessor.getSession().getEnv().getClassPaths().clear();
+                    commandProcessor.getSession().getEnv().getClassPaths().addAll(artifacts);
+                    commandProcessor.getSession().reload(true);
+                } else {
+                    commandProcessor.getSession().addToClasspath(artifacts);
+                }
+
             } catch (Exception e) {
-                commandProcessor.getSession().getFeedback().commandFailure(FXResourceBundle.getBundle().getString​("msg.resolution.failure", coords)).flush();
+                commandProcessor.getSession().getFeedback()
+                        .commandFailure(FXResourceBundle.getBundle().getString​("msg.resolution.failure", e.getMessage() != null ? e.getMessage() : coords))
+                        .flush();
             }
         }
     }

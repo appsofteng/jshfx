@@ -1,6 +1,6 @@
 package dev.jshfx.base.sys;
 
-import java.util.List;
+import java.util.Set;
 
 import dev.jshfx.util.RepositoryUtils;
 
@@ -23,12 +23,12 @@ public final class RepositoryManager extends Manager {
         repositoryUtils.init();
     }
 
-    public void resolve(String coords, List<String> artifacts) throws Exception {
+    public void resolve(String coords, Set<String> artifacts) throws Exception {
 
        repositoryUtils.resolve(coords, artifacts);
     }
 
-    public void resolvePom(String pom, List<String> artifacts) throws Exception {
+    public void resolvePom(String pom, Set<String> artifacts) throws Exception {
 
         repositoryUtils.resolvePom(pom, artifacts);
     }

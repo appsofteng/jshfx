@@ -2,12 +2,12 @@ package dev.jshfx.util;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuilder;
-import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
@@ -24,7 +24,6 @@ import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
-import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
@@ -47,7 +46,7 @@ public final class RepositoryUtils  {
         repositories = newRepositories(system, session);
     }
 
-    public void resolve(String coords, List<String> artifacts)
+    public void resolve(String coords, Set<String> artifacts)
             throws Exception {
 
         Artifact artifact = new DefaultArtifact(coords);
@@ -56,7 +55,7 @@ public final class RepositoryUtils  {
 
     }
 
-    public void resolvePom(String pom, List<String> artifacts)
+    public void resolvePom(String pom, Set<String> artifacts)
             throws Exception {
 
         File pomFile = new File(pom);
@@ -75,7 +74,7 @@ public final class RepositoryUtils  {
 
     }
 
-    private void resolve(Artifact artifact, List<String> artifacts) throws DependencyResolutionException {
+    private void resolve(Artifact artifact, Set<String> artifacts) throws DependencyResolutionException {
         DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
 
         CollectRequest collectRequest = new CollectRequest();

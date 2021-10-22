@@ -74,6 +74,14 @@ public class Completion {
             anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args,
                     argIndex, positionInArg, caretPosition + 1, candidates);
         }
+        
+        if (candidates.isEmpty() && args.length > 0) {
+            args = new String[] { args[0], "" };
+            argIndex = 1;
+            positionInArg = 0;
+            anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args, argIndex, positionInArg,
+                    caretPosition, candidates);
+        }
 
         String arg = args[argIndex];
 

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import dev.jshfx.base.sys.FileManager;
@@ -167,7 +168,7 @@ public class Session {
         return env;
     }
 
-    public void addToClasspath(List<String> paths) {
+    public void addToClasspath(Set<String> paths) {
         env.getClassPaths().addAll(paths);
         paths.forEach(p -> {
             jshell.addToClasspath(p);

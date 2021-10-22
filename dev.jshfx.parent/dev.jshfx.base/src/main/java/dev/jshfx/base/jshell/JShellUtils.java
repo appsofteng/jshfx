@@ -94,7 +94,7 @@ public final class JShellUtils {
             }
         });
 
-        return output.toString();
+        return output.toString().stripTrailing();
     }
 
     public static Snippet getSnippet(JShell jshell, Integer id) {

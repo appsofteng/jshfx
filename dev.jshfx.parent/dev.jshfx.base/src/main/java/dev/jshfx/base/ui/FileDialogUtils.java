@@ -41,6 +41,7 @@ public class FileDialogUtils {
         fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Java", "*.jar", "*.java", "*.jmod", "*.jsh"),
                 new ExtensionFilter("JAR", "*.jar"), new ExtensionFilter("Java", "*.java"),
                 new ExtensionFilter("JMOD", "*.jmod"), new ExtensionFilter("JSH", "*.jsh"),
+                new ExtensionFilter("XML", "*.xml"),
                 new ExtensionFilter("*", "*.*"));
         fileChooser.setInitialDirectory(PreferenceManager.get().getLatestDir().toFile());
         List<File> files = fileChooser.showOpenMultipleDialog(window);
