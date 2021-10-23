@@ -167,7 +167,28 @@ public class Session {
     public Env getEnv() {
         return env;
     }
+    
+    public void setEnv(Env env) {
+        this.env = env;
+    }
+    
+    public void setEnv(String name) {
+        env = loadEnv(name);
+    }
 
+    public String getNewEnvName() {
+        var names = FileManager.get().getEnvNames();
+        names.add(env.getName());
+        String name = PreferenceManager.DEFAULT_ENV_NAME;
+        int i = 1;
+        
+        while (names.contains(name)) {
+            name = PreferenceManager.DEFAULT_ENV_NAME + ++i;
+        }
+        
+        return name;
+    }
+    
     public void addToClasspath(Set<String> paths) {
         env.getClassPaths().addAll(paths);
         paths.forEach(p -> {
@@ -182,24 +203,36 @@ public class Session {
 
     public List<Env> getEnvs() {
 
-        return getEnvs(FileManager.get().getEnvNames());
+        var names = FileManager.get().getEnvNames();
+        names.add(env.getName());
+        var envs = getEnvs(names);
+        
+        return envs;
     }
 
-    public List<Env> getEnvs(List<String> names) {
-        List<Env> envs = names.stream()
-                .filter(n -> !n.equals(env.getName()))
-                .map(n -> loadEnv(n))
+    public List<Env> getEnvs(Set<String> names) {
+        List<Env> envs = names.stream().map(n -> loadEnv(n))
+                .filter(e -> !e.equals(env))
                 .collect(Collectors.toCollection(() -> new ArrayList<>()));
         Collections.sort(envs);
-        envs.add(0, env);
+
+        if (names.contains(env.getName())) {
+            envs.add(0, env);
+        }
 
         return envs;
     }
-    
-    public void deleteEnvs(List<String> names) {
+
+    public void deleteEnvs(Set<String> names) {
+
+        if (names.isEmpty()) {
+            names = Set.of(env.getName());
+        }
+
         FileManager.get().deleteEnvs(names);
-        if (names.contains(PreferenceManager.get().getEnv())) {
-            PreferenceManager.get().setDefaultEnv();
+        if (names.contains(env.getName())) {
+            env = new Env();
+            reload(true);
         }
     }
 
@@ -209,7 +242,6 @@ public class Session {
     }
 
     public void saveEnv() {
-        PreferenceManager.get().setEnv(env.getName());
         JsonUtils.getWithFormatting().toJson(env, FileManager.get().getEnvFile(env.getName()));
     }
 
@@ -323,6 +355,8 @@ public class Session {
             jshell.stop();
             jshell.close();
         }
+
+        PreferenceManager.get().setEnv(env.getName());
     }
 
     public void exit() {

@@ -3,7 +3,8 @@ package dev.jshfx.base.sys;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -56,12 +57,12 @@ public final class FileManager extends Manager {
         return Path.of(USER_ENV_DIR + "/" + name + FileManager.CONFIG_FILE_EXTENSION);
     }
 
-    public List<String> getEnvNames() {
-        List<String> names = List.of();
+    public Set<String> getEnvNames() {
+        Set<String> names = new HashSet<>();
         try {
             names = Files.list(USER_ENV_DIR)
                     .map(p -> p.getFileName().toString().replaceFirst(CONFIG_FILE_EXTENSION + "$", ""))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toCollection(() -> new HashSet<>()));
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
@@ -69,7 +70,7 @@ public final class FileManager extends Manager {
         return names;
     }
     
-    public void deleteEnvs(List<String> names) {
+    public void deleteEnvs(Set<String> names) {
         names.stream().map(n -> Path.of(USER_ENV_DIR + "/" + n + CONFIG_FILE_EXTENSION)).forEach(p -> LU.of(() -> Files.delete(p)));
     }
 

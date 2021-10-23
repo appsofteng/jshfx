@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import dev.jshfx.base.sys.PreferenceManager;
 import jakarta.json.bind.annotation.JsonbTransient;
 
 public class Env implements Comparable<Env> {
-        
-    private String name;
+
+    private String name = PreferenceManager.DEFAULT_ENV_NAME;
     private Set<String> classPaths = new HashSet<>();
     private Set<String> modulePaths = new HashSet<>();
     private Set<String> addModules = new HashSet<>();
@@ -19,7 +20,7 @@ public class Env implements Comparable<Env> {
 
     public Env() {
     }
-    
+
     public Env(String name) {
         this.name = name;
     }
@@ -27,53 +28,53 @@ public class Env implements Comparable<Env> {
     public String getName() {
         return name;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public Set<String> getClassPaths() {
         return classPaths;
     }
-    
+
     public void setClassPaths(Set<String> classPath) {
-		this.classPaths = classPath;
-	}
+        this.classPaths = classPath;
+    }
 
     public Set<String> getModulePaths() {
         return modulePaths;
     }
-    
+
     public void setModulePaths(Set<String> modulePath) {
-		this.modulePaths = modulePath;
-	}
+        this.modulePaths = modulePath;
+    }
 
     public Set<String> getAddModules() {
         return addModules;
     }
-    
+
     public void setAddModules(Set<String> addModules) {
-		this.addModules = addModules;
-	}
+        this.addModules = addModules;
+    }
 
     public Set<ExportItem> getAddExports() {
         return addExports;
     }
-    
+
     public void setAddExports(Set<ExportItem> addExports) {
-		this.addExports = addExports;
-	}
+        this.addExports = addExports;
+    }
 
     @JsonbTransient
     public String getClassPath() {
         return classPaths.stream().collect(Collectors.joining(File.pathSeparator));
     }
-    
+
     @JsonbTransient
     public String getModulePath() {
         return modulePaths.stream().collect(Collectors.joining(File.pathSeparator));
     }
-    
+
     private List<String> getOptionList() {
 
         List<String> options = new ArrayList<>();
@@ -101,8 +102,8 @@ public class Env implements Comparable<Env> {
         }
 
         return options;
-    }    
-    
+    }
+
     @JsonbTransient
     public String[] getOptions() {
 
@@ -112,6 +113,18 @@ public class Env implements Comparable<Env> {
     @Override
     public String toString() {
         return name + "\n" + getOptionList().stream().collect(Collectors.joining(" "));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean result = false;
+
+        if (obj instanceof Env env) {
+            result = name.equals(env.name) && classPaths.equals(env.classPaths) && modulePaths.equals(env.modulePaths)
+                    && addModules.equals(env.addModules) && addExports.equals(env.addExports);
+        }
+
+        return result;
     }
 
     @Override
