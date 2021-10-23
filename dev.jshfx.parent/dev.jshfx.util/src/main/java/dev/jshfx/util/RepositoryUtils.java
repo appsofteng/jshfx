@@ -24,6 +24,8 @@ import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
@@ -34,29 +36,27 @@ import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
 
-public final class RepositoryUtils  {
+public final class RepositoryUtils {
 
     private RepositorySystem system;
     private RepositorySystemSession session;
     private List<RemoteRepository> repositories;
-    
+
     public void init() throws Exception {
         system = newRepositorySystem();
         session = newRepositorySystemSession(system);
         repositories = newRepositories(system, session);
     }
 
-    public void resolve(String coords, Set<String> artifacts)
-            throws Exception {
+    public void resolve(String coords, Set<String> classPaths, Set<String> sourcePaths) throws Exception {
 
         Artifact artifact = new DefaultArtifact(coords);
 
-        resolve(artifact, artifacts);
+        resolve(artifact, classPaths, sourcePaths);
 
     }
 
-    public void resolvePom(String pom, Set<String> artifacts)
-            throws Exception {
+    public void resolvePom(String pom, Set<String> classPaths, Set<String> sourcePaths) throws Exception {
 
         File pomFile = new File(pom);
         ModelBuildingRequest modelBuildingRequest = new DefaultModelBuildingRequest().setProcessPlugins(false)
@@ -69,12 +69,13 @@ public final class RepositoryUtils  {
         for (org.apache.maven.model.Dependency dependency : model.getDependencies()) {
             Artifact artifact = new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(),
                     dependency.getType(), dependency.getVersion());
-            resolve(artifact, artifacts);
+            resolve(artifact, classPaths, sourcePaths);
         }
 
     }
 
-    private void resolve(Artifact artifact, Set<String> artifacts) throws DependencyResolutionException {
+    private void resolve(Artifact artifact, Set<String> classePaths, Set<String> sourcePaths)
+            throws DependencyResolutionException, ArtifactResolutionException {
         DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
 
         CollectRequest collectRequest = new CollectRequest();
@@ -86,7 +87,29 @@ public final class RepositoryUtils  {
         List<ArtifactResult> artifactResults = system.resolveDependencies(session, dependencyRequest)
                 .getArtifactResults();
 
-        artifactResults.forEach(ar -> artifacts.add(ar.getArtifact().getFile().toString()));
+        for (var ar : artifactResults) {
+            var classArtifact = ar.getArtifact();
+            classePaths.add(classArtifact.getFile().toString());
+            Artifact sourceArtifact = new DefaultArtifact(classArtifact.getGroupId(), classArtifact.getArtifactId(),
+                    "sources", classArtifact.getExtension(), classArtifact.getVersion());
+            sourceArtifact = resolve(sourceArtifact);
+            if (sourceArtifact != null) {
+                sourcePaths.add(sourceArtifact.getFile().toString());
+            }
+        }
+    }
+
+    private Artifact resolve(Artifact artifact) throws ArtifactResolutionException {
+
+        ArtifactRequest artifactRequest = new ArtifactRequest();
+        artifactRequest.setArtifact(artifact);
+        artifactRequest.setRepositories(repositories);
+
+        ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
+
+        artifact = artifactResult.getArtifact();
+
+        return artifact;
     }
 
     private RepositorySystem newRepositorySystem() {

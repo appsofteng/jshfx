@@ -32,7 +32,8 @@ public class ResolveCommand extends BaseCommand {
         if (coords != null && !coords.isEmpty()) {
 
             try {
-                Set<String> artifacts = new HashSet<>();
+                Set<String> classPaths = new HashSet<>();
+                Set<String> sourcePaths = new HashSet<>();
 
                 for (String coord : coords) {
                     if (coord.endsWith(".xml")) {
@@ -41,9 +42,9 @@ public class ResolveCommand extends BaseCommand {
                             path = PreferenceManager.get().getLatestDir().resolve(path);
                         }
                         
-                        RepositoryManager.get().resolvePom(path.toString(), artifacts);
+                        RepositoryManager.get().resolvePom(path.toString(), classPaths, sourcePaths);
                     } else {
-                        RepositoryManager.get().resolve(coord, artifacts);
+                        RepositoryManager.get().resolve(coord, classPaths, sourcePaths);
                     }
                 }
 
@@ -51,11 +52,14 @@ public class ResolveCommand extends BaseCommand {
                         .commandSuccess(FXResourceBundle.getBundle().getString​("msg.resolution.success")).flush();
 
                 if (set) {
+                    commandProcessor.getSession().getEnv().getSourcePaths().clear();
+                    commandProcessor.getSession().getEnv().getSourcePaths().addAll(sourcePaths);
                     commandProcessor.getSession().getEnv().getClassPaths().clear();
-                    commandProcessor.getSession().getEnv().getClassPaths().addAll(artifacts);
+                    commandProcessor.getSession().getEnv().getClassPaths().addAll(classPaths);
                     commandProcessor.getSession().reload(true);
                 } else {
-                    commandProcessor.getSession().addToClasspath(artifacts);
+                    commandProcessor.getSession().getEnv().getSourcePaths().addAll(sourcePaths);
+                    commandProcessor.getSession().addToClasspath(classPaths);
                 }
 
             } catch (Exception e) {

@@ -1,6 +1,7 @@
 module dev.jshfx.base {
 	
 	requires jdk.jshell;
+	requires jdk.compiler;
     requires transitive jdk.jsobject;
 	
 	requires java.compiler;

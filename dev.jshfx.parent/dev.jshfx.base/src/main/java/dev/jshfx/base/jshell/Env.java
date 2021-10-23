@@ -13,6 +13,7 @@ import jakarta.json.bind.annotation.JsonbTransient;
 public class Env implements Comparable<Env> {
 
     private String name = PreferenceManager.DEFAULT_ENV_NAME;
+    private Set<String> sourcePaths = new HashSet<>();
     private Set<String> classPaths = new HashSet<>();
     private Set<String> modulePaths = new HashSet<>();
     private Set<String> addModules = new HashSet<>();
@@ -33,6 +34,14 @@ public class Env implements Comparable<Env> {
         this.name = name;
     }
 
+    public Set<String> getSourcePaths() {
+        return sourcePaths;
+    }
+    
+    public void setSourcePaths(Set<String> sourcePaths) {
+        this.sourcePaths = sourcePaths;
+    }
+    
     public Set<String> getClassPaths() {
         return classPaths;
     }

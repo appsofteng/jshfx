@@ -23,13 +23,13 @@ public final class RepositoryManager extends Manager {
         repositoryUtils.init();
     }
 
-    public void resolve(String coords, Set<String> artifacts) throws Exception {
+    public void resolve(String coords, Set<String> classPaths, Set<String> sourcePaths) throws Exception {
 
-       repositoryUtils.resolve(coords, artifacts);
+       repositoryUtils.resolve(coords, classPaths, sourcePaths);
     }
 
-    public void resolvePom(String pom, Set<String> artifacts) throws Exception {
+    public void resolvePom(String pom, Set<String> classPaths, Set<String> sourcePaths) throws Exception {
 
-        repositoryUtils.resolvePom(pom, artifacts);
+        repositoryUtils.resolvePom(pom, classPaths, sourcePaths);
     }
 }
