@@ -83,7 +83,7 @@
 				<groupId>org.fxmisc.flowless</groupId>
 				<artifactId>flowless</artifactId>
 				<version>0.6.5-SNAPSHOT</version>
-			</dependency>			
+			</dependency>
 			<dependency>
 				<groupId>org.eclipse</groupId>
 				<artifactId>yasson</artifactId>
@@ -153,6 +153,12 @@
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-simple</artifactId>
 				<version>${slf4jVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-engine</artifactId>
+				<version>5.8.1</version>
+				<scope>test</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

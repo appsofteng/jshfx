@@ -128,7 +128,7 @@ public class Completion {
         int relativeCursor = inputArea.getCaretColumn();
 
         for (int i = inputArea.getCurrentParagraph(); i >= 0; i--) {
-            String text = inputArea.getParagraph(i).getText();
+            String text = inputArea.getParagraph(i).getText() + "\n";
             relativeInput.insert(0, text);
             if (i < inputArea.getCurrentParagraph()) {
                 relativeCursor += text.length();

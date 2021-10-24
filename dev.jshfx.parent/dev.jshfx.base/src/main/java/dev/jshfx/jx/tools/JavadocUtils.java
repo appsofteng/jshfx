@@ -2,21 +2,13 @@ package dev.jshfx.jx.tools;
 
 import static java.util.Map.entry;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
 
 import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.javadoc.Javadoc;
@@ -26,36 +18,10 @@ import com.github.javaparser.javadoc.description.JavadocDescriptionElement;
 import com.github.javaparser.javadoc.description.JavadocInlineTag;
 import com.github.javaparser.javadoc.description.JavadocInlineTag.Type;
 import com.github.javaparser.utils.Utils;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.util.JavacTask;
-import com.sun.source.util.TreePathScanner;
 
 public final class JavadocUtils {
 
     private JavadocUtils() {
-    }
-
-    public static String getDoc(String signature, Collection<String> sourcePathStrings) {
-        String doc = "";
-        
-        var sourcePaths = sourcePathStrings.stream().map(Path::of).collect(Collectors.toSet());
-        
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
-        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromPaths(sourcePaths);
-        JavacTask task = (JavacTask) compiler.getTask(null, null, null, null, null, compilationUnits);
-        try {
-            Iterable<? extends CompilationUnitTree> trees =  task.parse();
-            DocTreePathScanner scanner = new DocTreePathScanner();
-            trees.forEach(tree -> scanner.scan(tree, null));
-        } catch (IOException e) {
-
-            e.printStackTrace();
-        }
-        
-
-        
-        return doc;
     }
     
     public static Set<String> getBlockTagNames() {
@@ -194,9 +160,5 @@ public final class JavadocUtils {
 
             return order;
         }
-    }
-    
-    private static class DocTreePathScanner extends TreePathScanner<Void,Void> {
-        
     }
 }
