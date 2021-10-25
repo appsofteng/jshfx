@@ -59,7 +59,7 @@ public class JavaSource {
         StringBuilder htmlBuilder = new StringBuilder();
 
         try {
-            JavaFileObject jfo = fileManager.getJavaFileForInput(StandardLocation.SOURCE_PATH, signature.getFullName(),
+            JavaFileObject jfo = fileManager.getJavaFileForInput(StandardLocation.SOURCE_PATH, signature.getTypeFullName(),
                     JavaFileObject.Kind.SOURCE);
             JavacTask task = (JavacTask) compiler.getTask(null, null, null, null, null, List.of(jfo));
 
@@ -98,7 +98,7 @@ public class JavaSource {
 
         public TreePath visitClass(ClassTree node, Signature signature) {
 
-            if (node.getSimpleName().toString().equals(signature.getSimpleName())) {
+            if (node.getSimpleName().toString().equals(signature.getTypeSimpleName())) {
 
                 return getCurrentPath();
             } else {

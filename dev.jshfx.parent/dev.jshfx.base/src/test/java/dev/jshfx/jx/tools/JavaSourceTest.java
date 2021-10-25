@@ -22,7 +22,7 @@ public class JavaSourceTest {
     @Test
     public void testGetHtmlDoc() {
         javaSource.setSourcePaths(List.of(Path.of("src/test/java")));
-        var signature = Signature.get("dev.jshfx.jx.tools.Example", List.of());
+        var signature = Signature.get("dev.jshfx.jx.tools.Example", (t,i) -> null);
         
         var doc = javaSource.getHtmlDoc(signature);
         
@@ -32,7 +32,7 @@ public class JavaSourceTest {
     @Test
     public void testGetHtmlDocJar() {
         javaSource.setSourcePaths(List.of(Path.of("src/test/resources/dev.jar")));
-        var signature = Signature.get("dev.jshfx.jx.tools.Example", List.of());
+        var signature = Signature.get("dev.jshfx.jx.tools.Example",(t,i) -> null);
         
         var doc = javaSource.getHtmlDoc(signature);
         System.out.println(doc);
