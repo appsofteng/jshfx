@@ -32,7 +32,7 @@ public class Completion {
     public Collection<CompletionItem> getCompletionItems(CodeArea inputArea) {
 
         String currentParagraph = inputArea.getParagraph(inputArea.getCurrentParagraph()).getText();
-        
+
         return inputArea.getText().isBlank() || CommandProcessor.isCommand(currentParagraph)
                 ? getCommandCompletionItems(inputArea)
                 : getCodeCompletionItems(inputArea);
@@ -74,13 +74,13 @@ public class Completion {
             anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args,
                     argIndex, positionInArg, caretPosition + 1, candidates);
         }
-        
+
         if (candidates.isEmpty() && args.length > 0) {
             args = new String[] { args[0], "" };
             argIndex = 1;
             positionInArg = 0;
-            anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args, argIndex, positionInArg,
-                    caretPosition, candidates);
+            anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args,
+                    argIndex, positionInArg, caretPosition, candidates);
         }
 
         String arg = args[argIndex];
@@ -96,7 +96,7 @@ public class Completion {
 
             String name = arg.substring(0, positionInArg) + candidate;
             String docCode = args.length <= 1 ? name : (args[0] + "." + name);
-            
+
             items.add(new CommandCompletionItem(inputArea, absoluteAnchor, candidate.toString(), name, docCode,
                     this::getCommandHelp));
         }
@@ -143,7 +143,9 @@ public class Completion {
 
                 for (Suggestion suggestion : suggestions) {
                     String docInput = getDocInput(relativeInput.toString(), suggestion, relativeAnchor[0]);
-                    List<Documentation> docs = Session.documentation(docInput, docInput.length(), false);
+                    List<Documentation> docs = Session.documentation(docInput, docInput.length(), false);                    
+
+                    var expressionType = session.getJshell().sourceCodeAnalysis().analyzeType(docInput, docInput.length());
 
                     if (docs.isEmpty()) {
 

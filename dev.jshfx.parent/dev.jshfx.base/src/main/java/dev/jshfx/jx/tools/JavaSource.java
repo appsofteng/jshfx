@@ -20,13 +20,14 @@ import com.sun.source.doctree.SinceTree;
 import com.sun.source.doctree.TextTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.DocTreePath;
 import com.sun.source.util.DocTreePathScanner;
 import com.sun.source.util.DocTrees;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.Trees;
 
 public class JavaSource {
 
@@ -59,15 +60,14 @@ public class JavaSource {
         StringBuilder htmlBuilder = new StringBuilder();
 
         try {
-            JavaFileObject jfo = fileManager.getJavaFileForInput(StandardLocation.SOURCE_PATH, signature.getTypeFullName(),
-                    JavaFileObject.Kind.SOURCE);
+            JavaFileObject jfo = fileManager.getJavaFileForInput(StandardLocation.SOURCE_PATH,
+                    signature.getTopTypeFullName(), JavaFileObject.Kind.SOURCE);
             JavacTask task = (JavacTask) compiler.getTask(null, null, null, null, null, List.of(jfo));
 
-            Trees trees = Trees.instance(task);
             DocTrees docTrees = DocTrees.instance(task);
 
             Iterable<? extends CompilationUnitTree> unitTrees = task.parse();
-            SignatureTreePathScanner scanner = new SignatureTreePathScanner(trees);
+            SignatureTreePathScanner scanner = new SignatureTreePathScanner();
             TreePath treePath = scanner.scan(unitTrees.iterator().next(), signature);
 
             DocCommentTree docCommentTree = docTrees.getDocCommentTree(treePath);
@@ -83,13 +83,22 @@ public class JavaSource {
         return htmlBuilder.toString();
     }
 
-    private static class SignatureTreePathScanner extends TreePathScanner<TreePath, Signature> {
+    private static class Result extends Error {
 
-        private Trees trees;
+        private static final long serialVersionUID = 1L;
+        
+        private final TreePath treePath;
 
-        public SignatureTreePathScanner(Trees trees) {
-            this.trees = trees;
+        public Result(TreePath treePath) {
+            this.treePath = treePath;
         }
+
+        public TreePath getTreePath() {
+            return treePath;
+        }
+    }
+
+    private static class SignatureTreePathScanner extends TreePathScanner<TreePath, Signature> {
 
         @Override
         public TreePath visitCompilationUnit(CompilationUnitTree node, Signature signature) {
@@ -98,9 +107,34 @@ public class JavaSource {
 
         public TreePath visitClass(ClassTree node, Signature signature) {
 
-            if (node.getSimpleName().toString().equals(signature.getTypeSimpleName())) {
+            if (signature.getKind() == Signature.Kind.TYPE) {
 
                 return getCurrentPath();
+            } else {
+                try {
+                    return scan(node.getMembers(), signature);
+                } catch (Result result) {
+                    return result.getTreePath();
+                }
+            }
+        }
+
+        public TreePath visitVariable(VariableTree node, Signature signature) {
+            getCurrentPath().iterator().forEachRemaining(i -> System.out.println(i));
+            
+            if (signature.getKind() == Signature.Kind.FIELD
+                    ) {
+
+                throw new Result(getCurrentPath());
+            } else {
+                return null;
+            }
+        }
+
+        public TreePath visitMethod(MethodTree node, Signature signature) {
+            if (signature.getKind() == Signature.Kind.METHOD
+                    ) {
+                throw new Result(getCurrentPath());
             } else {
                 return null;
             }
@@ -115,7 +149,7 @@ public class JavaSource {
             htmlBuilder.append(node.getBody()).append("\n");
             return null;
         }
-        
+
         public Void visitSee(SeeTree node, StringBuilder htmlBuilder) {
 
             appendBlockTagName(node, htmlBuilder);
@@ -133,11 +167,11 @@ public class JavaSource {
         }
 
         private void appendBlockTagName(BlockTagTree tag, StringBuilder htmlBuilder) {
-            
+
             if (blockPassed.isEmpty()) {
                 htmlBuilder.append("<br><br>\n\n");
             }
-            
+
             if (!blockPassed.contains(tag.getTagName())) {
                 blockPassed.add(tag.getTagName());
                 htmlBuilder.append(
