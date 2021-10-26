@@ -35,15 +35,23 @@ public class Signature {
             int i = signature.lastIndexOf(".");
 
             if (i > 0) {
-                var part = signature.substring(i + 1);
-                var resolvedType = resolveFullTypeName.apply(part, List.of());
+                var startPart = signature.substring(0, i);
+                var endPart = signature.substring(i + 1);
+                var resolvedType = resolveFullTypeName.apply(endPart, List.of());
+                
                 if (resolvedType == null) {
-                    instance.enumLiteralName = part;
-                    var type = signature.substring(0, i);
-                    instance.parseType(type);
+                    instance.enumLiteralName = endPart; 
+                    instance.parseType(startPart);
                 } else {
-                    instance.typeSimpleName = part;
-                    instance.typeFullName = resolvedType;
+                    var nameSpace = resolvedType.substring(0, resolvedType.lastIndexOf("."));
+                    if (nameSpace.endsWith(startPart)) {
+                        instance.typeSimpleName = endPart;
+                        instance.typeFullName = resolvedType;   
+                    } else {
+                        // Enum literal has the same name as a type which is different from the actual enum type.
+                        instance.enumLiteralName = endPart; 
+                        instance.parseType(startPart);
+                    }
                 }
             } else {
                 instance.parseType();
@@ -126,7 +134,7 @@ public class Signature {
     }
 
     private void parseMethodParameterTypes(String parameters) {
-        String parameterPattern = "([\\w\\.]{2,})(?: +|\\.\\.\\. *|<.*>|\\[\\] +)";
+        String parameterPattern = "([\\w\\.]{2,}(?:\\.\\.\\.|\\[\\])?)(?: +|<.*>)";
       
         Pattern pattern = Pattern.compile(parameterPattern);
         Matcher matcher = pattern.matcher(parameters);
@@ -140,10 +148,18 @@ public class Signature {
                 paramType = paramType.substring(i + 1);
             }
 
-            var resolvedType = resolveFullTypeName.apply(paramType, List.of());
+            var noArrayType = paramType;
+            
+            if (noArrayType.endsWith("[]")) {
+                noArrayType = noArrayType.substring(0, noArrayType.indexOf("["));
+            } else if (noArrayType.endsWith("...")) {
+                noArrayType = noArrayType.substring(0, noArrayType.indexOf("."));
+            }
+            
+            var resolvedType = resolveFullTypeName.apply(noArrayType, List.of());
             
             if (resolvedType != null) {
-                paramType = resolvedType;
+                paramType = resolvedType.substring(0, resolvedType.lastIndexOf(".") + 1) + paramType;
             }
             
             methodParameterTypes.add(paramType);
