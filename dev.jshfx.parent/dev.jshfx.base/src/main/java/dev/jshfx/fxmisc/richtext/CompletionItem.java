@@ -7,6 +7,6 @@ public abstract class CompletionItem implements Comparable<CompletionItem> {
 
     @Override
     public int compareTo(CompletionItem o) {
-        return toString().compareTo(o.toString());
+        return toString().compareToIgnoreCase(o.toString());
     }
 }

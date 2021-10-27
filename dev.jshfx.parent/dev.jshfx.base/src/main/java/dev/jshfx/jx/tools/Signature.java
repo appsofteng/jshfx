@@ -2,6 +2,7 @@ package dev.jshfx.jx.tools;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,6 +73,20 @@ public class Signature {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        boolean result = false;
+        if (obj instanceof Signature other) {
+            result = Objects.equals(signature, other.signature);
+        }
+        return result;
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(signature);
+    }
+    
+    @Override
     public String toString() {
         return signature;
     }
@@ -124,13 +139,20 @@ public class Signature {
         var typeAndName = signature.substring(0, p1);
         typeAndName = typeAndName.substring(typeAndName.lastIndexOf(" ") + 1);
         int i = typeAndName.lastIndexOf(".");
-        var methodName = typeAndName.substring(i + 1);
-        var type = typeAndName.substring(0, i);
+        String methodName = typeAndName;
+        String type = typeAndName;
+        
+        // Constructor will no pass, e.g. URI(String u)
+        if (i > -1) {
+            methodName = typeAndName.substring(i + 1);
+            type = typeAndName.substring(0, i);   
+            i = methodName.lastIndexOf(">");
 
-        i = methodName.lastIndexOf(">");
-
-        if (i > 0) {
-            methodName = methodName.substring(i + 1);
+            if (i > 0) {
+                methodName = methodName.substring(i + 1);
+            }
+        } else {
+            methodName = "<init>";
         }
 
         parseType(type);

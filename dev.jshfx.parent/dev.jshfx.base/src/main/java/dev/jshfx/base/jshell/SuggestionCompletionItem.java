@@ -49,6 +49,18 @@ public class SuggestionCompletionItem extends SourceCodeCompletionItem {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        return obj instanceof SuggestionCompletionItem
+                && ((SuggestionCompletionItem) obj).suggestion.continuation().equals(suggestion.continuation())
+                && ((SuggestionCompletionItem) obj).getSignature().equals(getSignature());
+    }
+
+    @Override
+    public int hashCode() {
+        return (suggestion.continuation() + getSignature()).hashCode();
+    }
+    
+    @Override
     public String toString() {
 
         return label;

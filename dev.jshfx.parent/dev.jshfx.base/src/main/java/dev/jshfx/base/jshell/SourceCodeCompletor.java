@@ -3,7 +3,9 @@ package dev.jshfx.base.jshell;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.fxmisc.richtext.CodeArea;
 
@@ -22,7 +24,7 @@ class SourceCodeCompletor extends Completor {
     @Override
     public Collection<CompletionItem> getCompletionItems() {
 
-        List<CompletionItem> items = new ArrayList<>();
+        Set<CompletionItem> items = new HashSet<>();
 
         int[] relativeAnchor = new int[1];
         StringBuffer relativeInput = new StringBuffer();
@@ -77,9 +79,11 @@ class SourceCodeCompletor extends Completor {
             }
         }
 
-        Collections.sort(items);
+        var sortedItems = new ArrayList<>(items);
+        
+        Collections.sort(sortedItems);
 
-        return items;
+        return sortedItems;
     }
 
     private String getDocInput(String input, Suggestion suggestion, int anchor) {

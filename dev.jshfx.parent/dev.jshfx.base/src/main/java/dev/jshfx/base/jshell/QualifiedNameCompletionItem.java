@@ -19,6 +19,17 @@ public class QualifiedNameCompletionItem extends SourceCodeCompletionItem {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        return obj instanceof QualifiedNameCompletionItem
+                && ((QualifiedNameCompletionItem) obj).getSignature().equals(getSignature());
+    }
+
+    @Override
+    public int hashCode() {
+        return getSignature().hashCode();
+    }
+    
+    @Override
     public String toString() {
         return getSignature().toString();
     }
