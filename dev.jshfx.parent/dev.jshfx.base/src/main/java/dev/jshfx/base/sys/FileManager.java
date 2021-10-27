@@ -1,9 +1,16 @@
 package dev.jshfx.base.sys;
 
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -27,7 +34,8 @@ public final class FileManager extends Manager {
     public static final Path USER_PREFS_FILE = Path.of(USER_CONF_DIR + "/preferences.properties");
 
     private static final String START_DIR = System.getProperty("user.dir");
-    public static final Path DEFAULT_PREFS_FILE = Path.of(START_DIR + "/conf/preferences.properties");
+    public static final Path DEFAULT_PREFS_FILE = Path.of(START_DIR, "conf/preferences.properties");
+    private static final Path JDK_SOURCE_FILE = Path.of(START_DIR, "lib/src.zip");
 
     public static final Path HISTORY_FILE = Path.of(USER_CONF_DIR + "/history.json");
     public static final Path SET_FILE = Path.of(USER_CONF_DIR + "/set.json");
@@ -37,6 +45,9 @@ public final class FileManager extends Manager {
     public static final String CONFIG_FILE_EXTENSION = ".json";
 
     private static final Logger LOGGER = Logger.getLogger(FileManager.class.getName());
+
+    private FileSystem jdkSource;
+    private List<Path> jdkPaths;
 
     private FileManager() {
     }
@@ -51,8 +62,29 @@ public final class FileManager extends Manager {
         LogManager.getLogManager().readConfiguration(FileManager.class.getResourceAsStream(LOGGING_CONF_FILE));
         Thread.setDefaultUncaughtExceptionHandler(this::uncaughtException);
         Files.createDirectories(USER_ENV_DIR);
+
+        URI uri = URI.create("jar:" + JDK_SOURCE_FILE.toUri());
+        jdkSource = FileSystems.newFileSystem(uri, Collections.emptyMap());
+        jdkPaths = new ArrayList<>();
+        Path root = jdkSource.getRootDirectories().iterator().next();
+        try (DirectoryStream<Path> ds = Files.newDirectoryStream(root)) {
+            for (Path p : ds) {
+                if (Files.isDirectory(p)) {
+                    jdkPaths.add(p);
+                }
+            }
+        }
     }
 
+    @Override
+    public void stop() throws Exception {
+        jdkSource.close();
+    }
+
+    public List<Path> getJdkPaths() {
+        return jdkPaths;
+    }
+    
     public Path getEnvFile(String name) {
         return Path.of(USER_ENV_DIR + "/" + name + FileManager.CONFIG_FILE_EXTENSION);
     }
@@ -69,9 +101,10 @@ public final class FileManager extends Manager {
 
         return names;
     }
-    
+
     public void deleteEnvs(Set<String> names) {
-        names.stream().map(n -> Path.of(USER_ENV_DIR + "/" + n + CONFIG_FILE_EXTENSION)).forEach(p -> LU.of(() -> Files.delete(p)));
+        names.stream().map(n -> Path.of(USER_ENV_DIR + "/" + n + CONFIG_FILE_EXTENSION))
+                .forEach(p -> LU.of(() -> Files.delete(p)));
     }
 
     private void uncaughtException(Thread thread, Throwable throwable) {

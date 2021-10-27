@@ -1,5 +1,7 @@
 package dev.jshfx.jx.tools;
 
+import java.net.URI;
+
 /**
  * First sentence about example.
  * Second paragraph. Second sentence in the second paragraph.
@@ -20,21 +22,34 @@ public class Example {
      */
     public void method() {}
     
-    public static class SubExample {
+    /**
+     * Method int documentation.
+     */
+    public void method(int i) {}
+    
+    /**
+     * Method URI documentation.
+     */
+    public void method(URI u) {}
+    
+    /**
+     * Method String documentation.
+     */
+    public void method(String s) {}
+    
+    public static class NestedClass {
     }
     
     /**
      * Enum documentation.
      *
      */
-    public enum ExampleEnum {
+    public enum NestedEnum {
         
         /**
          * Enum const documentation.
          */
         CONST;
-        
-        public static class C {}
     }
 }
 

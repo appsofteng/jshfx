@@ -30,12 +30,13 @@ import javafx.scene.web.WebView;
 public class DocPopup extends Tooltip {
 
     private WebView webView;
-    private Function<DocRef, String> documentation;
+    private Function<CompletionItem, String> documentation;
+    private Function<String, CompletionItem> completionItem;
     private ContextMenu contextMenu;
-    private ObservableList<DocRef> history = FXCollections.observableArrayList();
+    private ObservableList<CompletionItem> history = FXCollections.observableArrayList();
     private IntegerProperty historyIndex = new SimpleIntegerProperty(-1);
 
-    public DocPopup() {        
+    public DocPopup() {
         setMinSize(10, 10);
         setPrefSize(CompletionPopup.DEFAULT_WIDTH, CompletionPopup.DEFAULT_HEIGHT);
 
@@ -51,14 +52,17 @@ public class DocPopup extends Tooltip {
         });
     }
 
-    public void setDocumentation(Function<DocRef, String> documentation) {
-    	this.documentation = documentation;
+    public void setDocumentation(Function<CompletionItem, String> documentation) {
+        this.documentation = documentation;
     }
     
+    public void setCompletionItem(Function<String, CompletionItem> completionItem) {
+        this.completionItem = completionItem;
+    }
+
     private void setBehavior() {
         setHideOnEscape(false);
-        Nodes.addInputMap(webView,
-                sequence(consume(keyPressed(ESCAPE), e -> getOwnerWindow().hide())));
+        Nodes.addInputMap(webView, sequence(consume(keyPressed(ESCAPE), e -> getOwnerWindow().hide())));
 
         webView.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
 
@@ -66,7 +70,7 @@ public class DocPopup extends Tooltip {
                 String url = JSUtils.getLinkUrl(webView.getEngine(), e.getX(), e.getY());
                 if (url != null) {
                     history.remove(getHistoryIndex() + 1, history.size());
-                    loadContent(new DocRef(url, documentation));
+                    loadContent(completionItem.apply(url));
                 }
             }
 
@@ -87,35 +91,29 @@ public class DocPopup extends Tooltip {
 
         MenuItem forward = new MenuItem();
         forward.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("forward"));
-        forward.disableProperty().bind(Bindings.isEmpty(history).or(historyIndex.isEqualTo(Bindings.size(history).subtract(1))));
+        forward.disableProperty()
+                .bind(Bindings.isEmpty(history).or(historyIndex.isEqualTo(Bindings.size(history).subtract(1))));
         forward.setOnAction(e -> forward());
 
         contextMenu.getItems().addAll(back, forward);
     }
 
-    boolean loadContent(DocRef docRef) {
+    boolean loadContent(CompletionItem docRef) {
 
-        if (docRef.getDocCode().isEmpty()) {
-            return false;
-        }
-
-        String doc = docRef.getDocumentation();
+        String doc = documentation.apply(docRef);
         if (!doc.isEmpty()) {
             history.add(docRef);
             moveHistory(1);
             webView.getEngine().getLoadWorker().cancel();
             webView.getEngine().load("");
             webView.getEngine().loadContent(doc);
-        } else if (docRef.isUrl()) {
-            history.add(docRef);
-            moveHistory(1);
-        }
+        } 
 
         return !doc.isBlank();
     }
 
-    private void load(DocRef docRef) {
-        String doc = docRef.getDocumentation();
+    private void load(CompletionItem docRef) {
+        String doc = documentation.apply(docRef);
         if (!doc.isEmpty()) {
             webView.getEngine().getLoadWorker().cancel();
             webView.getEngine().load("");
@@ -146,12 +144,7 @@ public class DocPopup extends Tooltip {
     }
 
     private void loadHistory() {
-        DocRef docRef = history.get(getHistoryIndex());
-
-        if (docRef.isUrl()) {
-            webView.getEngine().load(docRef.getDocCode());
-        } else {
-            load(docRef);
-        }
+        CompletionItem docRef = history.get(getHistoryIndex());
+        load(docRef);
     }
 }

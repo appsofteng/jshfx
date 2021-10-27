@@ -19,6 +19,8 @@ import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
 import dev.jshfx.jfx.scene.control.ConsoleModel;
 import dev.jshfx.jfx.scene.control.SplitConsolePane;
+import dev.jshfx.jfx.util.FXResourceBundle;
+import dev.jshfx.jx.tools.JavaSourceResolver;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -55,6 +57,7 @@ public class Session {
     private Map<String, List<Snippet>> snippetsByName = new HashMap<>();
     private List<Entry<Snippet, Status>> restoreSnippets = new ArrayList<>();
     private Subscription subscription;
+    private JavaSourceResolver javaSourceResolver;
 
     public Session(SplitConsolePane console, TaskQueuer taskQueuer) {
 
@@ -66,6 +69,9 @@ public class Session {
         snippetProcessor = new SnippetProcessor(this);
         settings = loadSettings();
         env = loadEnv();
+        javaSourceResolver = new JavaSourceResolver();
+        javaSourceResolver.setResourceBundle(FXResourceBundle.getBundle().getResourceBundle());
+        setSources();
         feedback = new Feedback(consoleModel, settings);
         idGenerator = new IdGenerator();
         restart();
@@ -138,6 +144,10 @@ public class Session {
         return snippetProcessor;
     }
 
+    public JavaSourceResolver getJavaSourceResolver() {
+        return javaSourceResolver;
+    }
+    
     public int getStartSnippetMaxIndex() {
         return startSnippetMaxIndex;
     }
@@ -167,11 +177,11 @@ public class Session {
     public Env getEnv() {
         return env;
     }
-    
+
     public void setEnv(Env env) {
         this.env = env;
     }
-    
+
     public void setEnv(String name) {
         env = loadEnv(name);
     }
@@ -181,20 +191,42 @@ public class Session {
         names.add(env.getName());
         String name = PreferenceManager.DEFAULT_ENV_NAME;
         int i = 1;
-        
+
         while (names.contains(name)) {
             name = PreferenceManager.DEFAULT_ENV_NAME + ++i;
         }
-        
+
         return name;
     }
-    
+
     public void addToClasspath(Set<String> paths) {
         env.getClassPaths().addAll(paths);
         paths.forEach(p -> {
             jshell.addToClasspath(p);
             commonJshell.addToClasspath(p);
         });
+    }
+
+    public void setClasspath(Set<String> paths) {
+        env.getClassPaths().clear();
+        env.getClassPaths().addAll(paths);
+    }
+
+    public void addToSourcepath(Set<String> paths) {
+        env.getSourcePaths().addAll(paths);
+        setSources();
+    }
+
+    public void setSourcepath(Set<String> paths) {
+        env.getSourcePaths().clear();
+        env.getSourcePaths().addAll(paths);
+        setSources();
+    }
+
+    private void setSources() {
+        List<Path> sources = new ArrayList<>(FileManager.get().getJdkPaths());
+        env.getSourcePaths().forEach(p -> sources.add(Path.of(p)));
+        javaSourceResolver.setSourcePaths(sources);
     }
 
     private Env loadEnv() {
@@ -206,13 +238,12 @@ public class Session {
         var names = FileManager.get().getEnvNames();
         names.add(env.getName());
         var envs = getEnvs(names);
-        
+
         return envs;
     }
 
     public List<Env> getEnvs(Set<String> names) {
-        List<Env> envs = names.stream().map(n -> loadEnv(n))
-                .filter(e -> !e.equals(env))
+        List<Env> envs = names.stream().map(n -> loadEnv(n)).filter(e -> !e.equals(env))
                 .collect(Collectors.toCollection(() -> new ArrayList<>()));
         Collections.sort(envs);
 
@@ -356,6 +387,7 @@ public class Session {
             jshell.close();
         }
 
+        javaSourceResolver.close();
         PreferenceManager.get().setEnv(env.getName());
     }
 

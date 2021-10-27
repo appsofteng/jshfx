@@ -11,6 +11,7 @@
 		<module>dev.jshfx.base</module>
 		<module>dev.jshfx.fonts</module>
 		<module>dev.jshfx.util</module>
+		<module>dev.jshfx.distribution</module>
 	</modules>
 
 	<properties>

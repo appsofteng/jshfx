@@ -1,49 +1,52 @@
 package dev.jshfx.jx.tools;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class Signature {
 
+    private static Pattern methodParameterPattern;
+
     private final String signature;
     private String topTypeFullName;
     private String typeFullName;
     private String fullName;
     private List<String> methodParameterTypes = new ArrayList<>();
-    private BiFunction<String, Collection<String>, String> resolveFullTypeName;
+    private Function<String, String> resolveFullTypeName;
     private Kind kind;
 
-    private Signature(String signature, BiFunction<String, Collection<String>, String> resolveFullTypeName) {
+    private Signature(String signature, Function<String, String> resolveFullTypeName) {
         this.signature = signature;
         this.resolveFullTypeName = resolveFullTypeName;
     }
 
-    public static Signature get(String signature, String expressionType,
-            BiFunction<String, Collection<String>, String> resolveFullTypeName) {
+    public static Signature get(String signature, String expressionType, Function<String, String> resolveFullTypeName) {
 
         var instance = new Signature(signature, resolveFullTypeName);
 
-        if (signature.contains(":")) {
-            instance.kind = Kind.FIELD;
-            instance.parseField();
-        } else if (signature.contains("(")) {
-            instance.kind = Kind.METHOD;
-            instance.parseMethod();
-        } else if (expressionType != null) {
-            instance.kind = Kind.ENUM_CONSTANT;
-            instance.parseEnumConstant();
-        } else {
-            instance.kind = Kind.TYPE;
-            instance.typeFullName = signature;
-            instance.fullName = signature;
-        }
+        if (signature != null && !signature.isEmpty()) {
 
-        instance.parseTopTypeFullName();
+            if (signature.contains(":")) {
+                instance.kind = Kind.FIELD;
+                instance.parseField();
+            } else if (signature.contains("(")) {
+                instance.kind = Kind.METHOD;
+                instance.parseMethod();
+            } else if (expressionType != null) {
+                instance.kind = Kind.ENUM_CONSTANT;
+                instance.parseEnumConstant();
+            } else {
+                instance.kind = Kind.TYPE;
+                instance.typeFullName = signature;
+                instance.fullName = signature;
+            }
+
+            instance.parseTopTypeFullName();
+        }
 
         return instance;
     }
@@ -64,10 +67,6 @@ public class Signature {
         return methodParameterTypes;
     }
 
-    public BiFunction<String, Collection<String>, String> getResolveFullTypeName() {
-        return resolveFullTypeName;
-    }
-
     public Kind getKind() {
         return kind;
     }
@@ -85,7 +84,7 @@ public class Signature {
         while (i > -1 && enclosingType != null) {
             i = enclosingType.lastIndexOf(".");
             enclosingType = enclosingType.substring(0, i);
-            enclosingType = resolveFullTypeName.apply(enclosingType, List.of());
+            enclosingType = resolveFullTypeName.apply(enclosingType);
 
             if (enclosingType != null) {
                 topTypeFullName = enclosingType;
@@ -99,7 +98,7 @@ public class Signature {
         if (i > 0) {
             typeFullName = type;
         } else {
-            typeFullName = resolveFullTypeName.apply(type, List.of());
+            typeFullName = resolveFullTypeName.apply(type);
         }
     }
 
@@ -144,14 +143,8 @@ public class Signature {
     }
 
     private void parseMethodParameterTypes(String parameters) {
-        var typePattern = "(?:[\\w]+\\.)*[\\w]{2,}";
-        var varArgsPattern = typePattern + "(?:\\.\\.\\.)";
-        var typeOrArrayPattern = typePattern + "(?:\\[\\])?";
 
-        String parameterPattern = String.format("(%s)|(%s)(?: +|<.*>)", varArgsPattern, typeOrArrayPattern);
-
-        Pattern pattern = Pattern.compile(parameterPattern);
-        Matcher matcher = pattern.matcher(parameters);
+        Matcher matcher = getMethodParameterPattern().matcher(parameters);
 
         while (matcher.find()) {
             String paramType = Stream.of(1, 2).map(i -> matcher.group(i)).filter(s -> s != null).findFirst().get();
@@ -173,7 +166,7 @@ public class Signature {
                 noArrayType = noArrayType.substring(i + 1);
             }
 
-            var resolvedType = resolveFullTypeName.apply(noArrayType, List.of());
+            var resolvedType = resolveFullTypeName.apply(noArrayType);
 
             if (resolvedType != null) {
                 paramType = resolvedType + array;
@@ -181,6 +174,21 @@ public class Signature {
 
             methodParameterTypes.add(paramType);
         }
+    }
+
+    private static Pattern getMethodParameterPattern() {
+
+        if (methodParameterPattern == null) {
+            var typePattern = "(?:[\\w]+\\.)*[\\w]{2,}";
+            var varArgsPattern = typePattern + "(?:\\.\\.\\.)";
+            var typeOrArrayPattern = typePattern + "(?:\\[\\])?";
+
+            String parameterPattern = String.format("(%s)|(%s)(?: +|<.*>)", varArgsPattern, typeOrArrayPattern);
+
+            methodParameterPattern = Pattern.compile(parameterPattern);
+        }
+
+        return methodParameterPattern;
     }
 
     public enum Kind {

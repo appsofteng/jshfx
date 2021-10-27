@@ -57,5 +57,6 @@ public class MainApp extends Application {
 	    Session.closeCommonJShell();
 		root.dispose();
 		TaskManager.get().stop();
+		FileManager.get().stop();
 	}
 }

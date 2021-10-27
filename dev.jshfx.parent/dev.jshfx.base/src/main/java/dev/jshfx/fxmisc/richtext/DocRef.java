@@ -8,20 +8,14 @@ public class DocRef {
 
     protected final String docCode;
     protected final String signature;
-    protected Function<DocRef, String> documentation;
 
     public DocRef(String docCode) {
-        this(docCode, "", dr -> "");
+        this(docCode, "");
     }
 
-    public DocRef(String docCode, Function<DocRef, String> documentation) {
-        this(docCode, "", documentation);
-    }
-
-    public DocRef(String docCode, String signature, Function<DocRef, String> documentation) {
+    public DocRef(String docCode, String signature) {
         this.docCode = docCode;
         this.signature = signature;
-        this.documentation = documentation;
     }
 
     public String getDocCode() {
@@ -30,10 +24,6 @@ public class DocRef {
 
     public String getSignature() {
         return signature;
-    }
-
-    public String getDocumentation() {
-        return documentation.apply(this);
     }
 
     public boolean isUrl() {

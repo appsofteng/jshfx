@@ -65,8 +65,12 @@ public class CompletionPopup extends Tooltip {
     	return INSTANCE;
     }
 
-    public void setDocumentation(Function<DocRef, String> documentation) {
+    public void setDocumentation(Function<CompletionItem, String> documentation) {
     	docPopup.setDocumentation(documentation);
+    }
+    
+    public void setCompletionItem(Function<String, CompletionItem> completionItem) {
+        docPopup.setCompletionItem(completionItem);
     }
     
     public void setItems(Collection<? extends CompletionItem> items) {
@@ -128,7 +132,7 @@ public class CompletionPopup extends Tooltip {
 
             if (n != null) {
 
-                if (docPopup.loadContent(n.getDocRef())) {
+                if (docPopup.loadContent(n)) {
                     if (!docPopup.isShowing()) {
                         docPopup.show(this);
                         docPopup.getGraphic().requestFocus();

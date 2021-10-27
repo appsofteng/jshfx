@@ -1,43 +1,25 @@
 package dev.jshfx.base.jshell;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
-import dev.jshfx.fxmisc.richtext.CompletionItem;
-import dev.jshfx.fxmisc.richtext.DocRef;
+import dev.jshfx.jx.tools.Signature;
 
-public class QualifiedNameCompletionItem extends CompletionItem {
+public class QualifiedNameCompletionItem extends SourceCodeCompletionItem {
 
     private final Consumer<String> input;
 
-    public QualifiedNameCompletionItem(String signature, Function<DocRef, String> documentation) {
-        this(i -> {}, signature, documentation);
-    }
-
-    public QualifiedNameCompletionItem(Consumer<String> input, String signature,
-            Function<DocRef, String> documentation) {
-        super(new DocRef(signature, signature, documentation));
+    public QualifiedNameCompletionItem(Signature signature, Consumer<String> input) {
+       super(signature);
         this.input = input;
     }
 
     @Override
     public void complete() {
-        input.accept(String.format("import %s;\n", getDocRef().getSignature()));
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof QualifiedNameCompletionItem
-                && ((QualifiedNameCompletionItem) obj).getDocRef().getSignature().equals(getDocRef().getSignature());
-    }
-
-    @Override
-    public int hashCode() {
-        return getDocRef().getSignature().hashCode();
+        input.accept(String.format("import %s;\n", getSignature().toString()));
     }
 
     @Override
     public String toString() {
-        return getDocRef().getSignature();
+        return getSignature().toString();
     }
 }

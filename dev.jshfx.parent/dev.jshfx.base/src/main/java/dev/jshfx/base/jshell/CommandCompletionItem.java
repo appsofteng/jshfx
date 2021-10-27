@@ -1,25 +1,35 @@
 package dev.jshfx.base.jshell;
 
-import java.util.function.Function;
-
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jshfx.fxmisc.richtext.CompletionItem;
-import dev.jshfx.fxmisc.richtext.DocRef;
 
 public class CommandCompletionItem extends CompletionItem {
 
     private CodeArea codeArea;
     private int anchor;
     private String continuation;
+    private String commandName;
     private String name;
 
-    public CommandCompletionItem(CodeArea codeArea, int anchor, String continuation, String name, String docCode, Function<DocRef, String> documentation) {
-        super(new DocRef(docCode, name, documentation));
+    public CommandCompletionItem(CodeArea codeArea, int anchor, String continuation, String commandName, String name) {
         this.codeArea = codeArea;
         this.anchor = anchor;
         this.continuation = continuation;
+        this.commandName = commandName;
         this.name = name;
+    }
+    
+    public String getCommandName() {
+        return commandName;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public String getDocKey() {
+        return commandName + "." + name;
     }
 
     @Override

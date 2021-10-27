@@ -47,7 +47,7 @@ public class ShellPane extends Part {
         consolePane = new SplitConsolePane(history, List.of("block-delimiter-match"));
         getProperties().put(getClass(), consolePane.getInputArea());
         session = new Session(consolePane, taskQueuer);
-        completion = new Completion(session);
+        completion = new Completion(consolePane.getInputArea(),session);
 
         getChildren().add(consolePane);
 
@@ -116,7 +116,7 @@ public class ShellPane extends Part {
 
     public void showCodeCompletion() {
         CTask<Collection<CompletionItem>> task = CTask
-                .create(() -> completion.getCompletionItems(consolePane.getInputArea()))
+                .create(() -> completion.getCompletor().getCompletionItems())
                 .onSucceeded(this::codeCompletion);
 
         taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
@@ -127,7 +127,8 @@ public class ShellPane extends Part {
         Optional<Bounds> boundsOption = consolePane.getInputArea().caretBoundsProperty().getValue();
         if (boundsOption.isPresent()) {
             Bounds bounds = boundsOption.get();
-            CompletionPopup.get().setDocumentation(completion::loadDocumentation);
+            CompletionPopup.get().setDocumentation(completion.getCompletor()::loadDocumentation);
+            CompletionPopup.get().setCompletionItem(completion.getCompletor()::getCompletionItem);
             CompletionPopup.get().setItems(items);
             CompletionPopup.get().show(consolePane.getInputArea(), bounds.getMaxX(), bounds.getMaxY());
         }

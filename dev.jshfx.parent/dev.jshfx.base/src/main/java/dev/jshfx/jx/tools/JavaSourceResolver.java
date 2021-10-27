@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
+import javax.lang.model.element.Name;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
@@ -29,24 +31,24 @@ import com.sun.source.util.JavacTask;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 
-public class JavaSource {
+public class JavaSourceResolver {
 
     private JavaCompiler compiler;
     private StandardJavaFileManager fileManager;
     private ResourceBundle resourceBundle;
 
-    public JavaSource() {
+    public JavaSourceResolver() {
         compiler = ToolProvider.getSystemJavaCompiler();
         fileManager = compiler.getStandardFileManager(null, null, null);
     }
 
-    public JavaSource setResourceBundle(ResourceBundle resourceBundle) {
+    public JavaSourceResolver setResourceBundle(ResourceBundle resourceBundle) {
         this.resourceBundle = resourceBundle;
 
         return this;
     }
 
-    public JavaSource setSourcePaths(Collection<Path> sourcePaths) {
+    public JavaSourceResolver setSourcePaths(Collection<Path> sourcePaths) {
         try {
             fileManager.setLocationFromPaths(StandardLocation.SOURCE_PATH, sourcePaths);
         } catch (IOException e) {
@@ -54,6 +56,14 @@ public class JavaSource {
         }
 
         return this;
+    }
+
+    public void close() {
+        try {
+            fileManager.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public String getHtmlDoc(Signature signature) {
@@ -86,7 +96,7 @@ public class JavaSource {
     private static class Result extends Error {
 
         private static final long serialVersionUID = 1L;
-        
+
         private final TreePath treePath;
 
         public Result(TreePath treePath) {
@@ -100,30 +110,73 @@ public class JavaSource {
 
     private static class SignatureTreePathScanner extends TreePathScanner<TreePath, Signature> {
 
+        private String namespace;
+        private List<String> imports;
+        private static final List<String> PRIMITIVES = List.of("byte", "char", "double", "float", "int", "long",
+                "short");
+
+        private String getNamespace(Name name) {
+            return namespace + "." + name;
+        }
+
+        private List<String> getFullNames(String name) {
+
+            List<String> names = List.of(name);
+
+            if (PRIMITIVES.stream().anyMatch(p -> name.matches(p + "(\\[\\]|\\.\\.\\.)?"))) {
+                return names;
+            }
+
+            names = imports.stream().filter(i -> i.endsWith(name)).collect(Collectors.toList());
+
+            if (names.isEmpty()) {
+                names = imports.stream().filter(i -> i.endsWith("*"))
+                        .map(i -> i.substring(0, i.lastIndexOf("*")) + name).collect(Collectors.toList());
+            }
+
+            return names;
+        }
+
         @Override
         public TreePath visitCompilationUnit(CompilationUnitTree node, Signature signature) {
+            namespace = node.getPackageName().toString();
+            imports = node.getImports().stream().map(i -> i.getQualifiedIdentifier().toString())
+                    .collect(Collectors.toCollection(() -> new ArrayList<>()));
+            imports.add("java.lang.*");
+
             return scan(node.getTypeDecls(), signature);
         }
 
+        @Override
         public TreePath visitClass(ClassTree node, Signature signature) {
 
-            if (signature.getKind() == Signature.Kind.TYPE) {
+            TreePath path = null;
 
-                return getCurrentPath();
+            if (signature.getKind() == Signature.Kind.TYPE
+                    && signature.getFullName().equals(getNamespace(node.getSimpleName()))) {
+
+                path = getCurrentPath();
             } else {
                 try {
-                    return scan(node.getMembers(), signature);
+                    namespace = getNamespace(node.getSimpleName());
+                    path = scan(node.getMembers(), signature);
                 } catch (Result result) {
-                    return result.getTreePath();
+                    path = result.getTreePath();
+                } finally {
+                    int i = namespace.lastIndexOf(".");
+
+                    namespace = namespace.substring(0, i);
                 }
             }
+
+            return path;
         }
 
+        @Override
         public TreePath visitVariable(VariableTree node, Signature signature) {
-            getCurrentPath().iterator().forEachRemaining(i -> System.out.println(i));
-            
-            if (signature.getKind() == Signature.Kind.FIELD
-                    ) {
+
+            if ((signature.getKind() == Signature.Kind.FIELD || signature.getKind() == Signature.Kind.ENUM_CONSTANT)
+                    && signature.getFullName().equals(getNamespace(node.getName()))) {
 
                 throw new Result(getCurrentPath());
             } else {
@@ -133,8 +186,22 @@ public class JavaSource {
 
         public TreePath visitMethod(MethodTree node, Signature signature) {
             if (signature.getKind() == Signature.Kind.METHOD
-                    ) {
-                throw new Result(getCurrentPath());
+                    && signature.getFullName().equals(getNamespace(node.getName()))
+                    && signature.getMethodParameterTypes().size() == node.getParameters().size()) {
+
+                boolean parameterTypeMatch = true;
+                for (int i = 0; i < node.getParameters().size(); i++) {
+                    List<String> names = getFullNames(node.getParameters().get(i).getType().toString());
+                    if (!names.contains(signature.getMethodParameterTypes().get(i))) {
+                        parameterTypeMatch = false;
+                        break;
+                    }
+                }
+                if (parameterTypeMatch) {
+                    throw new Result(getCurrentPath());
+                } else {
+                    return null;
+                }
             } else {
                 return null;
             }
