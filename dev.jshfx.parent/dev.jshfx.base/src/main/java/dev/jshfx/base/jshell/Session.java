@@ -30,14 +30,11 @@ import jdk.jshell.JShell.Subscription;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.SnippetEvent;
-import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.execution.LocalExecutionControlProvider;
 
 public class Session {
 
     public static final String PRIVILEDGED_TASK_QUEUE = "priviledged-task-queue";
-
-    private static JShell commonJshell;
 
     private BooleanProperty closed = new SimpleBooleanProperty();
     private Env env;
@@ -75,33 +72,6 @@ public class Session {
         feedback = new Feedback(consoleModel, settings);
         idGenerator = new IdGenerator();
         restart();
-        switchCommonJShell();
-    }
-
-    public JShell getCommonJShell() {
-        return commonJshell;
-    }
-
-    public static List<Documentation> documentation(String input, int cursor, boolean computeJavadoc) {
-        return commonJshell.sourceCodeAnalysis().documentation(input, cursor, computeJavadoc);
-    }
-
-    public static void closeCommonJShell() {
-
-        if (commonJshell != null) {
-
-            commonJshell.stop();
-            commonJshell.close();
-        }
-    }
-
-    public void switchCommonJShell() {
-        closeCommonJShell();
-        String[] options = env.getOptions();
-        commonJshell = JShell.builder().executionEngine(new LocalExecutionControlProvider(), null)
-                .compilerOptions(options).remoteVMOptions(options).build();
-        env.getClassPaths().forEach(p -> commonJshell.addToClasspath(p));
-        jshell.imports().forEach(i -> commonJshell.eval(i.source()));
     }
 
     public ReadOnlyBooleanProperty closedProperty() {
@@ -171,7 +141,6 @@ public class Session {
     public void setIO() {
         System.setErr(consoleModel.getErr());
         System.setOut(consoleModel.getOut());
-        switchCommonJShell();
     }
 
     public Env getEnv() {
@@ -203,7 +172,6 @@ public class Session {
         env.getClassPaths().addAll(paths);
         paths.forEach(p -> {
             jshell.addToClasspath(p);
-            commonJshell.addToClasspath(p);
         });
     }
 
@@ -306,20 +274,17 @@ public class Session {
     public void reset() {
         setRestoreSnippets();
         restart();
-        switchCommonJShell();
     }
 
     public void reload(boolean quiet) {
         setRestoreSnippets();
         restart();
         reloadSnippets(quiet);
-        switchCommonJShell();
     }
 
     public void restore(boolean quiet) {
         restart();
         reloadSnippets(quiet);
-        switchCommonJShell();
     }
 
     private void restart() {

@@ -100,11 +100,7 @@ public class SnippetProcessor extends Processor {
         return allSnippetEvents;
     }
 
-    private void setFeedback(SnippetEvent event, boolean quiet) {
-        
-        if (event.snippet() instanceof ImportSnippet) {
-            session.getCommonJShell().eval(event.snippet().source());
-        }
+    private void setFeedback(SnippetEvent event, boolean quiet) {        
 
         String message = "";
 

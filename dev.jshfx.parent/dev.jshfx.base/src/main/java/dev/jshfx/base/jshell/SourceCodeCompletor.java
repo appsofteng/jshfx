@@ -46,7 +46,10 @@ class SourceCodeCompletor extends Completor {
 
                 for (Suggestion suggestion : suggestions) {
                     String docInput = getDocInput(relativeInput.toString(), suggestion, relativeAnchor[0]);
-                    List<Documentation> docs = Session.documentation(docInput, docInput.length(), false);
+                    // List<Documentation> docs = Session.documentation(docInput, docInput.length(),
+                    // false);
+                    List<Documentation> docs = session.getJshell().sourceCodeAnalysis().documentation(docInput,
+                            docInput.length(), false);
 
                     var expressionType = session.getJshell().sourceCodeAnalysis().analyzeType(docInput,
                             docInput.length());
@@ -80,7 +83,7 @@ class SourceCodeCompletor extends Completor {
         }
 
         var sortedItems = new ArrayList<>(items);
-        
+
         Collections.sort(sortedItems);
 
         return sortedItems;
@@ -129,7 +132,7 @@ class SourceCodeCompletor extends Completor {
         }
 
         if (isType) {
-            List<Documentation> docs = Session.documentation(name, name.length(), false);
+            List<Documentation> docs = session.getJshell().sourceCodeAnalysis().documentation(name, name.length(), false);
 
             if (!docs.isEmpty()) {
                 result = docs.get(0).signature();
