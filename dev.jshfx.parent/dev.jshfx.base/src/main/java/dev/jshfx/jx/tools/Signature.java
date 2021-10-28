@@ -80,12 +80,12 @@ public class Signature {
         }
         return result;
     }
-    
+
     @Override
     public int hashCode() {
         return Objects.hash(signature);
     }
-    
+
     @Override
     public String toString() {
         return signature;
@@ -141,11 +141,11 @@ public class Signature {
         int i = typeAndName.lastIndexOf(".");
         String methodName = typeAndName;
         String type = typeAndName;
-        
+
         // Constructor will no pass, e.g. URI(String u)
         if (i > -1) {
             methodName = typeAndName.substring(i + 1);
-            type = typeAndName.substring(0, i);   
+            type = typeAndName.substring(0, i);
             i = methodName.lastIndexOf(">");
 
             if (i > 0) {
@@ -184,15 +184,11 @@ public class Signature {
 
             int i = noArrayType.lastIndexOf(".");
 
-            if (i > 0) {
-                noArrayType = noArrayType.substring(i + 1);
+            if (i == -1) {
+                noArrayType = resolveFullTypeName.apply(noArrayType);
             }
 
-            var resolvedType = resolveFullTypeName.apply(noArrayType);
-
-            if (resolvedType != null) {
-                paramType = resolvedType + array;
-            }
+            paramType = noArrayType + array;
 
             methodParameterTypes.add(paramType);
         }

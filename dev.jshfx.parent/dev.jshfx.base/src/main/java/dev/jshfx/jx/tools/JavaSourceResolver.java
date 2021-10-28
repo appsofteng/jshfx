@@ -126,13 +126,20 @@ public class JavaSourceResolver {
             if (PRIMITIVES.stream().anyMatch(p -> name.matches(p + "(\\[\\]|\\.\\.\\.)?"))) {
                 return names;
             }
+            
+            var raw = name.replaceAll("<.*>", "");
 
-            names = imports.stream().filter(i -> i.endsWith(name)).collect(Collectors.toList());
+            names = imports.stream().filter(i -> i.endsWith("." + raw)).collect(Collectors.toList());
 
             if (names.isEmpty()) {
                 names = imports.stream().filter(i -> i.endsWith("*"))
-                        .map(i -> i.substring(0, i.lastIndexOf("*")) + name).collect(Collectors.toList());
+                        .map(i -> i.substring(0, i.lastIndexOf("*")) + raw).collect(Collectors.toList());
             }
+            
+            if (names.isEmpty()) {
+                names = List.of(name);
+            }
+            
 
             return names;
         }
