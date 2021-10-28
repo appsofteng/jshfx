@@ -185,7 +185,10 @@ public class Signature {
             int i = noArrayType.lastIndexOf(".");
 
             if (i == -1) {
-                noArrayType = resolveFullTypeName.apply(noArrayType);
+                var resolvedType = resolveFullTypeName.apply(noArrayType);
+                if (resolvedType != null) {
+                    noArrayType = resolvedType;
+                }
             }
 
             paramType = noArrayType + array;
@@ -201,7 +204,8 @@ public class Signature {
             var varArgsPattern = typePattern + "(?:\\.\\.\\.)";
             var typeOrArrayPattern = typePattern + "(?:\\[\\])?";
 
-            String parameterPattern = String.format("(%s)|(%s)(?: +|<.*>)", varArgsPattern, typeOrArrayPattern);
+            String parameterPattern = String.format("(%s)|(%s)(?: +|<.*?> )",
+                    varArgsPattern, typeOrArrayPattern);
 
             methodParameterPattern = Pattern.compile(parameterPattern);
         }

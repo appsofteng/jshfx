@@ -7,7 +7,7 @@ import java.net.URI;
  * Second paragraph. Second sentence in the second paragraph.
  * 
  * @see Double
- * @see String
+ * @see Object#toString()
  * @since 1.0
  */
 public class Example {

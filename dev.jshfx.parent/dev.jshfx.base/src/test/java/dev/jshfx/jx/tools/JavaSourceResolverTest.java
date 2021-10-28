@@ -8,12 +8,13 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dev.jshfx.base.MainApp;
 import dev.jshfx.jfx.util.FXResourceBundle;
 
-public class JavaSourceTest {
+public class JavaSourceResolverTest {
 
     private static JavaSourceResolver javaSource;
     private Map<String, String> typeMapping = Map.of("dev.jshfx.jx.tools.Example", "dev.jshfx.jx.tools.Example", "Example", "dev.jshfx.jx.tools.Example", "NestedEnum", "dev.jshfx.jx.tools.Example.NestedEnum",
@@ -24,6 +25,10 @@ public class JavaSourceTest {
     public static void setup() {
         FXResourceBundle.setDefaultCaller(MainApp.class);
         javaSource = new JavaSourceResolver().setResourceBundle(FXResourceBundle.getBundle().getResourceBundle());
+    }
+    
+    @BeforeEach
+    public void setupEach() {
         javaSource.setSourcePaths(List.of(Path.of("src/test/java")));
     }
     

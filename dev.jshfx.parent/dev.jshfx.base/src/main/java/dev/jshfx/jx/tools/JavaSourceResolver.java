@@ -15,11 +15,17 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
+import com.sun.source.doctree.AuthorTree;
 import com.sun.source.doctree.BlockTagTree;
+import com.sun.source.doctree.DeprecatedTree;
 import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.LinkTree;
+import com.sun.source.doctree.LiteralTree;
 import com.sun.source.doctree.SeeTree;
 import com.sun.source.doctree.SinceTree;
 import com.sun.source.doctree.TextTree;
+import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -83,6 +89,7 @@ public class JavaSourceResolver {
             DocCommentTree docCommentTree = docTrees.getDocCommentTree(treePath);
             HtmlDocTreePathScanner docScanner = new HtmlDocTreePathScanner();
 
+            htmlBuilder.append("<p><strong>").append(signature.toString()).append("</strong></p>").append("\n");
             docScanner.scan(new DocTreePath(treePath, docCommentTree), htmlBuilder);
 
         } catch (IOException e) {
@@ -126,20 +133,19 @@ public class JavaSourceResolver {
             if (PRIMITIVES.stream().anyMatch(p -> name.matches(p + "(\\[\\]|\\.\\.\\.)?"))) {
                 return names;
             }
-            
+
             var raw = name.replaceAll("<.*>", "");
 
             names = imports.stream().filter(i -> i.endsWith("." + raw)).collect(Collectors.toList());
 
             if (names.isEmpty()) {
-                names = imports.stream().filter(i -> i.endsWith("*"))
-                        .map(i -> i.substring(0, i.lastIndexOf("*")) + raw).collect(Collectors.toList());
+                names = imports.stream().filter(i -> i.endsWith("*")).map(i -> i.substring(0, i.lastIndexOf("*")) + raw)
+                        .collect(Collectors.toList());
             }
-            
+
             if (names.isEmpty()) {
                 names = List.of(name);
             }
-            
 
             return names;
         }
@@ -217,17 +223,74 @@ public class JavaSourceResolver {
 
     private class HtmlDocTreePathScanner extends DocTreePathScanner<Void, StringBuilder> {
 
+        private static final List<DocTree.Kind> INLINE_TAGS = List.of(DocTree.Kind.CODE, DocTree.Kind.LINK,
+                DocTree.Kind.LINK_PLAIN);
         private List<String> blockPassed = new ArrayList<>();
 
-        public Void visitText(TextTree node, StringBuilder htmlBuilder) {
-            htmlBuilder.append(node.getBody()).append("\n");
+        public Void visitDocComment(DocCommentTree node, StringBuilder htmlBuilder) {
+
+            node.getFullBody().forEach(t -> processInlineTag(t, htmlBuilder));
+
+            scan(node.getBlockTags(), htmlBuilder);
+
+            htmlBuilder.append("<br>");
+
+            return null;
+        }
+
+        private void processInlineTag(DocTree docTree, StringBuilder htmlBuilder) {
+            if (INLINE_TAGS.contains(docTree.getKind())) {
+                scan(docTree, htmlBuilder);
+            } else {
+                htmlBuilder.append(docTree);
+            }
+        }
+
+        public Void visitAuthor(AuthorTree node, StringBuilder htmlBuilder) {
+
+            appendBlockTagName(node, htmlBuilder);
+            appendBlockTag(node.getName(), htmlBuilder);
+
+            return null;
+        }
+
+        public Void visitDeprecated(DeprecatedTree node, StringBuilder htmlBuilder) {
+
+            appendBlockTagName(node, htmlBuilder);
+            appendBlockTag(node.getBody(), htmlBuilder);
+
+            return null;
+        }
+
+        public Void visitLink(LinkTree node, StringBuilder htmlBuilder) {
+            var label = node.getLabel();
+            var reference = node.getReference().getSignature();
+
+            htmlBuilder.append("<code>");
+
+            if (label.isEmpty()) {
+                htmlBuilder.append(String.format(" <a href=\"%s\">%s</a> ", reference, reference.replace("#", ".")));
+            } else {
+                htmlBuilder.append(String.format(" <a href=\"%s\">%s</a> ", reference, label));
+            }
+
+            htmlBuilder.append("</code>");
+
+            return null;
+        }
+
+        public Void visitLiteral(LiteralTree node, StringBuilder htmlBuilder) {
+            htmlBuilder.append(String.format(" <code>%s</code> ", node.getBody()));
+
             return null;
         }
 
         public Void visitSee(SeeTree node, StringBuilder htmlBuilder) {
 
             appendBlockTagName(node, htmlBuilder);
-            appendBlockTag(htmlBuilder, node.getReference());
+            var reference = node.getReference().stream().map(Object::toString).collect(Collectors.joining()).strip();
+            reference = String.format("<a href=\"%s\">%s</a>", reference, reference.replace("#", "."));
+            appendBlockTagCode(reference, htmlBuilder);
 
             return null;
         }
@@ -235,7 +298,16 @@ public class JavaSourceResolver {
         public Void visitSince(SinceTree node, StringBuilder htmlBuilder) {
 
             appendBlockTagName(node, htmlBuilder);
-            appendBlockTag(htmlBuilder, node.getBody());
+            appendBlockTagCode(node.getBody(), htmlBuilder);
+
+            return null;
+        }
+
+        public Void visitUnknownBlockTag(UnknownBlockTagTree node, StringBuilder htmlBuilder) {
+
+            appendBlockTagName(node, htmlBuilder);
+            node.getContent().forEach(t -> processInlineTag(t, htmlBuilder));
+            htmlBuilder.append("<br>").append("\n");
 
             return null;
         }
@@ -243,20 +315,22 @@ public class JavaSourceResolver {
         private void appendBlockTagName(BlockTagTree tag, StringBuilder htmlBuilder) {
 
             if (blockPassed.isEmpty()) {
-                htmlBuilder.append("<br><br>\n\n");
+                htmlBuilder.append("<br>\n\n");
             }
 
             if (!blockPassed.contains(tag.getTagName())) {
                 blockPassed.add(tag.getTagName());
-                htmlBuilder.append(
+                htmlBuilder.append("<br>").append(
                         String.format("<strong>%s:</strong><br>\n", resourceBundle.getString(tag.getTagName())));
             }
         }
 
-        private void appendBlockTag(StringBuilder htmlBuilder, Object value) {
-            htmlBuilder.append("<p>").append("\n");
-            htmlBuilder.append("<code>").append(value).append("</code>").append("\n");
-            htmlBuilder.append("</p>").append("\n");
+        private void appendBlockTag(Object value, StringBuilder htmlBuilder) {
+            htmlBuilder.append(value).append("<br>").append("\n");
+        }
+
+        private void appendBlockTagCode(Object value, StringBuilder htmlBuilder) {
+            htmlBuilder.append("<code>").append(value).append("</code>").append("<br>").append("\n");
         }
     }
 }

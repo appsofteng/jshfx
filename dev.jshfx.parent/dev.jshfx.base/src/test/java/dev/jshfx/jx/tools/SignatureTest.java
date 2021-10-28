@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 public class SignatureTest {
 
     private Map<String, String> typeMapping = Map.of("ElementKind", "javax.lang.model.element.ElementKind", "Double", "java.lang.Double", "Object", "java.lang.Object", "String",
-            "java.lang.String");
+            "java.lang.String", "Example", "org.example.Example", "List", "java.util.List", "Map", "java.util.Map");
     private Function<String, String> resolveType = type -> typeMapping.get(type);
 
     @Test
@@ -142,6 +142,38 @@ public class SignatureTest {
         List<String> expectedMethodParamTypes = List.of("java.util.function.Function");
 
         var signature = Signature.get("R String.<R>transform(java.util.function.Function<? super String,? extends R> f)", null, resolveType);
+
+        assertEquals(Signature.Kind.METHOD, signature.getKind());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
+        assertEquals(expectedTypeFullName, signature.getTypeFullName());
+        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
+    }
+    
+    @Test
+    public void testMethodNameGenericMore() {
+        String expectedTopTypeFullName = "org.example.Example";
+        String expectedTypeFullName = "org.example.Example";
+        String expectedFullName = "org.example.Example.method";
+        List<String> expectedMethodParamTypes = List.of("java.util.Map");
+
+        var signature = Signature.get("void Example.method(Map<String, List<Double>> map)", null, resolveType);
+
+        assertEquals(Signature.Kind.METHOD, signature.getKind());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
+        assertEquals(expectedTypeFullName, signature.getTypeFullName());
+        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
+    }
+    
+    @Test
+    public void testMethodNameGeneric2() {
+        String expectedTopTypeFullName = "org.example.Example";
+        String expectedTypeFullName = "org.example.Example";
+        String expectedFullName = "org.example.Example.method";
+        List<String> expectedMethodParamTypes = List.of("java.util.List", "java.util.List", "java.util.Map");
+
+        var signature = Signature.get("void Example.method(List<String> list1, List<List<Double>> list2, Map<String, List<Double>> map)", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());
         assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
