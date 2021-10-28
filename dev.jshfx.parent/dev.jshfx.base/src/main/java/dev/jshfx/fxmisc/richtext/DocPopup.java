@@ -5,6 +5,10 @@ import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.function.Function;
 
 import org.fxmisc.wellbehaved.event.Nodes;
@@ -55,7 +59,7 @@ public class DocPopup extends Tooltip {
     public void setDocumentation(Function<CompletionItem, String> documentation) {
         this.documentation = documentation;
     }
-    
+
     public void setCompletionItem(Function<String, CompletionItem> completionItem) {
         this.completionItem = completionItem;
     }
@@ -69,8 +73,19 @@ public class DocPopup extends Tooltip {
             if (e.getButton() == MouseButton.PRIMARY) {
                 String url = JSUtils.getLinkUrl(webView.getEngine(), e.getX(), e.getY());
                 if (url != null) {
-                    history.remove(getHistoryIndex() + 1, history.size());
-                    loadContent(completionItem.apply(url));
+
+                    if (url.matches("https?://.*")) {
+                        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                            try {
+                                Desktop.getDesktop().browse(new URI(url));
+                            } catch (Exception e1) {
+                                e1.printStackTrace();
+                            } 
+                        }
+                    } else {
+                        history.remove(getHistoryIndex() + 1, history.size());
+                        loadContent(completionItem.apply(url));
+                    }
                 }
             }
 
@@ -107,7 +122,7 @@ public class DocPopup extends Tooltip {
             webView.getEngine().getLoadWorker().cancel();
             webView.getEngine().load("");
             webView.getEngine().loadContent(doc);
-        } 
+        }
 
         return !doc.isBlank();
     }

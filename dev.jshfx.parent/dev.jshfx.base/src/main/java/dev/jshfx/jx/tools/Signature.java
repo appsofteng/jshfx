@@ -42,8 +42,8 @@ public class Signature {
                 instance.parseEnumConstant();
             } else {
                 instance.kind = Kind.TYPE;
-                instance.typeFullName = signature;
-                instance.fullName = signature;
+                instance.parseType(signature);
+                instance.fullName = instance.typeFullName;
             }
 
             instance.parseTopTypeFullName();
@@ -108,6 +108,7 @@ public class Signature {
     }
 
     private void parseType(String type) {
+        type = type.replaceAll("<.*>", "");
         int i = type.lastIndexOf(".");
 
         if (i > 0) {

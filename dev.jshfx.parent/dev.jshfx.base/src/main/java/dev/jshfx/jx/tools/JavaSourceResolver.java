@@ -29,6 +29,7 @@ import com.sun.source.doctree.SinceTree;
 import com.sun.source.doctree.TextTree;
 import com.sun.source.doctree.ThrowsTree;
 import com.sun.source.doctree.UnknownBlockTagTree;
+import com.sun.source.doctree.UnknownInlineTagTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -160,7 +161,15 @@ public class JavaSourceResolver {
                     .collect(Collectors.toCollection(() -> new ArrayList<>()));
             imports.add("java.lang.*");
 
-            return scan(node.getTypeDecls(), signature);
+            TreePath path = null;
+
+            try {
+                path = scan(node.getTypeDecls(), signature);
+            } catch (Result result) {
+                path = result.getTreePath();
+            }
+
+            return path;
         }
 
         @Override
@@ -171,7 +180,7 @@ public class JavaSourceResolver {
             if (signature.getKind() == Signature.Kind.TYPE
                     && signature.getFullName().equals(getNamespace(node.getSimpleName()))) {
 
-                path = getCurrentPath();
+                throw new Result(getCurrentPath());
             } else {
                 try {
                     namespace = getNamespace(node.getSimpleName());
@@ -227,7 +236,7 @@ public class JavaSourceResolver {
     private class HtmlDocTreePathScanner extends DocTreePathScanner<Void, StringBuilder> {
 
         private static final List<DocTree.Kind> INLINE_TAGS = List.of(DocTree.Kind.CODE, DocTree.Kind.LINK,
-                DocTree.Kind.LINK_PLAIN);
+                DocTree.Kind.LINK_PLAIN, DocTree.Kind.UNKNOWN_INLINE_TAG);
         private List<String> blockPassed = new ArrayList<>();
 
         public Void visitDocComment(DocCommentTree node, StringBuilder htmlBuilder) {
@@ -282,28 +291,29 @@ public class JavaSourceResolver {
         }
 
         public Void visitParam(ParamTree node, StringBuilder htmlBuilder) {
-         
+
             appendBlockTagName(node, htmlBuilder);
             var name = node.getName().getName();
             var descBuilder = new StringBuilder();
             processInlineTag(node.getDescription(), descBuilder);
             appendBlockTag(name + " - " + descBuilder, htmlBuilder);
-            
+
             return null;
         }
-        
+
         public Void visitReturn(ReturnTree node, StringBuilder htmlBuilder) {
             appendBlockTagName(node, htmlBuilder);
             processInlineTag(node.getDescription(), htmlBuilder);
             htmlBuilder.append("<br>").append("\n");
-            
+
             return null;
         }
-        
+
         public Void visitSee(SeeTree node, StringBuilder htmlBuilder) {
 
             appendBlockTagName(node, htmlBuilder);
-            var reference = getReference(node.getReference().stream().map(Object::toString).collect(Collectors.joining()).strip());
+            var reference = getReference(
+                    node.getReference().stream().map(Object::toString).collect(Collectors.joining()).strip());
             reference = String.format("<a href=\"%s\">%s</a>", reference, reference);
             appendBlockTagCode(reference, htmlBuilder);
 
@@ -324,9 +334,9 @@ public class JavaSourceResolver {
             var reference = node.getExceptionName().getSignature();
             var descBuilder = new StringBuilder();
             processInlineTag(node.getDescription(), descBuilder);
-            htmlBuilder.append(String.format("<code><a href=\"%s\">%s</a></code> - %s", reference, reference.replace("#", "."), descBuilder))
-            .append("<br>");
-            
+            htmlBuilder.append(String.format("<code><a href=\"%s\">%s</a></code> - %s", reference,
+                    reference.replace("#", "."), descBuilder)).append("<br>");
+
             return null;
         }
 
@@ -339,10 +349,16 @@ public class JavaSourceResolver {
             return null;
         }
 
+        public Void visitUnknownInlineTag(UnknownInlineTagTree node, StringBuilder htmlBuilder) {
+            processInlineTag(node.getContent(), htmlBuilder);
+            
+            return null;
+        }
+
         private String getReference(Object obj) {
             return obj.toString().replace("#", ".");
         }
-        
+
         private void processInlineTag(List<? extends DocTree> docTrees, StringBuilder htmlBuilder) {
 
             docTrees.forEach(t -> {

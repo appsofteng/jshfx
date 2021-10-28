@@ -5,6 +5,7 @@ module dev.jshfx.base {
     requires transitive jdk.jsobject;
 	
 	requires java.compiler;
+	requires java.desktop;
     requires java.logging;
     requires transitive java.prefs;
 	
