@@ -4,16 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
-import java.util.Map;
 
 import org.fxmisc.richtext.CodeArea;
 
-import dev.jshfx.fxmisc.richtext.DocRef;
-import dev.jshfx.jx.tools.JavadocUtils;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
-import jdk.jshell.SourceCodeAnalysis.Documentation;
 
 public final class JShellUtils {
 
@@ -108,24 +103,5 @@ public final class JShellUtils {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
             reader.lines().forEach(s -> jshell.eval(s));
         }
-    }
-
-    public static String getDocumentation(List<Documentation> docs, DocRef docRef, Map<String, String> bundle) {
-
-        Documentation documentation = docs.stream().filter(d -> matches(d.signature(), docRef)).findFirst()
-                .orElse(null);
-
-        String result = documentation == null ? ""
-                : "<strong><code>" + documentation.signature() + "</code></strong><br><br>"
-                        + JavadocUtils.toHtml(documentation.javadoc(), bundle);
-
-        return result;
-    }
-
-    private static boolean matches(String signature, DocRef docRef) {
-
-        return docRef.getSignature() != null && !docRef.getSignature().isEmpty()
-                ? docRef.getSignature().equals(signature)
-                : signature.matches("[\\w\\.]*" + docRef.getDocCode() + "[\\w<>(), ]*");
     }
 }

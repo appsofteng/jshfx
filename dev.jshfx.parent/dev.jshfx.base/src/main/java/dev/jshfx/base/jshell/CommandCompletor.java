@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jshfx.fxmisc.richtext.CompletionItem;
-import dev.jshfx.fxmisc.richtext.DocRef;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.jx.tools.Token;
 import javafx.application.Platform;

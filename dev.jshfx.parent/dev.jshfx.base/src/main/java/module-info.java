@@ -26,7 +26,6 @@ module dev.jshfx.base {
     requires jakarta.json.bind;
     requires org.eclipse.yasson;
     
-    requires com.github.javaparser.core;
     requires info.picocli;
     requires dev.jshfx.util;
 	
