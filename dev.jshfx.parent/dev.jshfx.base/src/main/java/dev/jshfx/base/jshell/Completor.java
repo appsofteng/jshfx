@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jshfx.fxmisc.richtext.CompletionItem;
+import dev.jshfx.jx.tools.JavaSourceResolver.HtmlDoc;
 
 public abstract class Completor {
 
@@ -18,7 +19,7 @@ public abstract class Completor {
 
     public abstract Collection<CompletionItem> getCompletionItems();
         
-    public abstract String loadDocumentation(CompletionItem item);
+    public abstract HtmlDoc loadDocumentation(CompletionItem item);
     
-    public abstract CompletionItem getCompletionItem(String string);
+    public abstract CompletionItem getCompletionItem(String reference, HtmlDoc data);
 }

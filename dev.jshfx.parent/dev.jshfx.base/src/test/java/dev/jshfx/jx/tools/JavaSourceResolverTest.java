@@ -24,7 +24,7 @@ public class JavaSourceResolverTest {
     @BeforeAll
     public static void setup() {
         FXResourceBundle.setDefaultCaller(MainApp.class);
-        javaSource = new JavaSourceResolver().setResourceBundle(FXResourceBundle.getBundle().getResourceBundle());
+        javaSource = new JavaSourceResolver().setResourceBundle(k -> FXResourceBundle.getBundle().getString​(k));
     }
     
     @BeforeEach
@@ -37,86 +37,86 @@ public class JavaSourceResolverTest {
         javaSource.setSourcePaths(List.of(Path.of("src/test/resources/dev.jar")));
         var signature = Signature.get("dev.jshfx.jx.tools.Example", null, resolveType);
         
-        var doc = javaSource.getHtmlDoc(signature);
+        var doc = javaSource.getHtmlDoc(signature).doc();
         System.out.println(doc);
         
-        assertTrue(doc.startsWith("Example documentation."));
+        assertTrue(doc.contains("Example documentation."));
     }
     
     @Test
     public void testGetHtmlDocClass() {       
         var signature = Signature.get("dev.jshfx.jx.tools.Example", null, resolveType);
         
-        var doc = javaSource.getHtmlDoc(signature);
+        var doc = javaSource.getHtmlDoc(signature).doc();
         
         System.out.println(doc);
         
-        assertTrue(doc.startsWith("First sentence about example."));
+        assertTrue(doc.contains("First sentence about example."));
     }
     
     @Test
     public void testGetHtmlDocField() {
         var signature = Signature.get("Example.FIELD:String", "String", resolveType);
         
-        var doc = javaSource.getHtmlDoc(signature);
+        var doc = javaSource.getHtmlDoc(signature).doc();
         
         System.out.println(doc);
         
-        assertTrue(doc.startsWith("Field documentation."));
+        assertTrue(doc.contains("Field documentation."));
     }
     
     @Test
     public void testGetHtmlDocMethod() {
         var signature = Signature.get("void Example.method()", null, resolveType);
         
-        var doc = javaSource.getHtmlDoc(signature);
+        var doc = javaSource.getHtmlDoc(signature).doc();
         
         System.out.println(doc);
         
-        assertTrue(doc.startsWith("Method documentation."));
+        assertTrue(doc.contains("Method documentation."));
     }
     
     @Test
     public void testGetHtmlDocMethodInt() {
         var signature = Signature.get("void Example.method(int i)", null, resolveType);
         
-        var doc = javaSource.getHtmlDoc(signature);
+        var doc = javaSource.getHtmlDoc(signature).doc();
         
         System.out.println(doc);
         
-        assertTrue(doc.startsWith("Method int documentation."));
+        assertTrue(doc.contains("Method int documentation."));
     }
     
     @Test
     public void testGetHtmlDocMethodString() {
         var signature = Signature.get("void Example.method(String s)", null, resolveType);
         
-        var doc = javaSource.getHtmlDoc(signature);
+        var doc = javaSource.getHtmlDoc(signature).doc();
         
         System.out.println(doc);
         
-        assertTrue(doc.startsWith("Method String documentation."));
+        assertTrue(doc.contains("Method String documentation."));
     }
     
     @Test
     public void testGetHtmlDocMethodURI() {
         var signature = Signature.get("void Example.method(URI u)", null, resolveType);
         
-        var doc = javaSource.getHtmlDoc(signature);
+        var doc = javaSource.getHtmlDoc(signature).doc();
         
         System.out.println(doc);
         
-        assertTrue(doc.startsWith("Method URI documentation."));
+        assertTrue(doc.contains("Method URI documentation."));
     }
     
     @Test
     public void testGetHtmlDocEnumConst() {
         var signature = Signature.get("NestedEnum.CONST", "NestedEnum", resolveType);
         
-        var doc = javaSource.getHtmlDoc(signature);
+        var doc = javaSource.getHtmlDoc(signature).doc();
         
         System.out.println(doc);
         
-        assertTrue(doc.startsWith("Enum const documentation."));
+        assertTrue(doc.contains("Enum const documentation."));
     }
 }

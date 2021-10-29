@@ -9,11 +9,13 @@ import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
 import java.util.Collection;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.fxmisc.wellbehaved.event.Nodes;
 
 import dev.jshfx.jfx.scene.layout.LayoutUtils;
+import dev.jshfx.jx.tools.JavaSourceResolver.HtmlDoc;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.event.EventHandler;
@@ -65,11 +67,11 @@ public class CompletionPopup extends Tooltip {
     	return INSTANCE;
     }
 
-    public void setDocumentation(Function<CompletionItem, String> documentation) {
+    public void setDocumentation(Function<CompletionItem, HtmlDoc> documentation) {
     	docPopup.setDocumentation(documentation);
     }
     
-    public void setCompletionItem(Function<String, CompletionItem> completionItem) {
+    public void setCompletionItem(BiFunction<String, HtmlDoc, CompletionItem> completionItem) {
         docPopup.setCompletionItem(completionItem);
     }
     

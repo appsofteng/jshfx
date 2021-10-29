@@ -6,9 +6,8 @@ import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
 import java.awt.Desktop;
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.fxmisc.wellbehaved.event.Nodes;
@@ -17,6 +16,7 @@ import dev.jshfx.jfx.application.FXPlatform;
 import dev.jshfx.jfx.scene.layout.LayoutUtils;
 import dev.jshfx.jfx.scene.web.JSUtils;
 import dev.jshfx.jfx.util.FXResourceBundle;
+import dev.jshfx.jx.tools.JavaSourceResolver.HtmlDoc;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -34,11 +34,12 @@ import javafx.scene.web.WebView;
 public class DocPopup extends Tooltip {
 
     private WebView webView;
-    private Function<CompletionItem, String> documentation;
-    private Function<String, CompletionItem> completionItem;
+    private Function<CompletionItem, HtmlDoc> documentation;
+    private BiFunction<String, HtmlDoc, CompletionItem> completionItem;
     private ContextMenu contextMenu;
     private ObservableList<CompletionItem> history = FXCollections.observableArrayList();
     private IntegerProperty historyIndex = new SimpleIntegerProperty(-1);
+    private HtmlDoc doc;
 
     public DocPopup() {
         setMinSize(10, 10);
@@ -56,11 +57,11 @@ public class DocPopup extends Tooltip {
         });
     }
 
-    public void setDocumentation(Function<CompletionItem, String> documentation) {
+    public void setDocumentation(Function<CompletionItem, HtmlDoc> documentation) {
         this.documentation = documentation;
     }
 
-    public void setCompletionItem(Function<String, CompletionItem> completionItem) {
+    public void setCompletionItem(BiFunction<String, HtmlDoc, CompletionItem> completionItem) {
         this.completionItem = completionItem;
     }
 
@@ -72,6 +73,7 @@ public class DocPopup extends Tooltip {
 
             if (e.getButton() == MouseButton.PRIMARY) {
                 String url = JSUtils.getLinkUrl(webView.getEngine(), e.getX(), e.getY());
+                
                 if (url != null) {
 
                     if (url.matches("https?://.*")) {
@@ -84,7 +86,7 @@ public class DocPopup extends Tooltip {
                         }
                     } else {
                         history.remove(getHistoryIndex() + 1, history.size());
-                        loadContent(completionItem.apply(url));
+                        loadContent(completionItem.apply(url, doc));
                     }
                 }
             }
@@ -115,24 +117,24 @@ public class DocPopup extends Tooltip {
 
     boolean loadContent(CompletionItem docRef) {
 
-        String doc = documentation.apply(docRef);
-        if (!doc.isEmpty()) {
+        doc = documentation.apply(docRef);
+        if (doc.doc() != null) {
             history.add(docRef);
             moveHistory(1);
             webView.getEngine().getLoadWorker().cancel();
             webView.getEngine().load("");
-            webView.getEngine().loadContent(doc);
+            webView.getEngine().loadContent(doc.doc());
         }
 
-        return !doc.isBlank();
+        return doc.doc() != null;
     }
 
     private void load(CompletionItem docRef) {
-        String doc = documentation.apply(docRef);
-        if (!doc.isEmpty()) {
+        doc = documentation.apply(docRef);
+        if (doc.doc() != null) {
             webView.getEngine().getLoadWorker().cancel();
             webView.getEngine().load("");
-            webView.getEngine().loadContent(doc);
+            webView.getEngine().loadContent(doc.doc());
         }
     }
 

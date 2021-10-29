@@ -9,6 +9,7 @@ import org.fxmisc.richtext.CodeArea;
 
 import dev.jshfx.fxmisc.richtext.CompletionItem;
 import dev.jshfx.jfx.util.FXResourceBundle;
+import dev.jshfx.jx.tools.JavaSourceResolver.HtmlDoc;
 import dev.jshfx.jx.tools.Token;
 import javafx.application.Platform;
 import picocli.AutoComplete;
@@ -87,7 +88,7 @@ class CommandCompletor extends Completor {
     }
 
     @Override
-    public String loadDocumentation(CompletionItem item) {
+    public HtmlDoc loadDocumentation(CompletionItem item) {
         CommandCompletionItem commandItem = (CommandCompletionItem) item;
         String help = "";
         CommandLine subcommand = session.getCommandProcessor().getCommandLine().getSubcommands()
@@ -100,11 +101,11 @@ class CommandCompletor extends Completor {
                     FXResourceBundle.getBundle().getStringOrDefault(commandItem.getName(), ""));
         }
 
-        return help;
+        return new HtmlDoc(null, help, null, help);
     }
     
     @Override
-    public CompletionItem getCompletionItem(String string) {
+    public CompletionItem getCompletionItem(String reference, HtmlDoc data) {
         return null;
     }
 }

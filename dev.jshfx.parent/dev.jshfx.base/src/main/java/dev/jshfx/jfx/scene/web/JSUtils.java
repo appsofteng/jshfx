@@ -1,24 +1,46 @@
 package dev.jshfx.jfx.scene.web;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javafx.scene.web.WebEngine;
 import netscape.javascript.JSObject;
 
 public final class JSUtils {
 
-	private JSUtils() {
-	}
+    private JSUtils() {
+    }
 
+    public static Map<String, String> getElementDataAttributes(WebEngine engine, String name) {
+        Map<String, String> data = new HashMap<>();
+        var doc = engine.getDocument();
+        NodeList nodeList = doc.getElementsByTagName(name);
 
-	public static String getLinkUrl(WebEngine engine, double x, double y) {
-	    JSObject jsobject = getElementFromPoint(engine, x, y);
-	    JSObject linkJsobject = JSUtils.getJSObject(jsobject, "a");
+        if (nodeList.getLength() == 1) {
+            Node node = nodeList.item(0);
+            for (int i = 0; i < node.getAttributes().getLength(); i++) {
+                Node attr = node.getAttributes().item(i);
 
-	    String url = linkJsobject == null ? null : (String) linkJsobject.getMember("href");
+                if (attr.getNodeName().startsWith("data-")) {
+                    data.put(attr.getNodeName(), attr.getNodeValue());
+                }
+            }
+        }
 
-	    return url;
-	}
+        return data;
+    }
+
+    public static String getLinkUrl(WebEngine engine, double x, double y) {
+        JSObject jsobject = getElementFromPoint(engine, x, y);
+        JSObject linkJsobject = JSUtils.getJSObject(jsobject, "a");
+
+        String url = linkJsobject == null ? null : (String) linkJsobject.getMember("href");
+
+        return url;
+    }
 
     public static JSObject getElementFromPoint(WebEngine engine, double x, double y) {
         return (JSObject) engine.executeScript(String.format("document.elementFromPoint(%f , %f);", x, y));

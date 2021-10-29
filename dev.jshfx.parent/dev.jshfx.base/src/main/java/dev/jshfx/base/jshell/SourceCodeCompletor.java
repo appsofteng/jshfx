@@ -10,6 +10,7 @@ import java.util.Set;
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jshfx.fxmisc.richtext.CompletionItem;
+import dev.jshfx.jx.tools.JavaSourceResolver.HtmlDoc;
 import dev.jshfx.jx.tools.Signature;
 import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.QualifiedNames;
@@ -101,9 +102,10 @@ class SourceCodeCompletor extends Completor {
         return docInput;
     }
 
-    public String loadDocumentation(CompletionItem item) {
+    @Override
+    public HtmlDoc loadDocumentation(CompletionItem item) {
         SourceCodeCompletionItem sourceCodeCompletionItem = (SourceCodeCompletionItem) item;
-        String doc = "";
+        HtmlDoc doc = null;
         if (!sourceCodeCompletionItem.getSignature().toString().isEmpty()) {
 
             doc = session.getJavaSourceResolver().getHtmlDoc(sourceCodeCompletionItem.getSignature());
@@ -112,9 +114,38 @@ class SourceCodeCompletor extends Completor {
         return doc;
     }
 
+    /*
+     * Simplified reference resolution. Does not search imports for types and implemented interfaces and super classes for members.
+     */
     @Override
-    public CompletionItem getCompletionItem(String url) {
-        var item = new SuggestionCompletionItem(Signature.get(url, null, this::resolveType));
+    public CompletionItem getCompletionItem(String reference, HtmlDoc data) {
+        
+        String[] parts = reference.split("#"); 
+        
+        String resolvedRef = reference;
+        String type = parts[0];
+        String member = parts.length > 1 ? parts[1] : "";
+        
+        if (type.isEmpty()) {
+            type = data.signature().getTypeFullName();
+        }
+        
+        int i = type.indexOf('.');
+        
+        if (i == -1) {
+            QualifiedNames qualifiedNames = session.getJshell().sourceCodeAnalysis()
+                    .listQualifiedNames(type, type.length());
+            if (qualifiedNames.getNames().size() == 1) {
+                type = qualifiedNames.getNames().get(0);
+            } else {
+                type = data.packageName() + "." + type;
+            }
+        } 
+        
+        resolvedRef = member.isEmpty() ? type : type + "." + member;   
+                
+        var item = new SuggestionCompletionItem(Signature.get(resolvedRef, null, this::resolveType));
+        
         return item;
     }
 

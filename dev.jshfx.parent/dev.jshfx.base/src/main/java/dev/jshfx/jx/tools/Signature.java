@@ -4,13 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public class Signature {
-
-    private static Pattern methodParameterPattern;
 
     private final String signature;
     private String topTypeFullName;
@@ -167,51 +162,58 @@ public class Signature {
 
     private void parseMethodParameterTypes(String parameters) {
 
-        Matcher matcher = getMethodParameterPattern().matcher(parameters);
+        int genericDelimiters = 0;
+        int typeStartIndex = 0;
+        int typeEndIndex = 0;
 
-        while (matcher.find()) {
-            String paramType = Stream.of(1, 2).map(i -> matcher.group(i)).filter(s -> s != null).findFirst().get();
-
-            var noArrayType = paramType;
-            var array = "";
-
-            if (noArrayType.endsWith("[]")) {
-                noArrayType = noArrayType.substring(0, noArrayType.indexOf("["));
-                array = "[]";
-            } else if (noArrayType.endsWith("...")) {
-                noArrayType = noArrayType.substring(0, noArrayType.indexOf("."));
-                array = "...";
+        for (int i = 0; i < parameters.length(); i++) {
+            char c = parameters.charAt(i);
+            if (c == '<') {
+                genericDelimiters++;
+            } else if (c == '>') {
+                genericDelimiters--;
+                typeEndIndex = i;
+            } else if (c == ' ' || c == ']' || c == '.') {
+                typeEndIndex = i;
             }
 
-            int i = noArrayType.lastIndexOf(".");
-
-            if (i == -1) {
-                var resolvedType = resolveFullTypeName.apply(noArrayType);
-                if (resolvedType != null) {
-                    noArrayType = resolvedType;
+            if (c == ',' && genericDelimiters == 0 || i == parameters.length() - 1) {
+                if (typeEndIndex == typeStartIndex) {
+                    typeEndIndex = c == ',' ? i - 1 : i;
                 }
+                var type = parameters.substring(typeStartIndex, typeEndIndex + 1).trim();
+                parseMethodParameterType(type);
+                typeStartIndex = i + 1;
+                typeEndIndex = typeStartIndex;
             }
-
-            paramType = noArrayType + array;
-
-            methodParameterTypes.add(paramType);
         }
     }
 
-    private static Pattern getMethodParameterPattern() {
+    private void parseMethodParameterType(String paramType) {
 
-        if (methodParameterPattern == null) {
-            var typePattern = "(?:[\\w]+\\.)*[\\w]{2,}";
-            var varArgsPattern = typePattern + "(?:\\.\\.\\.)";
-            var typeOrArrayPattern = typePattern + "(?:\\[\\])?";
+        var noArrayType = paramType.replaceAll("<.*>", "");
+        var array = "";
 
-            String parameterPattern = String.format("(%s)|(%s)(?: +|<.*?> )",
-                    varArgsPattern, typeOrArrayPattern);
-
-            methodParameterPattern = Pattern.compile(parameterPattern);
+        if (noArrayType.endsWith("[]")) {
+            noArrayType = noArrayType.substring(0, noArrayType.indexOf("["));
+            array = "[]";
+        } else if (noArrayType.endsWith("...")) {
+            noArrayType = noArrayType.substring(0, noArrayType.indexOf("."));
+            array = "...";
         }
 
-        return methodParameterPattern;
+        int i = noArrayType.lastIndexOf(".");
+
+        if (i == -1) {
+            var resolvedType = resolveFullTypeName.apply(noArrayType);
+            if (resolvedType != null) {
+                noArrayType = resolvedType;
+            }
+        }
+
+        paramType = noArrayType + array;
+
+        methodParameterTypes.add(paramType);
     }
 
     public enum Kind {

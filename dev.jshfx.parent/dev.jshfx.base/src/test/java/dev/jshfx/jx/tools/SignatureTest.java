@@ -71,7 +71,7 @@ public class SignatureTest {
     }
     
     @Test
-    public void testMethodName1() {
+    public void testMethod1() {
         String expectedTopTypeFullName = "java.lang.String";
         String expectedTypeFullName = "java.lang.String";
         String expectedFullName = "java.lang.String.charAt";
@@ -87,7 +87,7 @@ public class SignatureTest {
     }
     
     @Test
-    public void testMethodName2() {
+    public void testMethod2() {
         String expectedTopTypeFullName = "java.lang.String";
         String expectedTypeFullName = "java.lang.String";
         String expectedFullName = "java.lang.String.codePointCount";
@@ -103,7 +103,7 @@ public class SignatureTest {
     }
     
     @Test
-    public void testMethodNameVarArgs() {
+    public void testMethodVarArgs() {
         String expectedTopTypeFullName = "java.lang.String";
         String expectedTypeFullName = "java.lang.String";
         String expectedFullName = "java.lang.String.formatted";
@@ -119,7 +119,7 @@ public class SignatureTest {
     }
     
     @Test
-    public void testMethodNameArray() {
+    public void testMethodArray() {
         String expectedTopTypeFullName = "java.lang.String";
         String expectedTypeFullName = "java.lang.String";
         String expectedFullName = "java.lang.String.getBytes";
@@ -135,7 +135,7 @@ public class SignatureTest {
     }
     
     @Test
-    public void testMethodNameGeneric() {
+    public void testMethodGeneric() {
         String expectedTopTypeFullName = "java.lang.String";
         String expectedTypeFullName = "java.lang.String";
         String expectedFullName = "java.lang.String.transform";
@@ -151,7 +151,7 @@ public class SignatureTest {
     }
     
     @Test
-    public void testMethodNameGenericMore() {
+    public void testMethodGenericMore() {
         String expectedTopTypeFullName = "org.example.Example";
         String expectedTypeFullName = "org.example.Example";
         String expectedFullName = "org.example.Example.method";
@@ -167,13 +167,45 @@ public class SignatureTest {
     }
     
     @Test
-    public void testMethodNameGeneric2() {
+    public void testMethodGeneric2() {
         String expectedTopTypeFullName = "org.example.Example";
         String expectedTypeFullName = "org.example.Example";
         String expectedFullName = "org.example.Example.method";
         List<String> expectedMethodParamTypes = List.of("java.util.List", "java.util.List", "java.util.Map");
 
         var signature = Signature.get("void Example.method(List<String> list1, List<List<Double>> list2, Map<String, List<Double>> map)", null, resolveType);
+
+        assertEquals(Signature.Kind.METHOD, signature.getKind());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
+        assertEquals(expectedTypeFullName, signature.getTypeFullName());
+        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
+    }
+    
+    @Test
+    public void testMethodType() {
+        String expectedTopTypeFullName = "org.example.Example";
+        String expectedTypeFullName = "org.example.Example";
+        String expectedFullName = "org.example.Example.method";
+        List<String> expectedMethodParamTypes = List.of("int");
+
+        var signature = Signature.get("void Example.method(int)", null, resolveType);
+
+        assertEquals(Signature.Kind.METHOD, signature.getKind());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
+        assertEquals(expectedTypeFullName, signature.getTypeFullName());
+        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
+    }
+    
+    @Test
+    public void testMethodTypes() {
+        String expectedTopTypeFullName = "org.example.Example";
+        String expectedTypeFullName = "org.example.Example";
+        String expectedFullName = "org.example.Example.method";
+        List<String> expectedMethodParamTypes = List.of("int", "java.lang.String");
+
+        var signature = Signature.get("void Example.method(int, String)", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());
         assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());

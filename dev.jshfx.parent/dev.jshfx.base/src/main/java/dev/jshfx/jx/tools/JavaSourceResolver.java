@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.ResourceBundle;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Name;
@@ -26,7 +26,6 @@ import com.sun.source.doctree.ParamTree;
 import com.sun.source.doctree.ReturnTree;
 import com.sun.source.doctree.SeeTree;
 import com.sun.source.doctree.SinceTree;
-import com.sun.source.doctree.TextTree;
 import com.sun.source.doctree.ThrowsTree;
 import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
@@ -45,14 +44,14 @@ public class JavaSourceResolver {
 
     private JavaCompiler compiler;
     private StandardJavaFileManager fileManager;
-    private ResourceBundle resourceBundle;
+    private Function<String, String> resourceBundle;
 
     public JavaSourceResolver() {
         compiler = ToolProvider.getSystemJavaCompiler();
         fileManager = compiler.getStandardFileManager(null, null, null);
     }
 
-    public JavaSourceResolver setResourceBundle(ResourceBundle resourceBundle) {
+    public JavaSourceResolver setResourceBundle(Function<String, String> resourceBundle) {
         this.resourceBundle = resourceBundle;
 
         return this;
@@ -76,8 +75,9 @@ public class JavaSourceResolver {
         }
     }
 
-    public String getHtmlDoc(Signature signature) {
+    public HtmlDoc getHtmlDoc(Signature signature) {
         StringBuilder htmlBuilder = new StringBuilder();
+        HtmlDoc htmlDoc = null;
 
         try {
             JavaFileObject jfo = fileManager.getJavaFileForInput(StandardLocation.SOURCE_PATH,
@@ -95,13 +95,15 @@ public class JavaSourceResolver {
 
             htmlBuilder.append("<p><strong>").append(signature.toString()).append("</strong></p>").append("\n");
             docScanner.scan(new DocTreePath(treePath, docCommentTree), htmlBuilder);
+            
+            htmlDoc = new HtmlDoc(signature, scanner.getPackageName(), scanner.getImports(), htmlBuilder.toString());    
 
         } catch (IOException e) {
 
             e.printStackTrace();
-        }
-
-        return htmlBuilder.toString();
+        }            
+        
+        return htmlDoc;
     }
 
     private static class Result extends Error {
@@ -122,6 +124,7 @@ public class JavaSourceResolver {
     private static class SignatureTreePathScanner extends TreePathScanner<TreePath, Signature> {
 
         private String namespace;
+        private String packageName;
         private List<String> imports;
         private static final List<String> PRIMITIVES = List.of("byte", "char", "double", "float", "int", "long",
                 "short");
@@ -130,6 +133,14 @@ public class JavaSourceResolver {
             return namespace + "." + name;
         }
 
+        public String getPackageName() {
+            return packageName;
+        }
+        
+        public List<String> getImports() {
+            return imports;
+        }
+        
         private List<String> getFullNames(String name) {
 
             List<String> names = List.of(name);
@@ -156,7 +167,8 @@ public class JavaSourceResolver {
 
         @Override
         public TreePath visitCompilationUnit(CompilationUnitTree node, Signature signature) {
-            namespace = node.getPackageName().toString();
+            packageName = node.getPackageName().toString();
+            namespace = packageName;
             imports = node.getImports().stream().map(i -> i.getQualifiedIdentifier().toString())
                     .collect(Collectors.toCollection(() -> new ArrayList<>()));
             imports.add("java.lang.*");
@@ -243,10 +255,10 @@ public class JavaSourceResolver {
 
             processInlineTag(node.getFullBody(), htmlBuilder);
 
-            htmlBuilder.append("<br>\n");
+            lineEnd(htmlBuilder);
             scan(node.getBlockTags(), htmlBuilder);
 
-            htmlBuilder.append("<br>");
+            lineEnd(htmlBuilder);
 
             return null;
         }
@@ -268,24 +280,20 @@ public class JavaSourceResolver {
         }
 
         public Void visitLink(LinkTree node, StringBuilder htmlBuilder) {
-            var label = node.getLabel();
+            var label = processInlineTag(node.getLabel());
             var reference = node.getReference().getSignature();
 
-            htmlBuilder.append("<code>");
-
-            if (label.isEmpty()) {
-                htmlBuilder.append(String.format(" <a href=\"%s\">%s</a> ", reference, reference.replace("#", ".")));
+            if (node.getKind() == DocTree.Kind.LINK) {
+                code(getLink(reference, label), htmlBuilder);
             } else {
-                htmlBuilder.append(String.format(" <a href=\"%s\">%s</a> ", reference, label));
+                htmlBuilder.append(getLink(reference, label));
             }
-
-            htmlBuilder.append("</code>");
 
             return null;
         }
 
         public Void visitLiteral(LiteralTree node, StringBuilder htmlBuilder) {
-            htmlBuilder.append(String.format(" <code>%s</code> ", node.getBody()));
+            code(node.getBody(), htmlBuilder);
 
             return null;
         }
@@ -304,7 +312,7 @@ public class JavaSourceResolver {
         public Void visitReturn(ReturnTree node, StringBuilder htmlBuilder) {
             appendBlockTagName(node, htmlBuilder);
             processInlineTag(node.getDescription(), htmlBuilder);
-            htmlBuilder.append("<br>").append("\n");
+            lineEnd(htmlBuilder);
 
             return null;
         }
@@ -312,9 +320,8 @@ public class JavaSourceResolver {
         public Void visitSee(SeeTree node, StringBuilder htmlBuilder) {
 
             appendBlockTagName(node, htmlBuilder);
-            var reference = getReference(
-                    node.getReference().stream().map(Object::toString).collect(Collectors.joining()).strip());
-            reference = String.format("<a href=\"%s\">%s</a>", reference, reference);
+            var reference =  processInlineTag(node.getReference());
+            reference = getLink(reference);
             appendBlockTagCode(reference, htmlBuilder);
 
             return null;
@@ -332,10 +339,8 @@ public class JavaSourceResolver {
 
             appendBlockTagName(node, htmlBuilder);
             var reference = node.getExceptionName().getSignature();
-            var descBuilder = new StringBuilder();
-            processInlineTag(node.getDescription(), descBuilder);
-            htmlBuilder.append(String.format("<code><a href=\"%s\">%s</a></code> - %s", reference,
-                    reference.replace("#", "."), descBuilder)).append("<br>");
+            var desc = processInlineTag(node.getDescription());
+            appendBlockTag(getLink(reference) + " - " + desc, htmlBuilder);
 
             return null;
         }
@@ -344,21 +349,24 @@ public class JavaSourceResolver {
 
             appendBlockTagName(node, htmlBuilder);
             processInlineTag(node.getContent(), htmlBuilder);
-            htmlBuilder.append("<br>").append("\n");
+            lineEnd(htmlBuilder);
 
             return null;
         }
 
         public Void visitUnknownInlineTag(UnknownInlineTagTree node, StringBuilder htmlBuilder) {
             processInlineTag(node.getContent(), htmlBuilder);
-            
+
             return null;
         }
 
-        private String getReference(Object obj) {
-            return obj.toString().replace("#", ".");
+        private String processInlineTag(List<? extends DocTree> docTrees) {
+            var stringBuilder = new StringBuilder();
+            processInlineTag(docTrees, stringBuilder);
+            
+            return stringBuilder.toString();
         }
-
+        
         private void processInlineTag(List<? extends DocTree> docTrees, StringBuilder htmlBuilder) {
 
             docTrees.forEach(t -> {
@@ -371,21 +379,56 @@ public class JavaSourceResolver {
             });
         }
 
+        private String getLink(Object reference) {
+
+            return getLink(reference, null);
+        }
+
+        private String getLink(Object reference, Object label) {
+            String labelStr = null;
+
+            if (label == null || label.toString().isEmpty()) {
+                labelStr = reference.toString().replace("#", ".");
+
+                if (labelStr.startsWith(".")) {
+                    labelStr = labelStr.substring(1);
+                }
+            } else {
+                labelStr = label.toString();
+            }
+
+            String link = String.format("<a href=\"%s\">%s</a>", reference, labelStr);
+
+            return link;
+        }
+
         private void appendBlockTagName(BlockTagTree tag, StringBuilder htmlBuilder) {
 
             if (!blockPassed.contains(tag.getTagName())) {
                 blockPassed.add(tag.getTagName());
-                htmlBuilder.append("<br>").append(
-                        String.format("<strong>%s:</strong><br>\n", resourceBundle.getString(tag.getTagName())));
+                htmlBuilder.append("<br>")
+                        .append(String.format("<strong>%s:</strong><br>\n", resourceBundle.apply(tag.getTagName())));
             }
         }
 
-        private void appendBlockTag(Object value, StringBuilder htmlBuilder) {
-            htmlBuilder.append(value).append("<br>").append("\n");
+        private void code(Object value, StringBuilder htmlBuilder) {
+            htmlBuilder.append("<code>").append(value).append("</code>");
         }
 
         private void appendBlockTagCode(Object value, StringBuilder htmlBuilder) {
-            htmlBuilder.append("<code>").append(value).append("</code>").append("<br>").append("\n");
+            code(value, htmlBuilder);
+            lineEnd(htmlBuilder);
+        }
+
+        private void appendBlockTag(Object value, StringBuilder htmlBuilder) {
+            htmlBuilder.append(value);
+            lineEnd(htmlBuilder);
+        }
+
+        private void lineEnd(StringBuilder htmlBuilder) {
+            htmlBuilder.append("<br>").append("\n");
         }
     }
+    
+    public record HtmlDoc(Signature signature, String packageName, List<String> imports, String doc) {}
 }

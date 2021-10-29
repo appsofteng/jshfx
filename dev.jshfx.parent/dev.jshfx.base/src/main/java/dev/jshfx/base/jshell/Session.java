@@ -67,7 +67,7 @@ public class Session {
         settings = loadSettings();
         env = loadEnv();
         javaSourceResolver = new JavaSourceResolver();
-        javaSourceResolver.setResourceBundle(FXResourceBundle.getBundle().getResourceBundle());
+        javaSourceResolver.setResourceBundle(k -> FXResourceBundle.getBundle().getString​(k));
         setSources();
         feedback = new Feedback(consoleModel, settings);
         idGenerator = new IdGenerator();

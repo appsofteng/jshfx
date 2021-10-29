@@ -10,7 +10,6 @@ import dev.jshfx.jfx.util.FXResourceBundle;
 import javafx.concurrent.Task;
 import jdk.jshell.DeclarationSnippet;
 import jdk.jshell.EvalException;
-import jdk.jshell.ImportSnippet;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Kind;
 import jdk.jshell.Snippet.Status;
