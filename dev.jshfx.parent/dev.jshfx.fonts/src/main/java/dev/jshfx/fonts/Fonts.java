@@ -19,7 +19,7 @@ public class Fonts {
     private static final Map<String, String> URLS = Map.of(FONT_AWESOME_5_FREE_REGULAR,
             getUrl("/dev/jshfx/fonts/Font_Awesome_5_Free-Regular-400.otf"), FONT_AWESOME_5_FREE_SOLID,
             getUrl("/dev/jshfx/fonts/Font_Awesome_5_Free-Solid-900.otf"), MATERIAL_ICONS,
-            getUrl("/dev/jshfx/fonts/MaterialIcons-Regular-2.ttf"), OCTICONS,
+            getUrl("/dev/jshfx/fonts/MaterialIcons-Regular.ttf"), OCTICONS,
             getUrl("/dev/jshfx/fonts/octicons.ttf"));
 
     private static String getUrl(String path) {

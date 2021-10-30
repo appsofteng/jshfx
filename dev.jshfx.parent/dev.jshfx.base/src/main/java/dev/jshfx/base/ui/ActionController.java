@@ -1,118 +1,119 @@
 package dev.jshfx.base.ui;
 
+import java.nio.file.Path;
+import java.util.List;
+
 public class ActionController {
 
     private RootPane rootPane;
+    private ContentPaneFactory contentPaneFactory;
+    
+    protected Actions actions;
 
-    public ActionController(RootPane rootPane) {
+    public ActionController(RootPane rootPane, Actions actions) {
         this.rootPane = rootPane;
+        this.actions = actions;
+        contentPaneFactory = new ContentPaneFactory();
+    }
+
+    public void init(ContentPane contentPane) {
+        
+    }
+    
+    public void bind(ContentPane contentPane) {
+        actions.allSelectedProperty().unbind();
+        actions.clearProperty().unbind();
+        actions.selectionEmptyProperty().unbind();
+        actions.redoEmptyProperty().unbind();
+        actions.undoEmptyProperty().unbind();
+        actions.historyStartReachedProperty().unbind();
+        actions.historyEndReachedProperty().unbind();
     }
     
     public void copy() {
-        var area = rootPane.getSelectedShell().getConsolePane().getFocusedArea();
-        if (area != null) {
-            area.copy();
-        }
-    }
-    
-    public void cut() {
-        var area = rootPane.getSelectedShell().getConsolePane().getFocusedArea();
-        if (area != null) {
-            area.cut();
-        }
-    }
-    
-    public void paste() {
-        var area = rootPane.getSelectedShell().getConsolePane().getFocusedArea();
-        if (area != null) {
-            area.paste();
-        }
-    }
-    
-    public void selectAll() {
-        var area = rootPane.getSelectedShell().getConsolePane().getFocusedArea();
-        if (area != null) {
-            area.selectAll();
-        }
-    }
-    
-    public void clear() {
-        var area = rootPane.getSelectedShell().getConsolePane().getFocusedArea();
-        if (area != null) {
-            area.clear();
-        }
-    }
-    
-    public void undo() {
-        var area = rootPane.getSelectedShell().getConsolePane().getFocusedArea();
-        if (area != null) {
-            area.undo();
-        }
-    }
-    
-    public void redo() {
-        var area = rootPane.getSelectedShell().getConsolePane().getFocusedArea();
-        if (area != null) {
-            area.redo();
-        }
-    }
-    
-    public void submit() {
-        rootPane.getSelectedShell().submit();
-    }
-    
-    public void submitLine() {
-        rootPane.getSelectedShell().submitLine();
-    }
-    
-    public void eval() {
-        rootPane.getSelectedShell().eval();
-    }
-    
-    public void evalLine() {
-        rootPane.getSelectedShell().evalLine();
-    }
-    
-    public void historyUp() {
-        rootPane.getSelectedShell().getConsolePane().historyUp();
-    }
-    
-    public void historyDown() {
-        rootPane.getSelectedShell().getConsolePane().historyDown();
-    }
-    
-    public void insertDirPath() {
-        rootPane.getSelectedShell().insertDirPath();
-    }
-    
-    public void insertFilePaths() {
-        rootPane.getSelectedShell().insertFilePaths();
-    }
-    
-    public void insertSaveFilePath() {
-        rootPane.getSelectedShell().insertSaveFilePath();
-    }
-    
-    public void showCodeCompletion() {
-        rootPane.getSelectedShell().showCodeCompletion();
-    }
-    
-    public void newShell() {
-        rootPane.newShell();
-    }
-    
-    public void openFile() {
 
+    }
+
+    public void cut() {
+
+    }
+
+    public void paste() {
+
+    }
+
+    public void selectAll() {
+
+    }
+
+    public void clear() {
+
+    }
+
+    public void undo() {
+
+    }
+
+    public void redo() {
+
+    }
+
+    public void submit() {
+
+    }
+
+    public void submitLine() {
+
+    }
+
+    public void eval() {
+
+    }
+
+    public void evalLine() {
+
+    }
+
+    public void historyUp() {
+
+    }
+
+    public void historyDown() {
+
+    }
+
+    public void insertDirPath() {
+
+    }
+
+    public void insertFilePaths() {
+
+    }
+
+    public void insertSaveFilePath() {
+
+    }
+
+    public void showCodeCompletion() {
+
+    }
+
+    public void newShell() {
+        rootPane.newTab(contentPaneFactory.newShellPane());
+    }
+
+    public void openFile() {
+       List<Path> files = FileDialogUtils.getJavaFiles(rootPane.getScene().getWindow());
     }
 
     public void saveFile() {
 
     }
-    
+
     public void saveAsFile() {
 
     }
-    
+
     public void saveAll() {
 
     }

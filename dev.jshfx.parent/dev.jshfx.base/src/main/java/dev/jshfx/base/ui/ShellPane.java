@@ -28,7 +28,7 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.geometry.Bounds;
 import javafx.scene.control.IndexRange;
 
-public class ShellPane extends Part {
+public class ShellPane extends ContentPane {
 
     private SplitConsolePane consolePane;
     private Completion completion;
@@ -52,8 +52,6 @@ public class ShellPane extends Part {
         getChildren().add(consolePane);
 
         consolePane.getInputArea().setParagraphGraphicFactory(LineNumberFactory.get(consolePane.getInputArea()));
-        Actions.get().setEditContextMenu(consolePane.getInputArea());
-        Actions.get().setReadOnlyContextMenu(consolePane.getOutputArea());
 
         CodeAreaWrappers.get(consolePane.getInputArea(), "java").style()
                 .highlighting(consolePane.getConsoleModel().getReadFromPipe()).indentation();
@@ -75,7 +73,7 @@ public class ShellPane extends Part {
             if (n != null) {
                 session.setIO();
             }
-        });
+        });       
 
         consolePane.getInputArea().caretPositionProperty().addListener((v, o, n) -> {
             if (CompletionPopup.get().isShowing()) {
@@ -244,6 +242,12 @@ public class ShellPane extends Part {
         });
     }
 
+    @Override
+    public void activate() {
+        session.setIO();
+    }
+    
+    @Override
     public void dispose() {
         var task = CTask.create(() -> session.close()).onFinished(t -> consolePane.dispose());
 
