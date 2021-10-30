@@ -1,7 +1,5 @@
 package dev.jshfx.base.ui;
 
-import org.fxmisc.richtext.GenericStyledArea;
-
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -17,14 +15,13 @@ public class RootPane extends BorderPane {
 
 	private TabPane centerPane;
 	private ObjectProperty<ShellPane> selectedShell = new SimpleObjectProperty<>();
-	private ObjectProperty<GenericStyledArea<?, ?, ?>> inputArea = new SimpleObjectProperty<>();
-	private ObjectProperty<GenericStyledArea<?, ?, ?>> outputArea = new SimpleObjectProperty<>();
+    private BindingManager bindingManager;
 
 	public RootPane() {
 		centerPane = new TabPane();
 		centerPane.setTabDragPolicy(TabDragPolicy.REORDER);
-		
-		Actions.get().init(this);
+		bindingManager = new BindingManager(this);
+		Actions.get().init(bindingManager, new ActionController(this));
 
 		ToolBar toolBar = Actions.get().getToolbar();
 
@@ -40,12 +37,8 @@ public class RootPane extends BorderPane {
 			if (n != null) {
 				selectedShell.set((ShellPane) n.getContent());
 				selectedShell.get().getSession().setIO();
-				inputArea.set(selectedShell.get().getConsolePane().getInputArea());
-				outputArea.set(selectedShell.get().getConsolePane().getOutputArea());
 			} else {
 				selectedShell.set(null);
-				inputArea.set(null);
-				outputArea.set(null);
 		        System.setErr(null);
 		        System.setOut(null);
 			}
@@ -58,14 +51,6 @@ public class RootPane extends BorderPane {
 	
 	public ReadOnlyObjectProperty<ShellPane> selectedShellProperty() {
 		return selectedShell;
-	}
-	
-	public ReadOnlyObjectProperty<GenericStyledArea<?, ?, ?>> inputAreaProperty() {
-		return inputArea;
-	}
-	
-	public ReadOnlyObjectProperty<GenericStyledArea<?, ?, ?>> outputAreaProperty() {
-		return outputArea;
 	}
 	
 	public void newShell() {
@@ -88,6 +73,7 @@ public class RootPane extends BorderPane {
 	}
 	
 	public void dispose() {
+	    bindingManager.cancel();
 		centerPane.getTabs().forEach(t -> ((ShellPane)t.getContent()).dispose());
 	}
 }

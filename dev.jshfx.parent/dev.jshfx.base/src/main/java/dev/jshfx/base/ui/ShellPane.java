@@ -47,7 +47,7 @@ public class ShellPane extends Part {
         consolePane = new SplitConsolePane(history, List.of("block-delimiter-match"));
         getProperties().put(getClass(), consolePane.getInputArea());
         session = new Session(consolePane, taskQueuer);
-        completion = new Completion(consolePane.getInputArea(),session);
+        completion = new Completion(consolePane.getInputArea(), session);
 
         getChildren().add(consolePane);
 
@@ -70,7 +70,7 @@ public class ShellPane extends Part {
         longTitle.bind(Bindings.createStringBinding(() -> path.getPath().toString(), path.pathProperty()));
 
         consolePane.getOutputHeader().textProperty().bind(session.getTimer().textProperty());
-        
+
         sceneProperty().addListener((v, o, n) -> {
             if (n != null) {
                 session.setIO();
@@ -115,8 +115,7 @@ public class ShellPane extends Part {
     }
 
     public void showCodeCompletion() {
-        CTask<Collection<CompletionItem>> task = CTask
-                .create(() -> completion.getCompletor().getCompletionItems())
+        CTask<Collection<CompletionItem>> task = CTask.create(() -> completion.getCompletor().getCompletionItems())
                 .onSucceeded(this::codeCompletion);
 
         taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
@@ -142,7 +141,7 @@ public class ShellPane extends Part {
         }
 
         text = JShellUtils.joinCommandLines(text);
-        
+
         eval(text);
     }
 
@@ -158,7 +157,7 @@ public class ShellPane extends Part {
 
         session.process(text);
     }
-    
+
     public void submit() {
         String text = consolePane.getInputArea().getSelectedText();
         IndexRange selection = consolePane.getInputArea().getSelection();
@@ -169,9 +168,9 @@ public class ShellPane extends Part {
         } else {
             from = selection.getStart();
         }
-        
+
         String original = text;
-        
+
         text = JShellUtils.joinCommandLines(text);
         consolePane.submit(from, text, original);
 
@@ -181,14 +180,15 @@ public class ShellPane extends Part {
             consolePane.getInputArea().replaceSelection("");
         }
     }
-    
+
     public void submitLine() {
         var lineSpan = JShellUtils.getCurrentLineSpan(consolePane.getInputArea());
         int from = consolePane.getInputArea().getAbsolutePosition(lineSpan.firstParagraphIndex(), 0);
-        
-        consolePane.submit(from, lineSpan.text(), lineSpan.originalText());        
-        
-        consolePane.getInputArea().deleteText(lineSpan.firstParagraphIndex(), 0, lineSpan.lastParagraphIndex(), consolePane.getInputArea().getParagraphLength(lineSpan.lastParagraphIndex()));
+
+        consolePane.submit(from, lineSpan.text(), lineSpan.originalText());
+
+        consolePane.getInputArea().deleteText(lineSpan.firstParagraphIndex(), 0, lineSpan.lastParagraphIndex(),
+                consolePane.getInputArea().getParagraphLength(lineSpan.lastParagraphIndex()));
     }
 
     public Session getSession() {
@@ -206,34 +206,37 @@ public class ShellPane extends Part {
     public void insertDirPath() {
         var dir = FileDialogUtils.getDirectory(getScene().getWindow());
         var joining = getJoining();
-        
+
         dir.ifPresent(d -> {
-            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), joining.prefix() + d.toString() + joining.delimiter());
+            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(),
+                    joining.prefix() + d.toString() + joining.delimiter());
         });
     }
 
     public void insertFilePaths() {
         var files = FileDialogUtils.getJavaFiles(getScene().getWindow());
         var joining = getJoining();
-        
+
         files.forEach(f -> {
-            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), joining.prefix() + f.toString() + joining.delimiter());
+            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(),
+                    joining.prefix() + f.toString() + joining.delimiter());
         });
     }
-    
-    record Joining(String prefix, String delimiter) {}
-    
+
+    record Joining(String prefix, String delimiter) {
+    }
+
     private Joining getJoining() {
         int end = consolePane.getInputArea().getCaretPosition();
         int start = end > 0 ? end - 1 : 0;
-        String caretChar = consolePane.getInputArea().getText(start, end);  
+        String caretChar = consolePane.getInputArea().getText(start, end);
         String delimiter = caretChar.matches("\\s|^$") ? " " : "";
         String prefix = delimiter.isEmpty() ? File.pathSeparator : "";
-        
+
         return new Joining(prefix, delimiter);
     }
 
-    public void insertSaveFilePaths() {
+    public void insertSaveFilePath() {
         var file = FileDialogUtils.saveJavaFile(getScene().getWindow());
 
         file.ifPresent(f -> {

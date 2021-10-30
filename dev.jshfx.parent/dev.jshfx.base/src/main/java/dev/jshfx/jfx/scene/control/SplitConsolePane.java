@@ -14,9 +14,12 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
@@ -32,6 +35,7 @@ public class SplitConsolePane extends BorderPane {
     private ConsoleModel consoleModel;
     private CodeArea inputArea = new CodeArea();
     private CodeArea outputArea = new CodeArea();
+    private ObjectProperty<CodeArea> focusedArea = new SimpleObjectProperty<>();
     private Label outputHeader = new Label();
     private ObservableList<String> history = FXCollections.observableArrayList();
     private int historyIndex;
@@ -95,6 +99,14 @@ public class SplitConsolePane extends BorderPane {
         return outputArea;
     }
     
+    public CodeArea getFocusedArea() {
+        return focusedArea.get();
+    }
+    
+    public ReadOnlyObjectProperty<CodeArea> focusedAreaProperty() {
+        return focusedArea;
+    }
+    
     public Label getOutputHeader() {
         return outputHeader;
     }
@@ -129,6 +141,22 @@ public class SplitConsolePane extends BorderPane {
         inputArea.sceneProperty().addListener((v, o, n) -> {
             if (n != null) {
                 inputArea.requestFocus();
+            }
+        });
+        
+        inputArea.focusedProperty().addListener((v,o,n) -> {
+            if (n) {
+                focusedArea.set(inputArea);
+            } else {
+                focusedArea.set(null);
+            }
+        });
+        
+        outputArea.focusedProperty().addListener((v,o,n) -> {
+            if (n) {
+                focusedArea.set(outputArea);
+            } else {
+                focusedArea.set(null);
             }
         });
 
