@@ -30,6 +30,10 @@ public final class ResourceManager extends Manager {
 		return new Image(caller.getResourceAsStream(IMAGE_DIR + name));
 	}	
 	
+	   public Image getImage(String name, double width, double height, boolean preserveRatio, boolean smooth) {
+	        return new Image(caller.getResourceAsStream(IMAGE_DIR + name), width, height, preserveRatio, smooth);
+	    }   
+	
 	public Image getIconImage() {
 		if (iconImage == null) {
 			iconImage = new Image(caller.getResourceAsStream(IMAGE_DIR + ICON_IMAGE));

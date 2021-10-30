@@ -108,4 +108,12 @@ public class ActionController {
     public void saveFile() {
 
     }
+    
+    public void saveAsFile() {
+
+    }
+    
+    public void saveAll() {
+
+    }
 }
