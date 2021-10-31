@@ -35,42 +35,50 @@ public class RootPane extends BorderPane {
                 contentPane.activate();
                 actions.bind(contentPane);
             } else {
-              FileManager.get().restoreOutput();
+                FileManager.get().restoreOutput();
             }
         });
     }
 
+    public boolean exists(String name) {
+        return centerPane.getTabs().stream().filter(t -> t.getContent() instanceof PathPane)
+                .anyMatch(t -> ((PathPane) t.getContent()).getFXPath().getPath().getFileName().toString().equals(name));
+    }
+    
     public List<Path> getNew(List<Path> paths) {
         List<Path> newPaths = paths.stream()
-                .filter(p -> centerPane.getTabs().stream()
-                        .filter(t -> t.getContent() instanceof PathPane)
+                .filter(p -> centerPane.getTabs().stream().filter(t -> t.getContent() instanceof PathPane)
                         .noneMatch(t -> ((PathPane) t.getContent()).getFXPath().getPath().equals(p)))
                 .collect(Collectors.toList());
-        
+
         if (newPaths.isEmpty()) {
-            var tab = centerPane.getTabs().stream()
-            .filter(t -> t.getContent() instanceof PathPane)
-            .filter(t -> ((PathPane) t.getContent()).getFXPath().getPath().equals(paths.get(0)))
-            .findFirst().get();
+            var tab = centerPane.getTabs().stream().filter(t -> t.getContent() instanceof PathPane)
+                    .filter(t -> ((PathPane) t.getContent()).getFXPath().getPath().equals(paths.get(0))).findFirst()
+                    .get();
             centerPane.getSelectionModel().select(tab);
         }
 
         return newPaths;
     }
 
+    public List<ContentPane> getModified() {
+        return centerPane.getTabs().stream().filter(t -> t.getContent() instanceof PathPane)
+                .map(t -> (PathPane) t.getContent()).filter(ContentPane::isModified).collect(Collectors.toList());
+    }
+
     public void add(List<ContentPane> contentPanes) {
         var tabs = contentPanes.stream().map(this::add).collect(Collectors.toList());
-        
+
         if (!tabs.isEmpty()) {
             centerPane.getSelectionModel().select(tabs.get(0));
         }
     }
-    
+
     public void addSelect(ContentPane contentPane) {
         var tab = add(contentPane);
         centerPane.getSelectionModel().select(tab);
     }
-    
+
     public Tab add(ContentPane contentPane) {
         actions.init(contentPane);
         Tab tab = new Tab();
@@ -84,10 +92,13 @@ public class RootPane extends BorderPane {
         contentPane.closedProperty().addListener((b, o, n) -> {
             if (n) {
 
-                Platform.runLater(() -> centerPane.getTabs().remove(tab));
+                Platform.runLater(() -> {
+                    centerPane.getTabs().remove(tab);
+                    contentPane.dispose();
+                });
             }
         });
-        
+
         return tab;
     }
 

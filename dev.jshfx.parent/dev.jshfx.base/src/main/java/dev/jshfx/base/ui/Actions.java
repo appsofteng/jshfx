@@ -19,6 +19,7 @@ import dev.jshfx.base.sys.ResourceManager;
 import dev.jshfx.fonts.Fonts;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import javafx.application.Platform;
+import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.ScheduledService;
@@ -41,7 +42,7 @@ public class Actions {
     private ScheduledService<Void> clipboardService;
     private ActionController actionController;
     private Map<String, ActionController> actionControllers = new HashMap<>();
-    
+
     private Action newAction;
     private Action openAction;
     private Action saveAction;
@@ -68,7 +69,10 @@ public class Actions {
 
     private Action codeCompletionAction;
 
+    private BooleanExpression savedAllExpression;
+    
     private BooleanProperty saved = new SimpleBooleanProperty();
+    private BooleanProperty savedAll = new SimpleBooleanProperty();
     private BooleanProperty clipboardEmpty = new SimpleBooleanProperty();
     private BooleanProperty allSelected = new SimpleBooleanProperty();
     private BooleanProperty clear = new SimpleBooleanProperty();
@@ -207,7 +211,6 @@ public class Actions {
         saveAction = new Action(e -> actionController.saveFile());
         saveAction.setGraphic(
                 GlyphFontRegistry.font(Fonts.FONT_AWESOME_5_FREE_SOLID).create(Fonts.Unicode.FLOPPY_DISK).size(14));
-        saveAction.setDisabled(true);
         saveAction.setAccelerator(KeyCombination.keyCombination("Shortcut+S"));
         FXResourceBundle.getBundle().put(saveAction.textProperty(), "save");
         FXResourceBundle.getBundle().put(saveAction.longTextProperty(), "saveLong",
@@ -221,13 +224,13 @@ public class Actions {
         FXResourceBundle.getBundle().put(saveAsAction.longTextProperty(), "saveAsLong",
                 saveAsAction.getAccelerator().getDisplayText());
 
-        saveAllAction = new Action(e -> actionController.saveAll());
+        saveAllAction = new Action(e -> saveAll());
         saveAllAction.setGraphic(new ImageView(ResourceManager.get().getImage("save-all.png")));
-        saveAllAction.setDisabled(true);
         saveAllAction.setAccelerator(KeyCombination.keyCombination("Shift+Shortcut+S"));
         FXResourceBundle.getBundle().put(saveAllAction.textProperty(), "saveAll");
         FXResourceBundle.getBundle().put(saveAllAction.longTextProperty(), "saveAllLong",
                 saveAllAction.getAccelerator().getDisplayText());
+        saveAllAction.disabledProperty().bind(savedAllProperty());
     }
 
     public void unbind() {
@@ -240,11 +243,15 @@ public class Actions {
         historyStartReachedProperty().unbind();
         historyEndReachedProperty().unbind();
     }
-    
+
     public BooleanProperty savedProperty() {
         return saved;
     }
     
+    public BooleanProperty savedAllProperty() {
+        return savedAll;
+    }
+
     public BooleanProperty allSelectedProperty() {
         return allSelected;
     }
@@ -276,8 +283,16 @@ public class Actions {
     public ActionController getActionController() {
         return actionController;
     }
-
+    
     public void init(ContentPane contentPane) {
+        
+        if (savedAllExpression == null) {
+            savedAllExpression = contentPane.modifiedProperty().not();
+        } else {
+            savedAllExpression = savedAllExpression.and(contentPane.modifiedProperty().not());
+        }
+        
+        savedAll.bind(savedAllExpression);
         getActionController(contentPane).init(contentPane);
     }
 
@@ -299,6 +314,13 @@ public class Actions {
         }
 
         return controller;
+    }
+
+    private void saveAll() {
+
+        var modifiedPanes = rootPane.getModified();
+        modifiedPanes.forEach(cp -> getActionController(cp).save(cp));
+
     }
 
     public void dispose() {

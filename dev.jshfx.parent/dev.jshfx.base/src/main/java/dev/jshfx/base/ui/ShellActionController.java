@@ -1,6 +1,5 @@
 package dev.jshfx.base.ui;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -137,18 +136,7 @@ public class ShellActionController extends ActionController {
 
     @Override
     public void saveFile() {
-        String output = shellPane.getConsolePane().getInputArea().getText();
-        Path path = shellPane.getFXPath().getPath();
-
-        if (!path.isAbsolute()) {
-            path = FileDialogUtils.saveSourceJavaFile(shellPane.getScene().getWindow(), path.getFileName()).orElse(null);
-        }
-
-        if (path != null) {
-            var savePath = path;
-            TaskManager.get().executeSequentially(
-                    CTask.create(() -> Files.writeString(savePath, output)).onSucceeded(p -> shellPane.saved(p)));
-        }
+        save(shellPane);
     }
 
     @Override
@@ -161,5 +149,22 @@ public class ShellActionController extends ActionController {
         path.ifPresent(savePath -> TaskManager.get().executeSequentially(
                 CTask.create(() -> Files.writeString(savePath, output)).onSucceeded(p -> shellPane.saved(p))));
 
+    }
+
+    @Override
+    public void save(ContentPane contentPane) {
+        var pane = (ShellPane) contentPane;
+        String output = pane.getConsolePane().getInputArea().getText();
+        Path path = pane.getFXPath().getPath();
+
+        if (!path.isAbsolute()) {
+            path = FileDialogUtils.saveSourceJavaFile(pane.getScene().getWindow(), path.getFileName()).orElse(null);
+        }
+
+        if (path != null) {
+            var savePath = path;
+            TaskManager.get().executeSequentially(
+                    CTask.create(() -> Files.writeString(savePath, output)).onSucceeded(p -> pane.saved(p)));
+        }
     }
 }

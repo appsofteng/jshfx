@@ -16,8 +16,8 @@ public class ContentPaneFactory {
     private static final List<String> SHELL_EXTENSIONS = List.of(JAVA, JSH);
     
     
-    public ContentPane newShellPane() {
-        return new ShellPane();
+    public ContentPane newShellPane(String name) {        
+        return new ShellPane(name);
     }
     public List<ContentPane> create(List<Path> paths) {
         

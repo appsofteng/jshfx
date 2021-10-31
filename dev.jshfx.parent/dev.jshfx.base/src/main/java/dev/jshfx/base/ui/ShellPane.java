@@ -33,8 +33,8 @@ public class ShellPane extends PathPane {
     private Session session;
     private TaskQueuer taskQueuer = new TaskQueuer();
 
-    public ShellPane() {
-        this(Path.of("new.jsh"),"");
+    public ShellPane(String name) {
+        this(Path.of(name),"");
     }
 
     public ShellPane(Path path, String input) {
@@ -244,6 +244,7 @@ public class ShellPane extends PathPane {
     
     @Override
     public void dispose() {
+        super.dispose();
         var task = CTask.create(() -> session.close()).onFinished(t -> consolePane.dispose());
 
         taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);

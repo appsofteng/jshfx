@@ -43,5 +43,8 @@ public class ContentPane extends StackPane {
     
     public void activate() {}
     
-    public void dispose() {}
+    public void dispose() {
+        modified.unbind();
+        modified.set(false);
+    }
 }

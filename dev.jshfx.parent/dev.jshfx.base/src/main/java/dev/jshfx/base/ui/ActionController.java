@@ -5,10 +5,11 @@ import java.util.List;
 
 import dev.jshfx.base.sys.TaskManager;
 import dev.jshfx.jfx.concurrent.CTask;
+import dev.jshfx.jfx.util.FXResourceBundle;
 
 public class ActionController {
 
-    private RootPane rootPane;
+    protected RootPane rootPane;
     private ContentPaneFactory contentPaneFactory;
 
     protected Actions actions;
@@ -97,7 +98,14 @@ public class ActionController {
     }
 
     public void newShell() {
-        rootPane.addSelect(contentPaneFactory.newShellPane());
+
+        String name = FXResourceBundle.getBundle().getString​("new");
+        int i = 0;
+        while (rootPane.exists(name + i)) {
+            i++;
+        }
+
+        rootPane.addSelect(contentPaneFactory.newShellPane(name + i));
     }
 
     public void openFile() {
@@ -117,7 +125,7 @@ public class ActionController {
 
     }
 
-    public void saveAll() {
+    public void save(ContentPane contentPane) {
 
     }
 }
