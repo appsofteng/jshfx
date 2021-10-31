@@ -1,5 +1,11 @@
 package dev.jshfx.base.ui;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import dev.jshfx.base.sys.TaskManager;
+import dev.jshfx.jfx.concurrent.CTask;
 import javafx.beans.binding.Bindings;
 
 public class ShellActionController extends ActionController {
@@ -43,12 +49,13 @@ public class ShellActionController extends ActionController {
                     shellPane.getConsolePane().focusedAreaProperty(), inputArea.selectionProperty(),
                     outputArea.selectionProperty()));
 
-            actions.clearProperty().bind(Bindings.createBooleanBinding(
-                    () -> shellPane.getConsolePane().getFocusedArea() == null
-                            || shellPane.getConsolePane().getFocusedArea() != null
-                                    && shellPane.getConsolePane().getFocusedArea().getLength() == 0,
-                    shellPane.getConsolePane().focusedAreaProperty(), inputArea.lengthProperty(),
-                    outputArea.lengthProperty()));
+            actions.clearProperty()
+                    .bind(Bindings.createBooleanBinding(
+                            () -> shellPane.getConsolePane().getFocusedArea() == null
+                                    || shellPane.getConsolePane().getFocusedArea() != null
+                                            && shellPane.getConsolePane().getFocusedArea().getLength() == 0,
+                            shellPane.getConsolePane().focusedAreaProperty(), inputArea.lengthProperty(),
+                            outputArea.lengthProperty()));
 
             actions.redoEmptyProperty().bind(Bindings.createBooleanBinding(() -> !inputArea.isRedoAvailable(),
                     inputArea.redoAvailableProperty()));
@@ -126,5 +133,22 @@ public class ShellActionController extends ActionController {
 
     public void showCodeCompletion() {
         shellPane.showCodeCompletion();
+    }
+
+    @Override
+    public void saveFile() {
+        String output = shellPane.getConsolePane().getInputArea().getText();
+        Path path = shellPane.getFXPath().getPath();
+
+        if (!path.isAbsolute()) {
+            path = FileDialogUtils.saveSourceJavaFile(shellPane.getScene().getWindow()).orElse(null);
+        }
+
+        if (path != null) {
+            var savePath = path;
+            TaskManager.get().executeSequentially(CTask.create(() -> Files.writeString(savePath, output))
+                    .onSucceeded(p -> shellPane.saved(p)));
+        }
+
     }
 }

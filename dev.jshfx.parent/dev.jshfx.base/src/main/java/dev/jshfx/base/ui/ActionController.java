@@ -25,6 +25,7 @@ public class ActionController {
 
     public void bind(ContentPane contentPane) {
         actions.unbind();
+        actions.savedProperty().bind(contentPane.modifiedProperty().not());
     }
 
     public void copy() {

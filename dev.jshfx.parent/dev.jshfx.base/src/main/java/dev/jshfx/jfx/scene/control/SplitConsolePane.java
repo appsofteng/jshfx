@@ -133,7 +133,7 @@ public class SplitConsolePane extends BorderPane {
         return getClass().getResource("console.css").toExternalForm();
     }
 
-    public void init() {
+    public void forgetEdit() {
         edited.set(false);
         inputArea.getUndoManager().forgetHistory();
     }

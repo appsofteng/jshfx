@@ -57,9 +57,14 @@ public class ShellPane extends PathPane {
 
         consolePane.getInputArea().replaceText(input);
         setBehavior();  
-        consolePane.init();
+        consolePane.forgetEdit();
     }
 
+    public void saved(Path path) {
+        getFXPath().setPath(path);
+        consolePane.forgetEdit();
+    }
+    
     private void setBehavior() {
 
         modified.bind(consolePane.editedProperty());
@@ -225,7 +230,7 @@ public class ShellPane extends PathPane {
     }
 
     public void insertSaveFilePath() {
-        var file = FileDialogUtils.saveJavaFile(getScene().getWindow());
+        var file = FileDialogUtils.saveSourceJavaFile(getScene().getWindow());
 
         file.ifPresent(f -> {
             consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), f.toString() + " ");

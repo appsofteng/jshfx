@@ -68,6 +68,7 @@ public class Actions {
 
     private Action codeCompletionAction;
 
+    private BooleanProperty saved = new SimpleBooleanProperty();
     private BooleanProperty clipboardEmpty = new SimpleBooleanProperty();
     private BooleanProperty allSelected = new SimpleBooleanProperty();
     private BooleanProperty clear = new SimpleBooleanProperty();
@@ -211,10 +212,10 @@ public class Actions {
         FXResourceBundle.getBundle().put(saveAction.textProperty(), "save");
         FXResourceBundle.getBundle().put(saveAction.longTextProperty(), "saveLong",
                 saveAction.getAccelerator().getDisplayText());
+        saveAction.disabledProperty().bind(savedProperty());
 
         saveAsAction = new Action(e -> actionController.saveAsFile());
         saveAsAction.setGraphic(new ImageView(ResourceManager.get().getImage("save-as.png")));
-        saveAsAction.setDisabled(true);
         saveAsAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Alt+S"));
         FXResourceBundle.getBundle().put(saveAsAction.textProperty(), "saveAs");
         FXResourceBundle.getBundle().put(saveAsAction.longTextProperty(), "saveAsLong",
@@ -230,6 +231,7 @@ public class Actions {
     }
 
     public void unbind() {
+        savedProperty().unbind();
         allSelectedProperty().unbind();
         clearProperty().unbind();
         selectionEmptyProperty().unbind();
@@ -237,6 +239,10 @@ public class Actions {
         undoEmptyProperty().unbind();
         historyStartReachedProperty().unbind();
         historyEndReachedProperty().unbind();
+    }
+    
+    public BooleanProperty savedProperty() {
+        return saved;
     }
     
     public BooleanProperty allSelectedProperty() {
@@ -328,6 +334,10 @@ public class Actions {
         ActionUtils.updateContextMenu(menu, actions);
 
         Nodes.addInputMap(area, sequence(
+                consume(keyPressed(saveAction.getAccelerator()).onlyIf(e -> !saveAction.isDisabled()),
+                        e -> saveAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+                consume(keyPressed(saveAsAction.getAccelerator()).onlyIf(e -> !saveAsAction.isDisabled()),
+                        e -> saveAsAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
                 consume(keyPressed(submitAction.getAccelerator()).onlyIf(e -> !submitAction.isDisabled()),
                         e -> submitAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
                 consume(keyPressed(submitLineAction.getAccelerator()).onlyIf(e -> !submitLineAction.isDisabled()),

@@ -7,23 +7,23 @@ import javafx.beans.binding.Bindings;
 
 public class PathPane extends ContentPane {
 
-    private FXPath path;
+    private FXPath fxpath;
 
     public PathPane(Path p) {
-        this.path = new FXPath(p);
+        this.fxpath = new FXPath(p);
         
         title.bind(
-                Bindings.createStringBinding(() -> createTitle(), path.nameProperty(), modifiedProperty()));
-        longTitle.bind(Bindings.createStringBinding(() -> path.getPath().toString(), path.pathProperty()));
+                Bindings.createStringBinding(() -> createTitle(), fxpath.nameProperty(), modifiedProperty()));
+        longTitle.bind(Bindings.createStringBinding(() -> fxpath.getPath().toString(), fxpath.pathProperty()));
     }
     
     private String createTitle() {
-        String result = isModified() ? "*" + path.getName() : path.getName();
+        String result = isModified() ? "*" + fxpath.getName() : fxpath.getName();
 
         return result;
     }
     
-    public FXPath getPath() {
-        return path;
+    public FXPath getFXPath() {
+        return fxpath;
     }
 }

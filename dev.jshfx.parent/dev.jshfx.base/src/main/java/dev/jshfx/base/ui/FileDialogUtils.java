@@ -55,15 +55,16 @@ public class FileDialogUtils {
 
         return paths;
     }
+    
+    public static Optional<Path> saveSourceJavaFile(Window window) {
+        return saveFile(window, new ExtensionFilter("Java", "*.java", "*.jsh"));
+    }
 
-    public static Optional<Path> saveJavaFile(Window window) {
+    public static Optional<Path> saveFile(Window window, ExtensionFilter... filter) {
         Optional<Path> path = Optional.empty();
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(FXResourceBundle.getBundle().getString​("insertSaveFilePath"));
-        fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Java", "*.jar", "*.java", "*.jmod", "*.jsh"),
-                new ExtensionFilter("JAR", "*.jar"), new ExtensionFilter("Java", "*.java"),
-                new ExtensionFilter("JMOD", "*.jmod"), new ExtensionFilter("JSH", "*.jsh"),
-                new ExtensionFilter("*", "*.*"));
+        fileChooser.getExtensionFilters().addAll(filter);
         fileChooser.setInitialDirectory(PreferenceManager.get().getLatestDir().toFile());
         File file = fileChooser.showSaveDialog(window);
         if (file != null) {

@@ -44,13 +44,13 @@ public class RootPane extends BorderPane {
         List<Path> newPaths = paths.stream()
                 .filter(p -> centerPane.getTabs().stream()
                         .filter(t -> t.getContent() instanceof PathPane)
-                        .noneMatch(t -> ((PathPane) t.getContent()).getPath().getPath().equals(p)))
+                        .noneMatch(t -> ((PathPane) t.getContent()).getFXPath().getPath().equals(p)))
                 .collect(Collectors.toList());
         
         if (newPaths.isEmpty()) {
             var tab = centerPane.getTabs().stream()
             .filter(t -> t.getContent() instanceof PathPane)
-            .filter(t -> ((PathPane) t.getContent()).getPath().getPath().equals(paths.get(0)))
+            .filter(t -> ((PathPane) t.getContent()).getFXPath().getPath().equals(paths.get(0)))
             .findFirst().get();
             centerPane.getSelectionModel().select(tab);
         }
