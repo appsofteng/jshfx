@@ -15,6 +15,7 @@ public class ContentPane extends StackPane {
     protected final ReadOnlyStringWrapper longTitle = new ReadOnlyStringWrapper();
     protected final ReadOnlyObjectWrapper<Node> graphic = new ReadOnlyObjectWrapper<>();
     protected ReadOnlyBooleanWrapper closed = new ReadOnlyBooleanWrapper();
+    protected final ReadOnlyBooleanWrapper modified = new ReadOnlyBooleanWrapper();
     
     ReadOnlyStringProperty titleProperty() {
         return title.getReadOnlyProperty();
@@ -30,6 +31,14 @@ public class ContentPane extends StackPane {
     
     public ReadOnlyBooleanProperty closedProperty() {
         return closed.getReadOnlyProperty();
+    }
+    
+    public boolean isModified() {
+        return modified.get();
+    }
+    
+    public ReadOnlyBooleanProperty modifiedProperty() {
+        return modified.getReadOnlyProperty();
     }
     
     public void activate() {}

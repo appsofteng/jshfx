@@ -1,6 +1,7 @@
 package dev.jshfx.base.sys;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
@@ -45,7 +46,9 @@ public final class FileManager extends Manager {
     public static final String CONFIG_FILE_EXTENSION = ".json";
 
     private static final Logger LOGGER = Logger.getLogger(FileManager.class.getName());
-
+    private PrintStream err;
+    private PrintStream out;
+    
     private FileSystem jdkSource;
     private List<Path> jdkPaths;
 
@@ -58,6 +61,8 @@ public final class FileManager extends Manager {
 
     @Override
     public void init() throws IOException {
+        err = System.err;
+        out = System.out;
         Files.createDirectories(LOG_DIR);
         LogManager.getLogManager().readConfiguration(FileManager.class.getResourceAsStream(LOGGING_CONF_FILE));
         Thread.setDefaultUncaughtExceptionHandler(this::uncaughtException);
@@ -81,6 +86,11 @@ public final class FileManager extends Manager {
         jdkSource.close();
     }
 
+    public void restoreOutput() {
+        System.setErr(err);
+        System.setOut(out);
+    }
+    
     public List<Path> getJdkPaths() {
         return jdkPaths;
     }

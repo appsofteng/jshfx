@@ -3,11 +3,14 @@ package dev.jshfx.base.ui;
 import java.nio.file.Path;
 import java.util.List;
 
+import dev.jshfx.base.sys.TaskManager;
+import dev.jshfx.jfx.concurrent.CTask;
+
 public class ActionController {
 
     private RootPane rootPane;
     private ContentPaneFactory contentPaneFactory;
-    
+
     protected Actions actions;
 
     public ActionController(RootPane rootPane, Actions actions) {
@@ -17,19 +20,13 @@ public class ActionController {
     }
 
     public void init(ContentPane contentPane) {
-        
+
     }
-    
+
     public void bind(ContentPane contentPane) {
-        actions.allSelectedProperty().unbind();
-        actions.clearProperty().unbind();
-        actions.selectionEmptyProperty().unbind();
-        actions.redoEmptyProperty().unbind();
-        actions.undoEmptyProperty().unbind();
-        actions.historyStartReachedProperty().unbind();
-        actions.historyEndReachedProperty().unbind();
+        actions.unbind();
     }
-    
+
     public void copy() {
 
     }
@@ -99,11 +96,16 @@ public class ActionController {
     }
 
     public void newShell() {
-        rootPane.newTab(contentPaneFactory.newShellPane());
+        rootPane.addSelect(contentPaneFactory.newShellPane());
     }
 
     public void openFile() {
-       List<Path> files = FileDialogUtils.getJavaFiles(rootPane.getScene().getWindow());
+        List<Path> files = FileDialogUtils.getJavaFiles(rootPane.getScene().getWindow());
+        List<Path> newFiles = rootPane.getNew(files);
+        if (!files.isEmpty()) {
+            TaskManager.get().execute(CTask.create(() -> contentPaneFactory.create(newFiles))
+                    .onSucceeded(contentPanes -> rootPane.add(contentPanes)));
+        }
     }
 
     public void saveFile() {

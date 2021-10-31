@@ -1,5 +1,10 @@
 package dev.jshfx.base.ui;
 
+import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import dev.jshfx.base.sys.FileManager;
 import javafx.application.Platform;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -30,13 +35,43 @@ public class RootPane extends BorderPane {
                 contentPane.activate();
                 actions.bind(contentPane);
             } else {
-                System.setErr(null);
-                System.setOut(null);
+              FileManager.get().restoreOutput();
             }
         });
     }
 
-    public void newTab(ContentPane contentPane) {
+    public List<Path> getNew(List<Path> paths) {
+        List<Path> newPaths = paths.stream()
+                .filter(p -> centerPane.getTabs().stream()
+                        .filter(t -> t.getContent() instanceof PathPane)
+                        .noneMatch(t -> ((PathPane) t.getContent()).getPath().getPath().equals(p)))
+                .collect(Collectors.toList());
+        
+        if (newPaths.isEmpty()) {
+            var tab = centerPane.getTabs().stream()
+            .filter(t -> t.getContent() instanceof PathPane)
+            .filter(t -> ((PathPane) t.getContent()).getPath().getPath().equals(paths.get(0)))
+            .findFirst().get();
+            centerPane.getSelectionModel().select(tab);
+        }
+
+        return newPaths;
+    }
+
+    public void add(List<ContentPane> contentPanes) {
+        var tabs = contentPanes.stream().map(this::add).collect(Collectors.toList());
+        
+        if (!tabs.isEmpty()) {
+            centerPane.getSelectionModel().select(tabs.get(0));
+        }
+    }
+    
+    public void addSelect(ContentPane contentPane) {
+        var tab = add(contentPane);
+        centerPane.getSelectionModel().select(tab);
+    }
+    
+    public Tab add(ContentPane contentPane) {
         actions.init(contentPane);
         Tab tab = new Tab();
         tab.setContent(contentPane);
@@ -45,14 +80,15 @@ public class RootPane extends BorderPane {
         tab.setTooltip(new Tooltip());
         tab.getTooltip().textProperty().bind(contentPane.longTitleProperty());
         centerPane.getTabs().add(tab);
-        tab.getTabPane().getSelectionModel().select(tab);
-        
+
         contentPane.closedProperty().addListener((b, o, n) -> {
             if (n) {
 
                 Platform.runLater(() -> centerPane.getTabs().remove(tab));
             }
         });
+        
+        return tab;
     }
 
     public void dispose() {

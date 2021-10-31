@@ -12,6 +12,10 @@ public final class XFiles {
 
     private XFiles() {
     }
+    
+    public static String getFileExtension(Path path) {
+        return getFileExtension(path.toString());
+    }
 
     public static String getFileExtension(String path) {
         return splitFilePath(path)[1];

@@ -20,28 +20,25 @@ import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.CTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
-import dev.jshfx.jfx.file.FXPath;
 import dev.jshfx.jfx.scene.control.SplitConsolePane;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.collections.ListChangeListener.Change;
 import javafx.geometry.Bounds;
 import javafx.scene.control.IndexRange;
 
-public class ShellPane extends ContentPane {
+public class ShellPane extends PathPane {
 
     private SplitConsolePane consolePane;
     private Completion completion;
     private Session session;
     private TaskQueuer taskQueuer = new TaskQueuer();
-    private FXPath path;
 
     public ShellPane() {
-        this(Path.of("new.jsh"));
+        this(Path.of("new.jsh"),"");
     }
 
-    public ShellPane(Path path) {
-        this.path = new FXPath(path);
+    public ShellPane(Path path, String input) {
+        super(path);
 
         List<String> history = JsonUtils.get().fromJson(FileManager.HISTORY_FILE, List.class, List.of());
         consolePane = new SplitConsolePane(history, List.of("block-delimiter-match"));
@@ -58,15 +55,14 @@ public class ShellPane extends ContentPane {
 
         CodeAreaWrappers.get(consolePane.getOutputArea(), "java").style();
 
-        setBehavior();
+        consolePane.getInputArea().replaceText(input);
+        setBehavior();  
+        consolePane.init();
     }
 
     private void setBehavior() {
 
-        title.bind(
-                Bindings.createStringBinding(() -> createTitle(), path.nameProperty(), consolePane.editedProperty()));
-        longTitle.bind(Bindings.createStringBinding(() -> path.getPath().toString(), path.pathProperty()));
-
+        modified.bind(consolePane.editedProperty());
         consolePane.getOutputHeader().textProperty().bind(session.getTimer().textProperty());
 
         sceneProperty().addListener((v, o, n) -> {
@@ -104,12 +100,6 @@ public class ShellPane extends ContentPane {
                 }
             }
         });
-    }
-
-    private String createTitle() {
-        String result = consolePane.isEdited() ? "*" + path.getName() : path.getName();
-
-        return result;
     }
 
     public void showCodeCompletion() {

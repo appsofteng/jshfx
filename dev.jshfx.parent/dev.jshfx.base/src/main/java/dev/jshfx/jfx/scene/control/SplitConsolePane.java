@@ -124,7 +124,7 @@ public class SplitConsolePane extends BorderPane {
         splitPane.setDividerPositions(0.8f);
 
         setCenter(splitPane);
-        // The style must be add explicitly.
+        // The style must be added explicitly.
         getStylesheets().add(getUserAgentStylesheet());
     }
 
@@ -133,6 +133,11 @@ public class SplitConsolePane extends BorderPane {
         return getClass().getResource("console.css").toExternalForm();
     }
 
+    public void init() {
+        edited.set(false);
+        inputArea.getUndoManager().forgetHistory();
+    }
+    
     private void setBehavior() {
 
         inputArea.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> edited.set((Boolean) n));

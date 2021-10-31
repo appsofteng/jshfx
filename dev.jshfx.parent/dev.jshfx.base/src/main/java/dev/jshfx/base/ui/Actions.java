@@ -229,6 +229,16 @@ public class Actions {
                 saveAllAction.getAccelerator().getDisplayText());
     }
 
+    public void unbind() {
+        allSelectedProperty().unbind();
+        clearProperty().unbind();
+        selectionEmptyProperty().unbind();
+        redoEmptyProperty().unbind();
+        undoEmptyProperty().unbind();
+        historyStartReachedProperty().unbind();
+        historyEndReachedProperty().unbind();
+    }
+    
     public BooleanProperty allSelectedProperty() {
         return allSelected;
     }

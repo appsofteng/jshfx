@@ -53,7 +53,7 @@ public class ShellActionController extends ActionController {
             actions.redoEmptyProperty().bind(Bindings.createBooleanBinding(() -> !inputArea.isRedoAvailable(),
                     inputArea.redoAvailableProperty()));
             actions.undoEmptyProperty().bind(Bindings.createBooleanBinding(() -> !inputArea.isUndoAvailable(),
-                    inputArea.redoAvailableProperty()));
+                    inputArea.undoAvailableProperty()));
 
             actions.historyStartReachedProperty().bind(shellPane.getConsolePane().historyStartReachedProperty());
             actions.historyEndReachedProperty().bind(shellPane.getConsolePane().historyEndReachedProperty());
