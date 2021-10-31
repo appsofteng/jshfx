@@ -41,8 +41,7 @@ public class FileDialogUtils {
         fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Java", "*.jar", "*.java", "*.jmod", "*.jsh"),
                 new ExtensionFilter("JAR", "*.jar"), new ExtensionFilter("Java", "*.java"),
                 new ExtensionFilter("JMOD", "*.jmod"), new ExtensionFilter("JSH", "*.jsh"),
-                new ExtensionFilter("XML", "*.xml"),
-                new ExtensionFilter("*", "*.*"));
+                new ExtensionFilter("XML", "*.xml"), new ExtensionFilter("*", "*.*"));
         fileChooser.setInitialDirectory(PreferenceManager.get().getLatestDir().toFile());
         List<File> files = fileChooser.showOpenMultipleDialog(window);
         if (files != null) {
@@ -55,17 +54,35 @@ public class FileDialogUtils {
 
         return paths;
     }
-    
+
     public static Optional<Path> saveSourceJavaFile(Window window) {
-        return saveFile(window, new ExtensionFilter("Java", "*.java", "*.jsh"));
+        return saveFile(window, null, new ExtensionFilter("Java", "*.java", "*.jsh"));
     }
 
-    public static Optional<Path> saveFile(Window window, ExtensionFilter... filter) {
+    public static Optional<Path> saveSourceJavaFile(Window window, Path initialPath) {
+        return saveFile(window, initialPath, new ExtensionFilter("Java", "*.java", "*.jsh"));
+    }
+
+    public static Optional<Path> saveFile(Window window, Path initialPath, ExtensionFilter... filter) {
+
+        var initialDir = PreferenceManager.get().getLatestDir().toFile();
+        String initialFile = null;
+        
+        if (initialPath != null) {
+
+            if (initialPath.isAbsolute()) {
+                initialDir = initialPath.getParent().toFile();
+            }
+            
+            initialFile = initialPath.getFileName().toString();
+        }
+
         Optional<Path> path = Optional.empty();
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(FXResourceBundle.getBundle().getString​("insertSaveFilePath"));
         fileChooser.getExtensionFilters().addAll(filter);
-        fileChooser.setInitialDirectory(PreferenceManager.get().getLatestDir().toFile());
+        fileChooser.setInitialDirectory(initialDir);
+        fileChooser.setInitialFileName(initialFile);
         File file = fileChooser.showSaveDialog(window);
         if (file != null) {
             path = Optional.of(file.toPath());

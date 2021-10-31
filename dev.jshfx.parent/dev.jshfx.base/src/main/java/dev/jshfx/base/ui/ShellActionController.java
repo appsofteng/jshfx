@@ -141,14 +141,25 @@ public class ShellActionController extends ActionController {
         Path path = shellPane.getFXPath().getPath();
 
         if (!path.isAbsolute()) {
-            path = FileDialogUtils.saveSourceJavaFile(shellPane.getScene().getWindow()).orElse(null);
+            path = FileDialogUtils.saveSourceJavaFile(shellPane.getScene().getWindow(), path.getFileName()).orElse(null);
         }
 
         if (path != null) {
             var savePath = path;
-            TaskManager.get().executeSequentially(CTask.create(() -> Files.writeString(savePath, output))
-                    .onSucceeded(p -> shellPane.saved(p)));
+            TaskManager.get().executeSequentially(
+                    CTask.create(() -> Files.writeString(savePath, output)).onSucceeded(p -> shellPane.saved(p)));
         }
+    }
+
+    @Override
+    public void saveAsFile() {
+        String output = shellPane.getConsolePane().getInputArea().getText();
+        Path fileName = shellPane.getFXPath().getPath().getFileName();
+
+        var path = FileDialogUtils.saveSourceJavaFile(shellPane.getScene().getWindow(), fileName);
+
+        path.ifPresent(savePath -> TaskManager.get().executeSequentially(
+                CTask.create(() -> Files.writeString(savePath, output)).onSucceeded(p -> shellPane.saved(p))));
 
     }
 }
