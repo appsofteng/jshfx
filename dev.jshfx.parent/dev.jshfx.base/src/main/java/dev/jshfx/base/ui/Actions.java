@@ -226,11 +226,15 @@ public class Actions {
 
         saveAllAction = new Action(e -> saveAll());
         saveAllAction.setGraphic(new ImageView(ResourceManager.get().getImage("save-all.png")));
-        saveAllAction.setAccelerator(KeyCombination.keyCombination("Shift+Shortcut+S"));
+        saveAllAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Shift+S"));
         FXResourceBundle.getBundle().put(saveAllAction.textProperty(), "saveAll");
         FXResourceBundle.getBundle().put(saveAllAction.longTextProperty(), "saveAllLong",
                 saveAllAction.getAccelerator().getDisplayText());
         saveAllAction.disabledProperty().bind(savedAllProperty());
+        
+        Nodes.addInputMap(rootPane, sequence(
+                consume(keyPressed(saveAllAction.getAccelerator()).onlyIf(e -> !saveAllAction.isDisabled()),
+                        e -> saveAllAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
     }
 
     public void empty() {

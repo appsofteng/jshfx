@@ -5,7 +5,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import dev.jshfx.base.sys.FileManager;
+import dev.jshfx.jfx.util.FXResourceBundle;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabDragPolicy;
@@ -45,7 +50,7 @@ public class RootPane extends BorderPane {
         return centerPane.getTabs().stream().filter(t -> t.getContent() instanceof PathPane)
                 .anyMatch(t -> ((PathPane) t.getContent()).getFXPath().getPath().getFileName().toString().equals(name));
     }
-    
+
     public List<Path> getNew(List<Path> paths) {
         List<Path> newPaths = paths.stream()
                 .filter(p -> centerPane.getTabs().stream().filter(t -> t.getContent() instanceof PathPane)
@@ -83,6 +88,7 @@ public class RootPane extends BorderPane {
     public Tab add(ContentPane contentPane) {
         actions.init(contentPane);
         Tab tab = new Tab();
+        addContextMenu(tab);
         tab.setContent(contentPane);
         tab.setOnClosed(e -> contentPane.dispose());
         tab.textProperty().bind(contentPane.titleProperty());
@@ -101,6 +107,28 @@ public class RootPane extends BorderPane {
         });
 
         return tab;
+    }
+
+    private void addContextMenu(Tab tab) {
+
+        MenuItem closeOthers = new MenuItem();
+        FXResourceBundle.getBundle().put(closeOthers.textProperty(), "closeOthers");
+        closeOthers.disableProperty().bind(Bindings.size(centerPane.getTabs()).isEqualTo(1));
+//        closeOthers.setOnAction(e -> centerPane.getTabs().removeIf(t -> t != tab && !((Editor) t.getContent()).isChanged()));
+
+        MenuItem closeAll = new MenuItem();
+        FXResourceBundle.getBundle().put(closeAll.textProperty(), "closeAll");
+//        closeAll.setOnAction(e -> centerPane.getTabs().removeIf(t -> !((Editor) t.getContent()).isChanged()));
+
+        MenuItem close = new MenuItem();
+        FXResourceBundle.getBundle().put(close.textProperty(), "close");
+        close.setOnAction(e -> {
+            centerPane.getTabs().remove(tab);
+            ((ContentPane) tab.getContent()).dispose();
+        });
+
+        ContextMenu menu = new ContextMenu(close, new SeparatorMenuItem(), closeOthers, closeAll);
+        tab.setContextMenu(menu);
     }
 
     public void dispose() {
