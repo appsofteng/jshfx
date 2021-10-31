@@ -233,6 +233,10 @@ public class Actions {
         saveAllAction.disabledProperty().bind(savedAllProperty());
     }
 
+    public void empty() {
+        saveAsAction.setDisabled(true);
+    }
+    
     public void unbind() {
         savedProperty().unbind();
         allSelectedProperty().unbind();
@@ -285,7 +289,7 @@ public class Actions {
     }
     
     public void init(ContentPane contentPane) {
-        
+        saveAsAction.setDisabled(false);
         if (savedAllExpression == null) {
             savedAllExpression = contentPane.modifiedProperty().not();
         } else {

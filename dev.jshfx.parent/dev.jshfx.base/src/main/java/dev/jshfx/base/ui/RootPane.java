@@ -35,6 +35,7 @@ public class RootPane extends BorderPane {
                 contentPane.activate();
                 actions.bind(contentPane);
             } else {
+                actions.empty();
                 FileManager.get().restoreOutput();
             }
         });

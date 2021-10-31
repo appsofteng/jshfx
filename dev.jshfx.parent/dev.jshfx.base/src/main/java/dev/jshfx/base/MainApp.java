@@ -2,7 +2,6 @@ package dev.jshfx.base;
 
 import org.controlsfx.glyphfont.GlyphFontRegistry;
 
-import dev.jshfx.base.jshell.Session;
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.base.sys.PreferenceManager;
 import dev.jshfx.base.sys.RepositoryManager;
@@ -49,6 +48,10 @@ public class MainApp extends Application {
 		stage.setTitle(FXResourceBundle.getBundle().getString​("appName") + " " + Constants.SYS_VERSION);
 		stage.getIcons().add(ResourceManager.get().getIconImage());
 
+		stage.setOnCloseRequest(e -> {
+		   // e.consume() 
+		});
+		
 		stage.show();
 	}
 
