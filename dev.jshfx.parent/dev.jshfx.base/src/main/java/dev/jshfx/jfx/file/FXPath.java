@@ -26,6 +26,10 @@ public class FXPath {
     private ObjectProperty<Image> image = new SimpleObjectProperty<>();
     private BooleanProperty directory = new SimpleBooleanProperty();
     
+    public FXPath() {
+        this(Path.of(""));
+    }
+    
     public FXPath(String path) {
     	this(Path.of(path));
     }

@@ -43,7 +43,11 @@ public final class FileManager extends Manager {
 
     public static final String LOGGING_CONF_FILE = "logging.properties";
 
-    public static final String CONFIG_FILE_EXTENSION = ".json";
+    private static final String CONFIG_FILE_EXTENSION = ".json";
+    public static final String JAVA = "java";
+    public static final String JSH = "jsh";
+    public static final List<String> EXTENSIONS = List.of(JAVA, JSH);
+    public static final List<String> SHELL_EXTENSIONS = List.of(JAVA, JSH);
 
     private static final Logger LOGGER = Logger.getLogger(FileManager.class.getName());
     private PrintStream err;

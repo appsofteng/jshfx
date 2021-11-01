@@ -55,6 +55,12 @@ public abstract class CTask<V> extends Task<V> {
         setOnSucceeded(e -> value.accept(getValue()));
         return this;
     }
+    
+    public CTask<V> onFailed(Consumer<V> value) {
+
+        setOnFailed(e -> value.accept(getValue()));
+        return this;
+    }
 
     public static interface TRunnable {
         void run() throws Exception;

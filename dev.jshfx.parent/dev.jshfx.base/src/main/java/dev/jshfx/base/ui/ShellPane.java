@@ -21,8 +21,9 @@ import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.CTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
 import dev.jshfx.jfx.scene.control.SplitConsolePane;
-import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.application.Platform;
 import javafx.collections.ListChangeListener.Change;
+import javafx.event.Event;
 import javafx.geometry.Bounds;
 import javafx.scene.control.IndexRange;
 
@@ -34,7 +35,7 @@ public class ShellPane extends PathPane {
     private TaskQueuer taskQueuer = new TaskQueuer();
 
     public ShellPane(String name) {
-        this(Path.of(name),"");
+        this(Path.of(name), "");
     }
 
     public ShellPane(Path path, String input) {
@@ -44,6 +45,7 @@ public class ShellPane extends PathPane {
         consolePane = new SplitConsolePane(history, List.of("block-delimiter-match"));
         getProperties().put(getClass(), consolePane.getInputArea());
         session = new Session(consolePane, taskQueuer);
+        session.setOnExitCommand(() -> Platform.runLater(() -> onCloseRequest.handle(new Event(this, this, Event.ANY))));
         completion = new Completion(consolePane.getInputArea(), session);
 
         getChildren().add(consolePane);
@@ -56,15 +58,28 @@ public class ShellPane extends PathPane {
         CodeAreaWrappers.get(consolePane.getOutputArea(), "java").style();
 
         consolePane.getInputArea().replaceText(input);
-        setBehavior();  
+        setBehavior();
         consolePane.forgetEdit();
     }
 
-    public void saved(Path path) {
-        getFXPath().setPath(path);
-        consolePane.forgetEdit();
+    @Override
+    public void setActions(Actions actions) {
+        super.setActions(actions);
+        actions.setActions(this);
     }
     
+    @Override
+    public void bind(Actions actions) {
+        super.bind(actions);
+        actions.bind(this);
+    }
+    
+    @Override
+    public void saved(Path path) {
+        super.saved(path);
+        consolePane.forgetEdit();
+    }
+
     private void setBehavior() {
 
         modified.bind(consolePane.editedProperty());
@@ -74,7 +89,7 @@ public class ShellPane extends PathPane {
             if (n != null) {
                 session.setIO();
             }
-        });       
+        });
 
         consolePane.getInputArea().caretPositionProperty().addListener((v, o, n) -> {
             if (CompletionPopup.get().isShowing()) {
@@ -105,6 +120,11 @@ public class ShellPane extends PathPane {
                 }
             }
         });
+    }
+
+    @Override
+    public String getContent() {
+        return getConsolePane().getInputArea().getText();
     }
 
     public void showCodeCompletion() {
@@ -192,10 +212,6 @@ public class ShellPane extends PathPane {
         return consolePane;
     }
 
-    public ReadOnlyBooleanProperty closedProperty() {
-        return session.closedProperty();
-    }
-
     public void insertDirPath() {
         var dir = FileDialogUtils.getDirectory(getScene().getWindow());
         var joining = getJoining();
@@ -241,7 +257,7 @@ public class ShellPane extends PathPane {
     public void activate() {
         session.setIO();
     }
-    
+
     @Override
     public void dispose() {
         super.dispose();

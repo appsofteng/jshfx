@@ -23,7 +23,7 @@ public class FileDialogUtils {
         Optional<Path> dir = null;
         var chooser = new DirectoryChooser();
         chooser.setInitialDirectory(initialDir.toFile());
-        chooser.setTitle(FXResourceBundle.getBundle().getString​("insertDirPath"));
+        chooser.setTitle(FXResourceBundle.getBundle().getString​("directory"));
         var file = chooser.showDialog(window);
 
         if (file != null) {
@@ -37,7 +37,7 @@ public class FileDialogUtils {
     public static List<Path> getJavaFiles(Window window) {
         List<Path> paths = List.of();
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle(FXResourceBundle.getBundle().getString​("insertFilePaths"));
+        fileChooser.setTitle(FXResourceBundle.getBundle().getString​("Open"));
         fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Java", "*.jar", "*.java", "*.jmod", "*.jsh"),
                 new ExtensionFilter("JAR", "*.jar"), new ExtensionFilter("Java", "*.java"),
                 new ExtensionFilter("JMOD", "*.jmod"), new ExtensionFilter("JSH", "*.jsh"),
@@ -79,7 +79,7 @@ public class FileDialogUtils {
 
         Optional<Path> path = Optional.empty();
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle(FXResourceBundle.getBundle().getString​("insertSaveFilePath"));
+        fileChooser.setTitle(FXResourceBundle.getBundle().getString​("save"));
         fileChooser.getExtensionFilters().addAll(filter);
         fileChooser.setInitialDirectory(initialDir);
         fileChooser.setInitialFileName(initialFile);

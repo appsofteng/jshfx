@@ -21,9 +21,6 @@ import dev.jshfx.jfx.scene.control.ConsoleModel;
 import dev.jshfx.jfx.scene.control.SplitConsolePane;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.jx.tools.JavaSourceResolver;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.stage.Window;
 import jdk.jshell.JShell;
 import jdk.jshell.JShell.Subscription;
@@ -36,7 +33,7 @@ public class Session {
 
     public static final String PRIVILEDGED_TASK_QUEUE = "priviledged-task-queue";
 
-    private BooleanProperty closed = new SimpleBooleanProperty();
+    private Runnable onExitCommand;
     private Env env;
     private Settings settings;
     private Feedback feedback;
@@ -74,8 +71,8 @@ public class Session {
         restart();
     }
 
-    public ReadOnlyBooleanProperty closedProperty() {
-        return closed;
+    public void setOnExitCommand(Runnable value) {
+        this.onExitCommand = value;
     }
 
     public Feedback getFeedback() {
@@ -357,9 +354,7 @@ public class Session {
     }
 
     public void exit() {
-
-        close();
-        closed.set(true);
+        onExitCommand.run();
     }
 
     public void loadPredefinedStartupFile(String file) {

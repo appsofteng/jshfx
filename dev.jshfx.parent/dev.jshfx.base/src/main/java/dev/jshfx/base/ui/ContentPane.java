@@ -1,11 +1,16 @@
 package dev.jshfx.base.ui;
 
+import java.nio.file.Path;
+
+import dev.jshfx.jfx.file.FXPath;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
 
@@ -14,8 +19,9 @@ public class ContentPane extends StackPane {
     protected final ReadOnlyStringWrapper title = new ReadOnlyStringWrapper();
     protected final ReadOnlyStringWrapper longTitle = new ReadOnlyStringWrapper();
     protected final ReadOnlyObjectWrapper<Node> graphic = new ReadOnlyObjectWrapper<>();
-    protected ReadOnlyBooleanWrapper closed = new ReadOnlyBooleanWrapper();
     protected final ReadOnlyBooleanWrapper modified = new ReadOnlyBooleanWrapper();
+    
+    protected EventHandler<Event> onCloseRequest;
     
     ReadOnlyStringProperty titleProperty() {
         return title.getReadOnlyProperty();
@@ -29,8 +35,8 @@ public class ContentPane extends StackPane {
     	return graphic.getReadOnlyProperty();
     }
     
-    public ReadOnlyBooleanProperty closedProperty() {
-        return closed.getReadOnlyProperty();
+    public void setOnCloseRequest(EventHandler<Event> value) {
+        this.onCloseRequest = value;
     }
     
     public boolean isModified() {
@@ -39,6 +45,26 @@ public class ContentPane extends StackPane {
     
     public ReadOnlyBooleanProperty modifiedProperty() {
         return modified.getReadOnlyProperty();
+    }
+    
+    public FXPath getFXPath() {
+        return new FXPath();
+    }
+    
+    public String getContent() {
+        return "";
+    }
+    
+    public void saved(Path path) {
+        getFXPath().setPath(path);
+    }
+    
+    public void setActions(Actions actions) {
+        actions.setActions(this);
+    }
+    
+    public void bind(Actions actions) {
+        actions.bind(this);
     }
     
     public void activate() {}

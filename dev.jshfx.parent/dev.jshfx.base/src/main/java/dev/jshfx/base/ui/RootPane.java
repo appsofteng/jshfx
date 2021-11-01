@@ -5,15 +5,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import dev.jshfx.base.sys.FileManager;
-import dev.jshfx.jfx.util.FXResourceBundle;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
+import javafx.collections.ObservableList;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabDragPolicy;
+import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 
@@ -21,24 +18,34 @@ public class RootPane extends BorderPane {
 
     private TabPane centerPane;
     private Actions actions;
+    private ContentPane contentPane;
 
     public RootPane() {
         centerPane = new TabPane();
         actions = new Actions(this);
-        centerPane.setTabDragPolicy(TabDragPolicy.REORDER);
-        setTop(actions.getToolbar());
+        
+        actions.setActions(this);
         setCenter(centerPane);
         setListeners();
 
         actions.getActionController().newShell();
+        centerPane.setTabDragPolicy(TabDragPolicy.REORDER);
     }
 
+    public Actions getActions() {
+        return actions;
+    }
+    
+    public void setToolBar(ToolBar toolbar) {
+        setTop(toolbar);
+    }
+    
     private void setListeners() {
         centerPane.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
             if (n != null) {
-                ContentPane contentPane = (ContentPane) n.getContent();
+                contentPane = (ContentPane) n.getContent();
                 contentPane.activate();
-                actions.bind(contentPane);
+                contentPane.bind(actions);
             } else {
                 actions.empty();
                 FileManager.get().restoreOutput();
@@ -46,20 +53,28 @@ public class RootPane extends BorderPane {
         });
     }
 
+    public ContentPane getContentPane() {
+        return contentPane;
+    }
+    
+    public ObservableList<Tab> getTabs() {
+        return centerPane.getTabs();
+    }
+
     public boolean exists(String name) {
-        return centerPane.getTabs().stream().filter(t -> t.getContent() instanceof PathPane)
-                .anyMatch(t -> ((PathPane) t.getContent()).getFXPath().getPath().getFileName().toString().equals(name));
+        return centerPane.getTabs().stream().anyMatch(
+                t -> ((ContentPane) t.getContent()).getFXPath().getPath().getFileName().toString().equals(name));
     }
 
     public List<Path> getNew(List<Path> paths) {
         List<Path> newPaths = paths.stream()
-                .filter(p -> centerPane.getTabs().stream().filter(t -> t.getContent() instanceof PathPane)
-                        .noneMatch(t -> ((PathPane) t.getContent()).getFXPath().getPath().equals(p)))
+                .filter(p -> centerPane.getTabs().stream()
+                        .noneMatch(t -> ((ContentPane) t.getContent()).getFXPath().getPath().equals(p)))
                 .collect(Collectors.toList());
 
         if (newPaths.isEmpty()) {
-            var tab = centerPane.getTabs().stream().filter(t -> t.getContent() instanceof PathPane)
-                    .filter(t -> ((PathPane) t.getContent()).getFXPath().getPath().equals(paths.get(0))).findFirst()
+            var tab = centerPane.getTabs().stream()
+                    .filter(t -> ((ContentPane) t.getContent()).getFXPath().getPath().equals(paths.get(0))).findFirst()
                     .get();
             centerPane.getSelectionModel().select(tab);
         }
@@ -68,8 +83,8 @@ public class RootPane extends BorderPane {
     }
 
     public List<ContentPane> getModified() {
-        return centerPane.getTabs().stream().filter(t -> t.getContent() instanceof PathPane)
-                .map(t -> (PathPane) t.getContent()).filter(ContentPane::isModified).collect(Collectors.toList());
+        return centerPane.getTabs().stream().map(t -> (ContentPane) t.getContent()).filter(ContentPane::isModified)
+                .collect(Collectors.toList());
     }
 
     public void add(List<ContentPane> contentPanes) {
@@ -86,49 +101,22 @@ public class RootPane extends BorderPane {
     }
 
     public Tab add(ContentPane contentPane) {
-        actions.init(contentPane);
         Tab tab = new Tab();
-        addContextMenu(tab);
+        actions.setTabContextMenu(tab);
         tab.setContent(contentPane);
-        tab.setOnClosed(e -> contentPane.dispose());
+        tab.setOnCloseRequest(e -> {
+            centerPane.setTabDragPolicy(TabPane.TabDragPolicy.FIXED);
+            actions.getActionController().close(e);
+            Platform.runLater(() -> centerPane.setTabDragPolicy(TabPane.TabDragPolicy.REORDER));
+        });
         tab.textProperty().bind(contentPane.titleProperty());
         tab.setTooltip(new Tooltip());
         tab.getTooltip().textProperty().bind(contentPane.longTitleProperty());
         centerPane.getTabs().add(tab);
 
-        contentPane.closedProperty().addListener((b, o, n) -> {
-            if (n) {
-
-                Platform.runLater(() -> {
-                    centerPane.getTabs().remove(tab);
-                    contentPane.dispose();
-                });
-            }
-        });
+        contentPane.setOnCloseRequest(e -> actions.getActionController().close(tab));
 
         return tab;
-    }
-
-    private void addContextMenu(Tab tab) {
-
-        MenuItem closeOthers = new MenuItem();
-        FXResourceBundle.getBundle().put(closeOthers.textProperty(), "closeOthers");
-        closeOthers.disableProperty().bind(Bindings.size(centerPane.getTabs()).isEqualTo(1));
-//        closeOthers.setOnAction(e -> centerPane.getTabs().removeIf(t -> t != tab && !((Editor) t.getContent()).isChanged()));
-
-        MenuItem closeAll = new MenuItem();
-        FXResourceBundle.getBundle().put(closeAll.textProperty(), "closeAll");
-//        closeAll.setOnAction(e -> centerPane.getTabs().removeIf(t -> !((Editor) t.getContent()).isChanged()));
-
-        MenuItem close = new MenuItem();
-        FXResourceBundle.getBundle().put(close.textProperty(), "close");
-        close.setOnAction(e -> {
-            centerPane.getTabs().remove(tab);
-            ((ContentPane) tab.getContent()).dispose();
-        });
-
-        ContextMenu menu = new ContextMenu(close, new SeparatorMenuItem(), closeOthers, closeAll);
-        tab.setContextMenu(menu);
     }
 
     public void dispose() {
