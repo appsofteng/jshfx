@@ -28,7 +28,7 @@ module dev.jshfx.base {
     requires org.eclipse.yasson;
     
     requires info.picocli;
-    requires dev.jshfx.util;
+    requires dev.jshfx.automatic;
 	
     exports dev.jshfx.j.util.prefs;
     

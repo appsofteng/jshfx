@@ -2,7 +2,7 @@ package dev.jshfx.base.sys;
 
 import java.util.Set;
 
-import dev.jshfx.util.RepositoryUtils;
+import dev.jshfx.automatic.RepositoryUtils;
 
 public final class RepositoryManager extends Manager {
 

@@ -12,6 +12,7 @@
 		<module>dev.jshfx.fonts</module>
 		<module>dev.jshfx.util</module>
 		<module>dev.jshfx.distribution</module>
+		<module>dev.jshfx.automatic</module>
 	</modules>
 
 	<properties>
@@ -43,7 +44,7 @@
 			</dependency>
 			<dependency>
 				<groupId>dev.jshfx</groupId>
-				<artifactId>dev.jshfx.util</artifactId>
+				<artifactId>dev.jshfx.automatic</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

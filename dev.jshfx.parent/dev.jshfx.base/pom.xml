@@ -16,7 +16,7 @@
 		</dependency>
 		<dependency>
 			<groupId>dev.jshfx</groupId>
-			<artifactId>dev.jshfx.util</artifactId>
+			<artifactId>dev.jshfx.automatic</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.openjfx</groupId>
