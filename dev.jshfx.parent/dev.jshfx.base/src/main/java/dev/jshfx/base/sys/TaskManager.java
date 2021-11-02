@@ -7,6 +7,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import dev.jshfx.j.util.concurrent.ExecutorServiceUtils;
 import dev.jshfx.j.util.concurrent.PrivilegedForkJoinWorkerThreadFactory;
 import javafx.concurrent.Task;
 
@@ -46,21 +47,10 @@ public final class TaskManager extends Manager {
 
 	@Override
 	public void stop() {
-		shutdown(singleThreadExecutor);
-		shutdown(executorService);
-		shutdown(scheduledExecutorService);
+	    ExecutorServiceUtils.shutdown(singleThreadExecutor);
+	    ExecutorServiceUtils.shutdown(executorService);
+	    ExecutorServiceUtils.shutdown(scheduledExecutorService);
 
 		ForkJoinPool.commonPool().awaitQuiescence(60, TimeUnit.SECONDS);
-	}
-
-	private void shutdown(ExecutorService executorService) {
-		executorService.shutdown();
-		try {
-			if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
-				executorService.shutdownNow();
-			}
-		} catch (InterruptedException e) {
-			executorService.shutdownNow();
-		}
 	}
 }

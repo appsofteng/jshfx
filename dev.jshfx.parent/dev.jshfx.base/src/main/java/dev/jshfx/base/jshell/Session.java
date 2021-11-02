@@ -17,6 +17,7 @@ import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.base.sys.PreferenceManager;
 import dev.jshfx.j.nio.file.XFiles;
 import dev.jshfx.j.util.json.JsonUtils;
+import dev.jshfx.jdk.jshell.execution.ObjectExecutionControlProvider;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
 import dev.jshfx.jfx.scene.control.ConsoleModel;
 import dev.jshfx.jfx.scene.control.SplitConsolePane;
@@ -28,7 +29,6 @@ import jdk.jshell.JShell.Subscription;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.SnippetEvent;
-import jdk.jshell.execution.LocalExecutionControlProvider;
 
 public class Session {
 
@@ -53,12 +53,14 @@ public class Session {
     private List<Entry<Snippet, Status>> restoreSnippets = new ArrayList<>();
     private Subscription subscription;
     private JavaSourceResolver javaSourceResolver;
+    private ObjectExecutionControlProvider objectExecutionControlProvider;
 
     public Session(SplitConsolePane console, TaskQueuer taskQueuer) {
 
         this.console = console;
         this.consoleModel = console.getConsoleModel();
         this.taskQueuer = taskQueuer;
+        objectExecutionControlProvider = new ObjectExecutionControlProvider();
 
         commandProcessor = new CommandProcessor(this);
         snippetProcessor = new SnippetProcessor(this);
@@ -115,7 +117,7 @@ public class Session {
     public JavaSourceResolver getJavaSourceResolver() {
         return javaSourceResolver;
     }
-    
+
     public int getStartSnippetMaxIndex() {
         return startSnippetMaxIndex;
     }
@@ -317,9 +319,9 @@ public class Session {
         close();
         try {
             String[] options = env.getOptions();
-            jshell = JShell.builder().executionEngine(new LocalExecutionControlProvider(), null)
-                    .idGenerator(idGenerator).in(consoleModel.getIn()).out(consoleModel.getOut())
-                    .err(consoleModel.getErr()).compilerOptions(options).remoteVMOptions(options).build();
+            jshell = JShell.builder().executionEngine(objectExecutionControlProvider, null).idGenerator(idGenerator)
+                    .in(consoleModel.getIn()).out(consoleModel.getOut()).err(consoleModel.getErr())
+                    .compilerOptions(options).remoteVMOptions(options).build();
             // Create the analysis before putting on the class path.
             jshell.sourceCodeAnalysis();
             env.getClassPaths().forEach(p -> jshell.addToClasspath(p));
