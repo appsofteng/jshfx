@@ -90,8 +90,8 @@ public class ShellPane extends PathPane {
     
     private void handleResult(SnippetEvent event, Object obj) {
         
-        if(event.snippet().kind() == Snippet.Kind.METHOD && obj instanceof ChartList chartList) {
-            ObservableList<Chart> charts = ChartUtils.create(chartList);
+        if(event.snippet().kind() == Snippet.Kind.METHOD) {
+           DialogUtils.show(obj);
         }
     }
 

@@ -267,7 +267,10 @@ public class Session {
             }
 
             if (!objectExecutionControlProvider.getExecutionControl().getResults().isEmpty()) {
-                resultHandler.accept(e, objectExecutionControlProvider.getExecutionControl().getResults().remove(0));
+                var result = objectExecutionControlProvider.getExecutionControl().getResults().remove(0);
+                if (result != null) {
+                    resultHandler.accept(e, result);
+                }
             }
 
             String name = SnippetUtils.getName(e.snippet());
