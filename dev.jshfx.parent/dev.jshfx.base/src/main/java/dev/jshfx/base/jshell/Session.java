@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import dev.jshfx.base.sys.FileManager;
@@ -34,7 +35,10 @@ public class Session {
 
     public static final String PRIVILEDGED_TASK_QUEUE = "priviledged-task-queue";
 
-    private Runnable onExitCommand;
+    private Runnable onExitCommand = () -> {
+    };
+    private BiConsumer<SnippetEvent, Object> resultHandler = (e, o) -> {
+    };
     private Env env;
     private Settings settings;
     private Feedback feedback;
@@ -76,6 +80,10 @@ public class Session {
 
     public void setOnExitCommand(Runnable value) {
         this.onExitCommand = value;
+    }
+
+    public void setOnResult(BiConsumer<SnippetEvent, Object> resultHandler) {
+        this.resultHandler = resultHandler;
     }
 
     public Feedback getFeedback() {
@@ -256,6 +264,10 @@ public class Session {
 
             if (e.snippet() == null || e.snippet().id() == null) {
                 return;
+            }
+
+            if (!objectExecutionControlProvider.getExecutionControl().getResults().isEmpty()) {
+                resultHandler.accept(e, objectExecutionControlProvider.getExecutionControl().getResults().remove(0));
             }
 
             String name = SnippetUtils.getName(e.snippet());

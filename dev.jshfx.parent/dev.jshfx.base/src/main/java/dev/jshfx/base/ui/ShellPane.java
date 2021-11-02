@@ -20,12 +20,19 @@ import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.CTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
+import dev.jshfx.jfx.scene.chart.ChartUtils;
 import dev.jshfx.jfx.scene.control.SplitConsolePane;
+import dev.jshfx.util.chart.ChartList;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
+import javafx.scene.chart.Chart;
 import javafx.scene.control.IndexRange;
+
+import jdk.jshell.Snippet;
+import jdk.jshell.SnippetEvent;
 
 public class ShellPane extends PathPane {
 
@@ -46,6 +53,7 @@ public class ShellPane extends PathPane {
         getProperties().put(getClass(), consolePane.getInputArea());
         session = new Session(consolePane, taskQueuer);
         session.setOnExitCommand(() -> Platform.runLater(() -> onCloseRequest.handle(new Event(this, this, Event.ANY))));
+        session.setOnResult(this::handleResult);
         completion = new Completion(consolePane.getInputArea(), session);
 
         getChildren().add(consolePane);
@@ -78,6 +86,13 @@ public class ShellPane extends PathPane {
     public void saved(Path path) {
         super.saved(path);
         consolePane.forgetEdit();
+    }
+    
+    private void handleResult(SnippetEvent event, Object obj) {
+        
+        if(event.snippet().kind() == Snippet.Kind.METHOD && obj instanceof ChartList chartList) {
+            ObservableList<Chart> charts = ChartUtils.create(chartList);
+        }
     }
 
     private void setBehavior() {
