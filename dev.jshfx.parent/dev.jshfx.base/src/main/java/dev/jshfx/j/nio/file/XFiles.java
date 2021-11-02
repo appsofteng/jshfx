@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import dev.jshfx.j.util.LU;
@@ -167,6 +168,17 @@ public final class XFiles {
         return result;
     }
 
+    public static String getUniqueName(Predicate<String> used, String name) {
+        String result = name;
+        int i = 1;
+        
+        while(used.test(result)) {
+            result = name + i++;
+        }
+        
+        return result;
+    }
+    
     public static void delete(Path path) {
 
         if (Files.isDirectory(path)) {

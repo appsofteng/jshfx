@@ -3,6 +3,7 @@ package dev.jshfx.base.ui;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,50 +25,70 @@ import javafx.scene.control.Tab;
 public class ActionController {
 
     private RootPane rootPane;
-    private Optional<ButtonType> result;
+    private Optional<ButtonType> result = Optional.of(ButtonType.NO);
 
     public ActionController(RootPane rootPane) {
         this.rootPane = rootPane;
     }
 
     public void close(Event event) {
-        result = Optional.of(ButtonType.NO);
         if (event.getSource()instanceof Tab tab) {
             close(tab, event);
         } else if (event.getSource()instanceof MenuItem item) {
             Tab tab = (Tab) item.getParentPopup().getUserData();
-            close(tab);
+            close(tab, null);
         }
     }
 
     public void close(Tab tab) {
-        result = Optional.of(ButtonType.NO);
         close(tab, null);
     }
 
-    public void closeOtherTabs(ActionEvent event) {
-        result = Optional.of(ButtonType.NO);
+    public void closeOthers(ActionEvent event) {
         if (event.getSource()instanceof MenuItem item) {
             Tab tab = (Tab) item.getParentPopup().getUserData();
-            rootPane.getTabs().filtered(t -> t != tab)
-            .forEach(t -> close(t, event));
+            var tabs = rootPane.getTabs().stream().filter(t -> t != tab).collect(Collectors.toList());
+
+            if (tabs.size() > 1) {
+                close(tabs, event);
+            } else {
+                close(tabs.get(0), event);
+            }
         }
     }
 
-    public void closeAllTabs(Event event) {
-        result = Optional.of(ButtonType.NO);
-        rootPane.getTabs().forEach(t -> close(t, event));
+    public void closeAll(Event event) {
+        close(rootPane.getTabs(), event);
     }
 
     private void close(Tab tab, Event event) {
+        result = Optional.of(ButtonType.NO);
+        close(tab, event, List.of());
+    }
+
+    private void close(List<Tab> tabs, Event event) {
+        result = Optional.of(ButtonType.NO);
+        var buttons = List.of(ButtonTypes.YES_ALL, ButtonTypes.NO_ALL);
+
+        for (Tab tab : tabs) {
+            close(tab, event, buttons);
+            if (result.get() == ButtonType.CANCEL) {
+                break;
+            }
+        }
+    }
+
+    private void close(Tab tab, Event event, List<ButtonType> additionalButtons) {
 
         ContentPane contentPane = (ContentPane) tab.getContent();
 
         if (contentPane.isModified() && result.get() != ButtonTypes.YES_ALL && result.get() != ButtonTypes.NO_ALL) {
 
+            var buttons = new ArrayList<>(List.of(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL));
+            buttons.addAll(additionalButtons);
             result = AlertBuilder.get(AlertType.CONFIRMATION).initOwner(rootPane.getScene().getWindow())
-                    .contentTextKey("msg.file.save", contentPane.getFXPath().getPath().toString())
-                    .buttonTypes(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL).build().showAndWait();
+                    .contentTextKey("msg.file.save", contentPane.getFXPath().getPath().toString()).buttonTypes(buttons)
+                    .build().showAndWait();
 
         }
 
@@ -98,13 +119,9 @@ public class ActionController {
 
     public void newShell() {
 
-        String name = FXResourceBundle.getBundle().getString​("new");
-        int i = 0;
-        while (rootPane.exists(name + i)) {
-            i++;
-        }
+        String name = XFiles.getUniqueName(n -> rootPane.exists(n), FXResourceBundle.getBundle().getString​("new"));
 
-        var shellPane = new ShellPane(name + i);
+        var shellPane = new ShellPane(name);
         shellPane.setActions(rootPane.getActions());
         rootPane.addSelect(shellPane);
     }

@@ -49,7 +49,7 @@ public class MainApp extends Application {
 		stage.getIcons().add(ResourceManager.get().getIconImage());
 
 		stage.setOnCloseRequest(e -> {
-		   root.getActions().getActionController().closeAllTabs(e);
+		   root.getActions().getActionController().closeAll(e);
 		});
 		
 		stage.show();

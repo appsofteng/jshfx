@@ -163,10 +163,10 @@ public class Actions {
         closeTabAction = new Action(e -> actionController.close(e));
         FXResourceBundle.getBundle().put(closeTabAction.textProperty(), "close");
 
-        closeOtherTabsAction = new Action(e -> actionController.closeOtherTabs(e));
+        closeOtherTabsAction = new Action(e -> actionController.closeOthers(e));
         FXResourceBundle.getBundle().put(closeOtherTabsAction.textProperty(), "closeOthers");
 
-        closeAllTabsAction = new Action(e -> actionController.closeAllTabs(e));
+        closeAllTabsAction = new Action(e -> actionController.closeAll(e));
         FXResourceBundle.getBundle().put(closeAllTabsAction.textProperty(), "closeAll");
 
         // Code area actions

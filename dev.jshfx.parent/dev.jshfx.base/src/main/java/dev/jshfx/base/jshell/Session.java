@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.base.sys.PreferenceManager;
+import dev.jshfx.j.nio.file.XFiles;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
 import dev.jshfx.jfx.scene.control.ConsoleModel;
@@ -155,12 +156,7 @@ public class Session {
     public String getNewEnvName() {
         var names = FileManager.get().getEnvNames();
         names.add(env.getName());
-        String name = PreferenceManager.DEFAULT_ENV_NAME;
-        int i = 1;
-
-        while (names.contains(name)) {
-            name = PreferenceManager.DEFAULT_ENV_NAME + ++i;
-        }
+        String name = XFiles.getUniqueName(n -> names.contains(n), PreferenceManager.DEFAULT_ENV_NAME);
 
         return name;
     }
