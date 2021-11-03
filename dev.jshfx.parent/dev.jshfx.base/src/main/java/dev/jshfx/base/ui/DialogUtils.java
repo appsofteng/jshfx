@@ -24,7 +24,7 @@ public final class DialogUtils {
             Dialog<Void> dialog = new Dialog<>();
             dialog.initOwner(window);
             TilePane tilePane = new TilePane();
-            tilePane.setPrefColumns(chartsFX.size() > 1 ? 2 : 1);
+            tilePane.setPrefColumns(charts.getColumns());
             tilePane.getChildren().addAll(chartsFX);
 
             ScrollPane scrollPane = new ScrollPane(tilePane);
