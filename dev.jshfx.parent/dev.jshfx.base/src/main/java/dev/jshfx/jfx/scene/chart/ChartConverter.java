@@ -13,9 +13,9 @@ import dev.jshfx.util.chart.XYChart;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public final class ChartUtils {
+public final class ChartConverter {
 
-    private ChartUtils() {
+    private ChartConverter() {
     }
 
     public static ObservableList<javafx.scene.chart.Chart> convert(Charts charts) {
@@ -51,7 +51,7 @@ public final class ChartUtils {
     }
 
     private static <X, Y> void convertXYChart(XYChart<X, Y> chart, javafx.scene.chart.XYChart<X, Y> chartFX) {
-        chartFX.getData().addAll(chart.getSeries().stream().map(ChartUtils::convert).collect(Collectors.toList()));
+        chartFX.getData().addAll(chart.getSeries().stream().map(ChartConverter::convert).collect(Collectors.toList()));
     }
 
     @SuppressWarnings("unchecked")

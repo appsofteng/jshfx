@@ -1,7 +1,7 @@
 package dev.jshfx.base.ui;
 
 import dev.jshfx.base.MainApp;
-import dev.jshfx.jfx.scene.chart.ChartUtils;
+import dev.jshfx.jfx.scene.chart.ChartConverter;
 import dev.jshfx.util.chart.Charts;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
@@ -19,7 +19,7 @@ public final class DialogUtils {
     public static void show(Window window, Object obj) {
 
         if (obj instanceof Charts charts) {
-            ObservableList<Chart> chartsFX = ChartUtils.convert(charts);
+            ObservableList<Chart> chartsFX = ChartConverter.convert(charts);
 
             Dialog<Void> dialog = new Dialog<>();
             dialog.initOwner(window);
@@ -28,10 +28,11 @@ public final class DialogUtils {
             tilePane.getChildren().addAll(chartsFX);
 
             ScrollPane scrollPane = new ScrollPane(tilePane);
-            scrollPane.prefViewportWidthProperty().bind(Bindings.createDoubleBinding(() -> Math.min(tilePane.getWidth(), MainApp.WINDOW_PREF_WIDTH) , tilePane.widthProperty()));
+            scrollPane.prefViewportWidthProperty().bind(Bindings.createDoubleBinding(
+                    () -> Math.min(tilePane.getWidth(), MainApp.WINDOW_PREF_WIDTH), tilePane.widthProperty()));
             scrollPane.setPrefHeight(MainApp.WINDOW_PREF_HEIGHT);
             scrollPane.setPannable(true);
-            
+
             dialog.getDialogPane().setContent(scrollPane);
             Window dialogWindow = dialog.getDialogPane().getScene().getWindow();
             dialogWindow.setOnCloseRequest(event -> dialogWindow.hide());
