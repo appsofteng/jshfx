@@ -333,12 +333,14 @@ public class Session {
 
         close();
         try {
-            String[] options = env.getOptions();
+            String[] options = env.getOptions(FileManager.UTIL_CLASSPATH, List.of("--enable-preview", "--release", System.getProperty("java.version")));
+            
             jshell = JShell.builder().executionEngine(objectExecutionControlProvider, null).idGenerator(idGenerator)
                     .in(consoleModel.getIn()).out(consoleModel.getOut()).err(consoleModel.getErr())
                     .compilerOptions(options).remoteVMOptions(options).build();
             // Create the analysis before putting on the class path.
             jshell.sourceCodeAnalysis();
+            jshell.addToClasspath(FileManager.UTIL_CLASSPATH);
             env.getClassPaths().forEach(p -> jshell.addToClasspath(p));
             idGenerator.setJshell(jshell);
 

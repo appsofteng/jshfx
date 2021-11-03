@@ -37,6 +37,7 @@ public final class FileManager extends Manager {
     private static final String START_DIR = System.getProperty("user.dir");
     public static final Path DEFAULT_PREFS_FILE = Path.of(START_DIR, "conf/preferences.properties");
     private static final Path JDK_SOURCE_FILE = Path.of(START_DIR, "lib/src.zip");
+    public static final String UTIL_CLASSPATH = START_DIR +  "/lib/dev.jshfx.util.jar";
 
     public static final Path HISTORY_FILE = Path.of(USER_CONF_DIR + "/history.json");
     public static final Path SET_FILE = Path.of(USER_CONF_DIR + "/set.json");

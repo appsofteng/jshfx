@@ -84,13 +84,13 @@ public class Env implements Comparable<Env> {
         return modulePaths.stream().collect(Collectors.joining(File.pathSeparator));
     }
 
-    private List<String> getOptionList() {
+    private List<String> getOptionList(String classpath) {
 
         List<String> options = new ArrayList<>();
 
         if (!classPaths.isEmpty()) {
             options.add("--class-path");
-            options.add(getClassPath());
+            options.add(getClassPath() + File.pathSeparator + classpath);
         }
 
         if (!modulePaths.isEmpty()) {
@@ -109,19 +109,21 @@ public class Env implements Comparable<Env> {
                 options.add(e.toString());
             });
         }
-
+        
         return options;
     }
 
     @JsonbTransient
-    public String[] getOptions() {
+    public String[] getOptions(String classpath, List<String> additionalOptions) {
+        var options = getOptionList(classpath);
+        options.addAll(additionalOptions);
 
-        return getOptionList().toArray(new String[] {});
+        return options.toArray(new String[] {});
     }
 
     @Override
     public String toString() {
-        return name + "\n" + getOptionList().stream().collect(Collectors.joining(" "));
+        return name + "\n" + getOptionList("").stream().collect(Collectors.joining(" "));
     }
 
     @Override

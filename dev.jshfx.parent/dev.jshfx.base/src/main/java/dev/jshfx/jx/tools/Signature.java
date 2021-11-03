@@ -114,9 +114,10 @@ public class Signature {
     }
 
     private void parseField() {
-        int i = signature.lastIndexOf(".");
-        var fieldName = signature.substring(i + 1, signature.lastIndexOf(":"));
-        var type = signature.substring(0, i);
+        var typeFieldName = signature.substring(0, signature.lastIndexOf(":"));
+        int i = typeFieldName.lastIndexOf(".");
+        var fieldName = typeFieldName.substring(i + 1);
+        var type = typeFieldName.substring(0, i);
         parseType(type);
         fullName = typeFullName + "." + fieldName;
     }

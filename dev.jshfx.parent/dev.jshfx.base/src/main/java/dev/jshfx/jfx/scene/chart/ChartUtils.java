@@ -1,12 +1,15 @@
 package dev.jshfx.jfx.scene.chart;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collectors;
 
 import dev.jshfx.util.chart.Axis;
-import dev.jshfx.util.chart.ChartList;
+import dev.jshfx.util.chart.CategoryAxis;
+import dev.jshfx.util.chart.Chart;
+import dev.jshfx.util.chart.Charts;
 import dev.jshfx.util.chart.LineChart;
+import dev.jshfx.util.chart.NumberAxis;
 import dev.jshfx.util.chart.Series;
+import dev.jshfx.util.chart.XYChart;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -15,41 +18,61 @@ public final class ChartUtils {
     private ChartUtils() {
     }
 
-    public static ObservableList<javafx.scene.chart.Chart> create(ChartList chartList) {
-        ObservableList<javafx.scene.chart.Chart> list = FXCollections.observableArrayList();
+    public static ObservableList<javafx.scene.chart.Chart> convert(Charts charts) {
+        ObservableList<javafx.scene.chart.Chart> chartsFX = FXCollections.observableArrayList();
+        javafx.scene.chart.Chart chartFX = null;
 
-        return list;
+        for (Chart chart : charts.getCharts()) {
+
+            if (chart instanceof LineChart<?, ?> lineChart) {
+
+                chartFX = convert(lineChart);
+            }
+            
+            convertChart(chart, chartFX);
+
+            chartsFX.add(chartFX);
+        }
+
+        return chartsFX;
     }
 
-    private static <X, Y> javafx.scene.chart.LineChart<X, Y> create(LineChart<X, Y> chart) {
-        javafx.scene.chart.LineChart<X, Y> lineChart = new javafx.scene.chart.LineChart<>(create(chart.getXAxis()),
-                create(chart.getYAxis()));
-        lineChart.getData().addAll(create(chart.getSeries()));
-
+    private static <X, Y> javafx.scene.chart.LineChart<X, Y> convert(LineChart<X, Y> chart) {
+        javafx.scene.chart.LineChart<X, Y> lineChart = new javafx.scene.chart.LineChart<>(convert(chart.getXAxis()),
+                convert(chart.getYAxis()));
+       
+        convertXYChart(chart, lineChart);
+        
         return lineChart;
     }
 
-    private static <T> javafx.scene.chart.Axis<T> create(Axis<T> axis) {
-        var a = new javafx.scene.chart.NumberAxis();
-
-        return (javafx.scene.chart.Axis<T>) a;
+    private static void convertChart(Chart chart, javafx.scene.chart.Chart chartFX) {
+        chartFX.setTitle(chart.getTitle());
     }
 
-    private static <X, Y> List<javafx.scene.chart.XYChart.Series<X, Y>> create(List<Series<X, Y>> seriesList) {
+    private static <X, Y> void convertXYChart(XYChart<X, Y> chart, javafx.scene.chart.XYChart<X, Y> chartFX) {
+        chartFX.getData().addAll(chart.getSeries().stream().map(ChartUtils::convert).collect(Collectors.toList()));
+    }
 
-        List<javafx.scene.chart.XYChart.Series<X, Y>> dataSeriesList = new ArrayList<>();
+    @SuppressWarnings("unchecked")
+    private static <T> javafx.scene.chart.Axis<T> convert(Axis<T> axis) {
 
-        for (Series<X, Y> series : seriesList) {
-            javafx.scene.chart.XYChart.Series<X, Y> dataSeries = new javafx.scene.chart.XYChart.Series<>();
+        javafx.scene.chart.Axis<T> a = null;
 
-            for (int i = 0; i < series.size(); i++) {
-                dataSeries.getData().add(
-                        new javafx.scene.chart.XYChart.Data<>(series.getXValues().get(i), series.getYValues().get(i)));
-            }
-
-            dataSeriesList.add(dataSeries);
+        if (axis instanceof NumberAxis) {
+            a = (javafx.scene.chart.Axis<T>) new javafx.scene.chart.NumberAxis();
+        } else if (axis instanceof CategoryAxis) {
+            a = (javafx.scene.chart.Axis<T>) new javafx.scene.chart.CategoryAxis();
         }
 
-        return dataSeriesList;
+        return a;
+    }
+
+    private static <X, Y> javafx.scene.chart.XYChart.Series<X, Y> convert(Series<X, Y> series) {
+
+        javafx.scene.chart.XYChart.Series<X, Y> dataSeries = new javafx.scene.chart.XYChart.Series<>();
+        series.iterate((x, y) -> dataSeries.getData().add(new javafx.scene.chart.XYChart.Data<>(x, y)));
+
+        return dataSeries;
     }
 }

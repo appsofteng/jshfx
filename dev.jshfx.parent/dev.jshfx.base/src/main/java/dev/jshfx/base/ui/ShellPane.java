@@ -20,17 +20,12 @@ import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.CTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
-import dev.jshfx.jfx.scene.chart.ChartUtils;
 import dev.jshfx.jfx.scene.control.SplitConsolePane;
-import dev.jshfx.util.chart.ChartList;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener.Change;
-import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
-import javafx.scene.chart.Chart;
 import javafx.scene.control.IndexRange;
-
 import jdk.jshell.Snippet;
 import jdk.jshell.SnippetEvent;
 
@@ -90,8 +85,8 @@ public class ShellPane extends PathPane {
     
     private void handleResult(SnippetEvent event, Object obj) {
         
-        if(event.snippet().kind() == Snippet.Kind.METHOD) {
-           DialogUtils.show(obj);
+        if(event.snippet().subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
+            Platform.runLater(() -> DialogUtils.show(getScene().getWindow(), obj));
         }
     }
 

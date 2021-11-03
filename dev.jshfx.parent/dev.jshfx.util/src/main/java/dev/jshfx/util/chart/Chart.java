@@ -1,24 +1,14 @@
 package dev.jshfx.util.chart;
 
-public class Chart {
+public abstract class Chart {
 
-    public static Builder builder() {
-        return new Builder();
+    private String title;
+    
+    public String getTitle() {
+        return title;
     }
-
-    public static class Builder {
-        
-        private ChartList chartList = new ChartList();
-        
-        private Builder() {
-        }
-
-        public ChartList plot() {
-            return chartList;
-        }
-    }
-
-    public enum ChartType {
-        LINE_CHART;
+    
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

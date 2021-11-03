@@ -18,13 +18,22 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class MainApp extends Application {
-
+    
+    public static final double WINDOW_PREF_WIDTH;
+    public static final double WINDOW_PREF_HEIGHT;
+    
+    static {
+        Rectangle2D screen = Screen.getPrimary().getBounds();
+        WINDOW_PREF_WIDTH = screen.getWidth() * 0.7;
+        WINDOW_PREF_HEIGHT = screen.getHeight() * 0.7;
+    }
+    
 	private RootPane root;
 
 	public static void main(String[] args) {
 		launch(args);
 	}
-
+	
 	@Override
 	public void init() throws Exception {
 		FileManager.get().init();
@@ -39,9 +48,8 @@ public class MainApp extends Application {
 	@Override
 	public void start(Stage stage) throws Exception {
 		root = new RootPane();
-
-		Rectangle2D screen = Screen.getPrimary().getBounds();
-		Scene scene = new Scene(root, screen.getWidth() * 0.7, screen.getHeight() * 0.7, false,
+		
+		Scene scene = new Scene(root, WINDOW_PREF_WIDTH, WINDOW_PREF_HEIGHT, false,
 				SceneAntialiasing.BALANCED);
 		scene.getStylesheets().add(ResourceManager.get().getStyle());
 		stage.setScene(scene);

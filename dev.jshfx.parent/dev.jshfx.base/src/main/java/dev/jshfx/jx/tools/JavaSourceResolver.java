@@ -76,7 +76,7 @@ public class JavaSourceResolver {
     }
 
     public HtmlDoc getHtmlDoc(Signature signature) {
-        StringBuilder htmlBuilder = new StringBuilder();
+        StringBuilder htmlBuilder = new StringBuilder("");
         HtmlDoc htmlDoc = null;
 
         try {

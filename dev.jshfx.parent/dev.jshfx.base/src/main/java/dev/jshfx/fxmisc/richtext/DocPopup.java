@@ -118,7 +118,7 @@ public class DocPopup extends Tooltip {
     boolean loadContent(CompletionItem docRef) {
 
         doc = documentation.apply(docRef);
-        if (doc.doc() != null) {
+        if (doc!= null) {
             history.add(docRef);
             moveHistory(1);
             webView.getEngine().getLoadWorker().cancel();
@@ -126,12 +126,12 @@ public class DocPopup extends Tooltip {
             webView.getEngine().loadContent(doc.doc());
         }
 
-        return doc.doc() != null;
+        return doc != null;
     }
 
     private void load(CompletionItem docRef) {
         doc = documentation.apply(docRef);
-        if (doc.doc() != null) {
+        if (doc != null) {
             webView.getEngine().getLoadWorker().cancel();
             webView.getEngine().load("");
             webView.getEngine().loadContent(doc.doc());

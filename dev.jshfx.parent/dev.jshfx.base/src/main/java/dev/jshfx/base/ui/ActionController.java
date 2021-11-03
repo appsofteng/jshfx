@@ -49,11 +49,7 @@ public class ActionController {
             Tab tab = (Tab) item.getParentPopup().getUserData();
             var tabs = rootPane.getTabs().stream().filter(t -> t != tab).collect(Collectors.toList());
 
-            if (tabs.size() > 1) {
-                close(tabs, event);
-            } else {
-                close(tabs.get(0), event);
-            }
+            close(tabs, event);
         }
     }
 
@@ -68,7 +64,11 @@ public class ActionController {
 
     private void close(List<Tab> tabs, Event event) {
         result = Optional.of(ButtonType.NO);
-        var buttons = List.of(ButtonTypes.YES_ALL, ButtonTypes.NO_ALL);
+        List<ButtonType> buttons = List.of();
+
+        if (tabs.size() > 1) {
+            buttons = List.of(ButtonTypes.YES_ALL, ButtonTypes.NO_ALL);
+        }
 
         for (Tab tab : tabs) {
             close(tab, event, buttons);
