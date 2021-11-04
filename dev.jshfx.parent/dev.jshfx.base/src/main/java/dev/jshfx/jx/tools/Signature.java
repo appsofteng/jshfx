@@ -100,16 +100,19 @@ public class Signature {
                 topTypeFullName = enclosingType;
             }
         }
+        
+        topTypeFullName = topTypeFullName.replaceAll("<.*>", "");
     }
 
     private void parseType(String type) {
-        type = type.replaceAll("<.*>", "");
         int i = type.lastIndexOf(".");
+        type = type.replaceAll("<.*>", "");
 
         if (i > 0) {
             typeFullName = type;
-        } else {
+        } else {            
             typeFullName = resolveFullTypeName.apply(type);
+            typeFullName = typeFullName.replaceAll("<.*>", "");
         }
     }
 

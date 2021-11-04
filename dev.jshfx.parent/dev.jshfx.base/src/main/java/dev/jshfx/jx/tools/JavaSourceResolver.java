@@ -158,11 +158,9 @@ public class JavaSourceResolver {
 
             if (names.isEmpty()) {
                 names = imports.stream().filter(i -> i.endsWith("*")).map(i -> i.substring(0, i.lastIndexOf("*")) + raw)
-                        .collect(Collectors.toList());
-            }
-
-            if (names.isEmpty()) {
-                names = List.of(name);
+                        .collect(Collectors.toCollection(() -> new ArrayList<>()));
+                names.add(packageName + "." + raw);
+                names.add(raw);
             }
 
             return names;

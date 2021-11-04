@@ -3,8 +3,10 @@ package dev.jshfx.base.jshell;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.fxmisc.richtext.CodeArea;
@@ -25,6 +27,8 @@ class SourceCodeCompletor extends Completor {
     @Override
     public Collection<CompletionItem> getCompletionItems() {
 
+        doImports();
+        
         Set<CompletionItem> items = new HashSet<>();
 
         int[] relativeAnchor = new int[1];
@@ -39,13 +43,21 @@ class SourceCodeCompletor extends Completor {
             }
 
             List<Suggestion> suggestions = session.getJshell().sourceCodeAnalysis()
-                    .completionSuggestions(relativeInput.toString(), relativeCursor, relativeAnchor);
-
+                    .completionSuggestions(relativeInput.toString(), relativeCursor, relativeAnchor);           
+            
             if (!suggestions.isEmpty()) {
 
                 int absoluteAnchor = inputArea.getCaretPosition() - (relativeCursor - relativeAnchor[0]);
+                Map<String, String> continuations = new HashMap<>();
 
                 for (Suggestion suggestion : suggestions) {
+                    
+                    if (continuations.containsKey(suggestion.continuation())) {
+                        continue;
+                    }
+                    
+                    continuations.put(suggestion.continuation(), suggestion.continuation());
+                    
                     String docInput = getDocInput(relativeInput.toString(), suggestion, relativeAnchor[0]);
                     // List<Documentation> docs = Session.documentation(docInput, docInput.length(),
                     // false);
@@ -88,6 +100,22 @@ class SourceCodeCompletor extends Completor {
         Collections.sort(sortedItems);
 
         return sortedItems;
+    }
+    
+    private void doImports() {
+        for (var p : inputArea.getParagraphs()) {
+            String text = p.getText().trim();
+            
+            if (text.isEmpty()) {
+                continue;
+            }
+            
+            if (text.startsWith("import")) {
+                session.getSnippetProcessor().analyseAndEvaluate(text);
+            } else {
+                break;
+            }
+        }
     }
 
     private String getDocInput(String input, Suggestion suggestion, int anchor) {

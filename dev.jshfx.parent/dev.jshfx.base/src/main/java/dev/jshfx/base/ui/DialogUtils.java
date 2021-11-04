@@ -8,8 +8,10 @@ import dev.jshfx.base.MainApp;
 import dev.jshfx.j.beans.BeanConverter;
 import dev.jshfx.util.chart.Charts;
 import javafx.beans.binding.Bindings;
+import javafx.scene.Node;
 import javafx.scene.chart.Chart;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.TilePane;
 import javafx.stage.Window;
@@ -29,6 +31,7 @@ public final class DialogUtils {
             List<Chart> chartsFX = charts.getCharts().stream().map(c -> (Chart) beanConverter.convert(c)).collect(Collectors.toList());            
 
             Dialog<Void> dialog = new Dialog<>();
+            dialog.setDialogPane(new PlainDialogPane());
             dialog.initOwner(window);
             TilePane tilePane = new TilePane();
             tilePane.setPrefColumns(charts.getColumns());
@@ -46,5 +49,14 @@ public final class DialogUtils {
             dialogWindow.setOnCloseRequest(event -> dialogWindow.hide());
             dialog.showAndWait();
         }
+    }
+    
+    private static class PlainDialogPane extends DialogPane {
+        
+        @Override
+        protected Node createButtonBar() {
+            return null;
+        }
+        
     }
 }

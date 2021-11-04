@@ -6,6 +6,7 @@ public abstract class Chart {
 
     private String title;
     private Side titleSide = Side.TOP;
+    private boolean legendVisible;
     
     public String getTitle() {
         return title;
@@ -21,5 +22,13 @@ public abstract class Chart {
     
     public void setTitleSide(Side titleSide) {
         this.titleSide = titleSide;
+    }
+    
+    public boolean isLegendVisible() {
+        return legendVisible;
+    }
+    
+    public void setLegendVisible(boolean legendVisible) {
+        this.legendVisible = legendVisible;
     }
 }

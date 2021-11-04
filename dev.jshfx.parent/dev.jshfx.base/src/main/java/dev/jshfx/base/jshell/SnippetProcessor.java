@@ -32,7 +32,7 @@ public class SnippetProcessor extends Processor {
         task.setOnFailed(e -> getSession().getTimer().stop());
     }
 
-    private void analyseAndEvaluate(String input) {
+    public void analyseAndEvaluate(String input) {
 
         SourceCodeAnalysis sourceAnalysis = session.getJshell().sourceCodeAnalysis();
 

@@ -21,29 +21,29 @@ public final class BeanConverter {
         this.namespaces = namespaces;
     }
 
-    public <T> T convert(Object bean) {
+    public <T> T convert(Object obj) {
         
-        if (bean == null) {
+        if (obj == null) {
             return null;
         }
         
-        T mirrorBean = (T) bean;
+        T mirrorBean = (T) obj;
 
-        Class<?> mirrorClass = getMirrorType(bean.getClass());
+        Class<?> mirrorClass = getMirrorType(obj.getClass());
 
-        if (mirrorClass != bean.getClass()) {
+        if (mirrorClass != obj.getClass()) {
             try {
                 
-                mirrorBean = (T) newInstance(mirrorClass, bean);
+                mirrorBean = (T) newInstance(mirrorClass, obj);
 
-                BeanInfo info = Introspector.getBeanInfo(bean.getClass(), Object.class);
+                BeanInfo info = Introspector.getBeanInfo(obj.getClass(), Object.class);
                 for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
 
                     if (pd.getReadMethod() == null) {
                         continue;
                     }
                     
-                    Object propertyValue = pd.getReadMethod().invoke(bean);
+                    Object propertyValue = pd.getReadMethod().invoke(obj);
 
                     if (propertyValue instanceof List list) {
                         List mirrorList = (List) mirrorClass.getMethod(pd.getReadMethod().getName()).invoke(mirrorBean);
@@ -67,6 +67,11 @@ public final class BeanConverter {
     }
 
     private Class<?> getMirrorType(Class<?> type) {
+        
+        if (type.isPrimitive()) {
+            return type;
+        }
+        
         String mirrorName = getMirrorName(type.getName());
         Class<?> mirrorClass = type;
 
