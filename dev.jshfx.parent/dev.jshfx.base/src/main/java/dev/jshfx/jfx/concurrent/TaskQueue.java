@@ -11,6 +11,10 @@ public class TaskQueue {
 
     private Queue<Task<?>> queue = new ArrayDeque<>();
 
+    public synchronized void clear() {
+        queue.clear();
+    }
+    
     public synchronized void add(Task<?> task) {
         queue.add(task);
 

@@ -32,4 +32,8 @@ public class TaskQueuer {
 		taskQueues.computeIfAbsent(queueId, k -> new TaskQueue()).add(t);
 		return t;
 	}
+	
+	public void clear() {
+	    taskQueues.values().forEach(q -> q.clear());
+	}
 }

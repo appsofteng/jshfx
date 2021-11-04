@@ -271,8 +271,8 @@ public class ShellPane extends PathPane {
     @Override
     public void dispose() {
         super.dispose();
-        var task = CTask.create(() -> session.close()).onFinished(t -> consolePane.dispose());
-
-        taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
+        session.close();
+        consolePane.dispose();
+        taskQueuer.clear();
     }
 }

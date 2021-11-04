@@ -49,10 +49,14 @@ public class ActionController {
             Tab tab = (Tab) item.getParentPopup().getUserData();
             var tabs = rootPane.getTabs().stream().filter(t -> t != tab).collect(Collectors.toList());
 
-            close(tabs, event);
+            close(tabs, null);
         }
     }
 
+    public void closeAll() {
+        close(new ArrayList<>(rootPane.getTabs()), null);
+    }
+    
     public void closeAll(Event event) {
         close(rootPane.getTabs(), event);
     }
@@ -96,7 +100,7 @@ public class ActionController {
             contentPane.dispose();
 
             if (event == null) {
-                // rootPane.getTabs().remove(tab);
+                rootPane.getTabs().remove(tab);
             }
         };
 

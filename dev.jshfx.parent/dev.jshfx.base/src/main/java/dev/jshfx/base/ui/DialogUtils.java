@@ -37,7 +37,8 @@ public final class DialogUtils {
             ScrollPane scrollPane = new ScrollPane(tilePane);
             scrollPane.prefViewportWidthProperty().bind(Bindings.createDoubleBinding(
                     () -> Math.min(tilePane.getWidth(), MainApp.WINDOW_PREF_WIDTH), tilePane.widthProperty()));
-            scrollPane.setPrefHeight(MainApp.WINDOW_PREF_HEIGHT);
+            scrollPane.prefViewportHeightProperty().bind(Bindings.createDoubleBinding(
+                    () -> Math.min(tilePane.getHeight(), MainApp.WINDOW_PREF_HEIGHT), tilePane.heightProperty()));
             scrollPane.setPannable(true);
 
             dialog.getDialogPane().setContent(scrollPane);

@@ -22,6 +22,11 @@ public final class BeanConverter {
     }
 
     public <T> T convert(Object bean) {
+        
+        if (bean == null) {
+            return null;
+        }
+        
         T mirrorBean = (T) bean;
 
         Class<?> mirrorClass = getMirrorType(bean.getClass());
@@ -93,7 +98,7 @@ public final class BeanConverter {
         Object obj = null;
 
         if (clazz.isEnum()) {
-            String constantName = ((Enum) bean).name();
+            String constantName = ((Enum<?>) bean).name();
             obj = Enum.valueOf((Class) clazz, constantName);
 
             return obj;

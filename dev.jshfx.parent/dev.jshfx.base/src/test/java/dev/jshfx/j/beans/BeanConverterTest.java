@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import dev.jshfx.util.chart.Chart;
 import dev.jshfx.util.chart.LineChart;
 import dev.jshfx.util.chart.NumberAxis;
+import dev.jshfx.util.geometry.Side;
 import javafx.embed.swing.JFXPanel;
 
 public class BeanConverterTest {
@@ -40,11 +41,21 @@ public class BeanConverterTest {
 
        assertTrue(result instanceof javafx.scene.chart.NumberAxis);
     }
+    @Test
+    public void testConvertEnum() {        
+        
+        var side = Side.TOP;
+
+        Object result = converter.convert(side);
+
+       assertTrue(result == javafx.geometry.Side.TOP);
+    }
 
     @Test
     public void testConvertLineChart() {
         Chart chart = new LineChart<>(Stream.of(0, 1, 2), Stream.of(10, 20, 30));
         chart.setTitle("Line Chart");
+        chart.setTitleSide(Side.RIGHT);
 
         javafx.scene.chart.LineChart<?,?> result = converter.convert(chart);
 
