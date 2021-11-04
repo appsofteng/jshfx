@@ -57,8 +57,8 @@ public class ActionController {
         close(new ArrayList<>(rootPane.getTabs()), null);
     }
     
-    public void closeAll(Event event) {
-        close(rootPane.getTabs(), event);
+    public void closeApp(Event event) {
+        close(new ArrayList<>(rootPane.getTabs()), event);
     }
 
     private void close(Tab tab, Event event) {
@@ -99,7 +99,7 @@ public class ActionController {
         Runnable close = () -> {
             contentPane.dispose();
 
-            if (event == null) {
+            if (event == null || !(event.getSource()instanceof Tab)) {
                 rootPane.getTabs().remove(tab);
             }
         };

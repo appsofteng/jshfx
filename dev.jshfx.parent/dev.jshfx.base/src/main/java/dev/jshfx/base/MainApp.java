@@ -57,7 +57,7 @@ public class MainApp extends Application {
 		stage.getIcons().add(ResourceManager.get().getIconImage());
 
 		stage.setOnCloseRequest(e -> {
-		   root.getActions().getActionController().closeAll(e);
+		   root.getActions().getActionController().closeApp(e);
 		});
 		
 		stage.show();
