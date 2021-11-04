@@ -10,6 +10,7 @@ public final class Charts {
     private List<Chart> charts;
     
     private Charts (int columns, Chart... charts) {
+        this.columns = columns;
         this.charts = Arrays.asList(charts);
     }
     

@@ -14,6 +14,7 @@ module dev.jshfx.base {
 	requires javafx.base;
 	requires javafx.controls;
 	requires javafx.graphics;
+	requires javafx.swing;
     requires transitive javafx.web;
 	
 	requires org.controlsfx.controls;
