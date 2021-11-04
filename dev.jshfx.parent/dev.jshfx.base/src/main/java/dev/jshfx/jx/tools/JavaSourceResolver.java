@@ -82,27 +82,30 @@ public class JavaSourceResolver {
         try {
             JavaFileObject jfo = fileManager.getJavaFileForInput(StandardLocation.SOURCE_PATH,
                     signature.getTopTypeFullName(), JavaFileObject.Kind.SOURCE);
-            JavacTask task = (JavacTask) compiler.getTask(null, null, null, null, null, List.of(jfo));
+            if (jfo != null) {
+                JavacTask task = (JavacTask) compiler.getTask(null, null, null, null, null, List.of(jfo));
 
-            DocTrees docTrees = DocTrees.instance(task);
+                DocTrees docTrees = DocTrees.instance(task);
 
-            Iterable<? extends CompilationUnitTree> unitTrees = task.parse();
-            SignatureTreePathScanner scanner = new SignatureTreePathScanner();
-            TreePath treePath = scanner.scan(unitTrees.iterator().next(), signature);
+                Iterable<? extends CompilationUnitTree> unitTrees = task.parse();
+                SignatureTreePathScanner scanner = new SignatureTreePathScanner();
+                TreePath treePath = scanner.scan(unitTrees.iterator().next(), signature);
 
-            DocCommentTree docCommentTree = docTrees.getDocCommentTree(treePath);
-            HtmlDocTreePathScanner docScanner = new HtmlDocTreePathScanner();
+                DocCommentTree docCommentTree = docTrees.getDocCommentTree(treePath);
+                HtmlDocTreePathScanner docScanner = new HtmlDocTreePathScanner();
 
-            htmlBuilder.append("<p><strong>").append(signature.toString()).append("</strong></p>").append("\n");
-            docScanner.scan(new DocTreePath(treePath, docCommentTree), htmlBuilder);
-            
-            htmlDoc = new HtmlDoc(signature, scanner.getPackageName(), scanner.getImports(), htmlBuilder.toString());    
+                htmlBuilder.append("<p><strong>").append(signature.toString()).append("</strong></p>").append("\n");
+                docScanner.scan(new DocTreePath(treePath, docCommentTree), htmlBuilder);
+
+                htmlDoc = new HtmlDoc(signature, scanner.getPackageName(), scanner.getImports(),
+                        htmlBuilder.toString());
+            }
 
         } catch (IOException e) {
 
             e.printStackTrace();
-        }            
-        
+        }
+
         return htmlDoc;
     }
 
@@ -136,11 +139,11 @@ public class JavaSourceResolver {
         public String getPackageName() {
             return packageName;
         }
-        
+
         public List<String> getImports() {
             return imports;
         }
-        
+
         private List<String> getFullNames(String name) {
 
             List<String> names = List.of(name);
@@ -320,7 +323,7 @@ public class JavaSourceResolver {
         public Void visitSee(SeeTree node, StringBuilder htmlBuilder) {
 
             appendBlockTagName(node, htmlBuilder);
-            var reference =  processInlineTag(node.getReference());
+            var reference = processInlineTag(node.getReference());
             reference = getLink(reference);
             appendBlockTagCode(reference, htmlBuilder);
 
@@ -363,10 +366,10 @@ public class JavaSourceResolver {
         private String processInlineTag(List<? extends DocTree> docTrees) {
             var stringBuilder = new StringBuilder();
             processInlineTag(docTrees, stringBuilder);
-            
+
             return stringBuilder.toString();
         }
-        
+
         private void processInlineTag(List<? extends DocTree> docTrees, StringBuilder htmlBuilder) {
 
             docTrees.forEach(t -> {
@@ -429,6 +432,7 @@ public class JavaSourceResolver {
             htmlBuilder.append("<br>").append("\n");
         }
     }
-    
-    public record HtmlDoc(Signature signature, String packageName, List<String> imports, String doc) {}
+
+    public record HtmlDoc(Signature signature, String packageName, List<String> imports, String doc) {
+    }
 }
