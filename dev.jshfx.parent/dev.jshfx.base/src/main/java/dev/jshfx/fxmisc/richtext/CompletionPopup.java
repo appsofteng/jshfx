@@ -8,7 +8,9 @@ import static org.fxmisc.wellbehaved.event.EventPattern.mousePressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -16,6 +18,7 @@ import org.fxmisc.wellbehaved.event.Nodes;
 
 import dev.jshfx.jfx.scene.layout.LayoutUtils;
 import dev.jshfx.jx.tools.JavaSourceResolver.HtmlDoc;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.event.EventHandler;
@@ -30,13 +33,14 @@ import javafx.stage.Screen;
 
 public class CompletionPopup extends Tooltip {
 
-	private static CompletionPopup INSTANCE;
+    private static CompletionPopup INSTANCE;
     static final double DEFAULT_WIDTH = 450;
     static final double DEFAULT_HEIGHT = 200;
     private ListView<CompletionItem> itemView = new ListView<>();
     private DocPopup docPopup;
     private ChangeListener<Boolean> focusListener;
     private ChangeListener<Number> windowListener;
+    private List<CompletionItem> buffer = new ArrayList<>();
 
     private EventHandler<KeyEvent> handler;
 
@@ -58,23 +62,48 @@ public class CompletionPopup extends Tooltip {
 
         setBehavior();
     }
-    
+
     public static CompletionPopup get() {
-    	if (INSTANCE == null) {
-    		INSTANCE = new CompletionPopup();
-    	}
-    	
-    	return INSTANCE;
+        if (INSTANCE == null) {
+            INSTANCE = new CompletionPopup();
+        }
+
+        return INSTANCE;
     }
 
     public void setDocumentation(Function<CompletionItem, HtmlDoc> documentation) {
-    	docPopup.setDocumentation(documentation);
+        docPopup.setDocumentation(documentation);
     }
-    
+
     public void setCompletionItem(BiFunction<String, HtmlDoc, CompletionItem> completionItem) {
         docPopup.setCompletionItem(completionItem);
     }
-    
+
+    public void clear() {
+        buffer.clear();
+        itemView.getItems().clear();
+    }
+
+    public void add(CompletionItem item) {
+
+        if (item != null) {
+            buffer.add(item);
+        }
+
+        if (buffer.size() > 4 || item == null) {
+            var copy = new ArrayList<>(buffer);
+            Platform.runLater(() -> {
+                itemView.getItems().addAll(copy);
+                if (itemView.getSelectionModel().isEmpty()) {
+                    getGraphic().requestFocus();
+                    itemView.getSelectionModel().clearSelection();
+                    itemView.getSelectionModel().selectFirst();
+                }
+            });
+            buffer.clear();
+        }
+    }
+
     public void setItems(Collection<? extends CompletionItem> items) {
         itemView.setItems(FXCollections.observableArrayList(items));
     }
@@ -112,13 +141,12 @@ public class CompletionPopup extends Tooltip {
         };
 
         Nodes.addInputMap(itemView,
-                sequence(consume(keyPressed(ENTER), e -> selected()),
-                        consume(keyPressed(ESCAPE), e -> close()),
+                sequence(consume(keyPressed(ENTER), e -> selected()), consume(keyPressed(ESCAPE), e -> close()),
                         consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 2), e -> selected())));
 
         anchorXProperty().addListener((v, o, n) -> {
-            double offset = Screen.getPrimary().getBounds().getWidth() - n.doubleValue() - getPrefWidth() > n.doubleValue() ? getPrefWidth()
-                    : -docPopup.getPrefWidth();
+            double offset = Screen.getPrimary().getBounds().getWidth() - n.doubleValue() - getPrefWidth() > n
+                    .doubleValue() ? getPrefWidth() : -docPopup.getPrefWidth();
             docPopup.setAnchorX(n.doubleValue() + offset);
         });
 

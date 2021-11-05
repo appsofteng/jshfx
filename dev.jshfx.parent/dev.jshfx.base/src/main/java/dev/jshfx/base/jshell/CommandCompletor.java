@@ -1,8 +1,8 @@
 package dev.jshfx.base.jshell;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.fxmisc.richtext.CodeArea;
@@ -11,7 +11,6 @@ import dev.jshfx.fxmisc.richtext.CompletionItem;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.jx.tools.JavaSourceResolver.HtmlDoc;
 import dev.jshfx.jx.tools.Token;
-import javafx.application.Platform;
 import picocli.AutoComplete;
 import picocli.CommandLine;
 
@@ -22,7 +21,7 @@ class CommandCompletor extends Completor {
     }
 
     @Override
-    public Collection<CompletionItem> getCompletionItems() {
+    public void getCompletionItems(Consumer<CompletionItem> items) {
         var lineSpan = JShellUtils.getCurrentLineSpan(inputArea);
         String input = lineSpan.text();
         int caretPosition = lineSpan.caretPosition();
@@ -49,14 +48,15 @@ class CommandCompletor extends Completor {
                 argIndex, positionInArg, caretPosition, candidates);
 
         if (candidates.size() == 1 && candidates.get(0).length() == 0 && arguments.size() > 0) {
-            Platform.runLater(() -> inputArea.insertText(inputArea.getCaretPosition(), " "));
 
+            candidates.clear();
             arguments.add("");
             argIndex++;
             positionInArg = 0;
             args = arguments.toArray(new String[0]);
             anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args,
-                    argIndex, positionInArg, caretPosition + 1, candidates);
+                    argIndex, positionInArg, caretPosition, candidates);
+            candidates = candidates.stream().map(c -> " " + c).collect(Collectors.toCollection(() -> new ArrayList<>()));
         }
 
         if (candidates.isEmpty() && args.length > 0) {
@@ -69,7 +69,6 @@ class CommandCompletor extends Completor {
 
         String arg = args[argIndex];
 
-        List<CompletionItem> items = new ArrayList<>();
         int absoluteAnchor = inputArea.getCaretPosition() - (caretPosition - anchor);
 
         for (CharSequence candidate : candidates) {
@@ -81,14 +80,15 @@ class CommandCompletor extends Completor {
             String commandName = args[0];
             String name = arg.substring(0, positionInArg) + candidate;
 
-            items.add(new CommandCompletionItem(inputArea, absoluteAnchor, candidate.toString(), commandName, name));
+            items.accept(new CommandCompletionItem(inputArea, absoluteAnchor, candidate.toString(), commandName, name));
         }
-
-        return items;
+        
+        items.accept(null);
     }
 
     @Override
     public HtmlDoc loadDocumentation(CompletionItem item) {
+        HtmlDoc doc = null;
         CommandCompletionItem commandItem = (CommandCompletionItem) item;
         String help = "";
         CommandLine subcommand = session.getCommandProcessor().getCommandLine().getSubcommands()
@@ -100,8 +100,12 @@ class CommandCompletor extends Completor {
             help = FXResourceBundle.getBundle().getStringOrDefault(commandItem.getDocKey(),
                     FXResourceBundle.getBundle().getStringOrDefault(commandItem.getName(), ""));
         }
+        
+        if (!help.isEmpty()) {
+            doc = new HtmlDoc(null, help, null, help);            
+        }
 
-        return new HtmlDoc(null, help, null, help);
+        return doc;
     }
     
     @Override

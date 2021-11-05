@@ -3,7 +3,6 @@ package dev.jshfx.base.ui;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +13,6 @@ import dev.jshfx.base.jshell.JShellUtils;
 import dev.jshfx.base.jshell.Session;
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.fxmisc.richtext.CodeAreaWrappers;
-import dev.jshfx.fxmisc.richtext.CompletionItem;
 import dev.jshfx.fxmisc.richtext.CompletionPopup;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import dev.jshfx.j.util.json.JsonUtils;
@@ -138,21 +136,16 @@ public class ShellPane extends PathPane {
     }
 
     public void showCodeCompletion() {
-        CTask<Collection<CompletionItem>> task = CTask.create(() -> completion.getCompletor().getCompletionItems())
-                .onSucceeded(this::codeCompletion);
-
-        taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
-    }
-
-    private void codeCompletion(Collection<CompletionItem> items) {
-
+        
         Optional<Bounds> boundsOption = consolePane.getInputArea().caretBoundsProperty().getValue();
         if (boundsOption.isPresent()) {
             Bounds bounds = boundsOption.get();
             CompletionPopup.get().setDocumentation(completion.getCompletor()::loadDocumentation);
             CompletionPopup.get().setCompletionItem(completion.getCompletor()::getCompletionItem);
-            CompletionPopup.get().setItems(items);
+            CompletionPopup.get().clear();
             CompletionPopup.get().show(consolePane.getInputArea(), bounds.getMaxX(), bounds.getMaxY());
+            CTask<Void> task = CTask.create(() -> completion.getCompletor().getCompletionItems(i -> CompletionPopup.get().add(i)));
+            taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
         }
     }
 

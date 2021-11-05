@@ -3,16 +3,19 @@ package dev.jshfx.base.jshell;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jshfx.fxmisc.richtext.CompletionItem;
 import dev.jshfx.jx.tools.JavaSourceResolver.HtmlDoc;
+import javafx.collections.ObservableList;
 import dev.jshfx.jx.tools.Signature;
 import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.QualifiedNames;
@@ -25,11 +28,9 @@ class SourceCodeCompletor extends Completor {
     }
 
     @Override
-    public Collection<CompletionItem> getCompletionItems() {
+    public void getCompletionItems(Consumer<CompletionItem> items) {
 
-        doImports();
-        
-        Set<CompletionItem> items = new HashSet<>();
+      //  doImports();
 
         int[] relativeAnchor = new int[1];
         StringBuffer relativeInput = new StringBuffer();
@@ -48,6 +49,8 @@ class SourceCodeCompletor extends Completor {
             if (!suggestions.isEmpty()) {
 
                 int absoluteAnchor = inputArea.getCaretPosition() - (relativeCursor - relativeAnchor[0]);
+                
+                suggestions = suggestions.stream().sorted(Comparator.comparing(s -> s.continuation())).toList();
                 Map<String, String> continuations = new HashMap<>();
 
                 for (Suggestion suggestion : suggestions) {
@@ -69,11 +72,12 @@ class SourceCodeCompletor extends Completor {
 
                     if (docs.isEmpty()) {
 
-                        items.add(new SuggestionCompletionItem(inputArea, suggestion, absoluteAnchor,
+                        items.accept(new SuggestionCompletionItem(inputArea, suggestion, absoluteAnchor,
                                 Signature.get("", expressionType, this::resolveType)));
 
                     } else {
-                        docs.forEach(d -> items.add(new SuggestionCompletionItem(inputArea, suggestion, absoluteAnchor,
+                        docs = docs.stream().sorted(Comparator.comparing(d -> d.signature())).toList();
+                        docs.forEach(d -> items.accept(new SuggestionCompletionItem(inputArea, suggestion, absoluteAnchor,
                                 Signature.get(d.signature(), expressionType, this::resolveType))));
                     }
                 }
@@ -87,19 +91,15 @@ class SourceCodeCompletor extends Completor {
             if (!qualifiedNames.isResolvable()) {
                 if (!qualifiedNames.getNames().isEmpty()) {
                     qualifiedNames.getNames().forEach(
-                            n -> items.add(new QualifiedNameCompletionItem(Signature.get(n, null, this::resolveType),
+                            n -> items.accept(new QualifiedNameCompletionItem(Signature.get(n, null, this::resolveType),
                                     it -> session.getConsoleView().submit(it))));
 
                     break;
                 }
             }
         }
-
-        var sortedItems = new ArrayList<>(items);
-
-        Collections.sort(sortedItems);
-
-        return sortedItems;
+        
+        items.accept(null);
     }
     
     private void doImports() {
