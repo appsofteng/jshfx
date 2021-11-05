@@ -48,6 +48,7 @@ public class Actions {
     private Action saveAsAction;
     private Action saveAllAction;
     private Action evaluateAction;
+    private Action evaluateLineAction;
 
     private Action closeTabAction;
     private Action closeOtherTabsAction;
@@ -73,6 +74,7 @@ public class Actions {
     private Action insertSaveFilePathAction;
 
     private Action codeCompletionAction;
+    private Action historySearchAction;
 
     private Consumer<ActionEvent> copyHandler;
     private Consumer<ActionEvent> cutHandler;
@@ -91,8 +93,9 @@ public class Actions {
     private Consumer<ActionEvent> insertFilePathHandler;
     private Consumer<ActionEvent> insertSaveFilePathHandler;
     private Consumer<ActionEvent> codeCompletionHandler;
+    private Consumer<ActionEvent> historySearchHandler;
     private Consumer<ActionEvent> evaluateHandler;
-    
+    private Consumer<ActionEvent> evaluateLineHandler;
 
     private BooleanExpression savedAllExpression;
 
@@ -169,6 +172,14 @@ public class Actions {
         FXResourceBundle.getBundle().put(evaluateAction.textProperty(), "evaluate");
         FXResourceBundle.getBundle().put(evaluateAction.longTextProperty(), "evaluateLong",
                 evaluateAction.getAccelerator().getDisplayText());
+        
+        evaluateLineAction = new Action(e -> evaluateLineHandler.accept(e));
+        evaluateLineAction.setGraphic(
+                GlyphFontRegistry.font(Fonts.FONT_AWESOME_5_FREE_SOLID).create(Fonts.FontAwesome.ARROW_RIGHT));
+        evaluateLineAction.setAccelerator(KeyCombination.keyCombination("Alt+E"));
+        FXResourceBundle.getBundle().put(evaluateLineAction.textProperty(), "evaluateLine");
+        FXResourceBundle.getBundle().put(evaluateLineAction.longTextProperty(), "evaluateLineLong",
+                evaluateLineAction.getAccelerator().getDisplayText());
         
         // Tab actions
         closeTabAction = new Action(e -> actionController.close(e));
@@ -275,6 +286,10 @@ public class Actions {
         FXResourceBundle.getBundle().put(codeCompletionAction.textProperty(), "codeCompletion");
         FXResourceBundle.getBundle().put(codeCompletionAction.longTextProperty(), "codeCompletion");
         codeCompletionAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Space"));
+        
+        historySearchAction = new Action(e -> historySearchHandler.accept(e));
+        FXResourceBundle.getBundle().put(historySearchAction.textProperty(), "historySearch");
+        historySearchAction.setAccelerator(KeyCombination.keyCombination("Shortcut+R"));
     }
 
     public ActionController getActionController() {
@@ -299,7 +314,7 @@ public class Actions {
 
     private ToolBar getToolbar() {
         ToolBar toolBar = ActionUtils.createToolBar(
-                List.of(newAction, openAction, saveAction, saveAsAction, saveAllAction, evaluateAction), ActionTextBehavior.HIDE);
+                List.of(newAction, openAction, saveAction, saveAsAction, saveAllAction, evaluateAction, evaluateLineAction), ActionTextBehavior.HIDE);
 
         toolBar.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
 
@@ -364,7 +379,9 @@ public class Actions {
         insertFilePathHandler = e -> shellPane.insertFilePaths();
         insertSaveFilePathHandler = e -> shellPane.insertSaveFilePath();
         codeCompletionHandler = e -> shellPane.showCodeCompletion();
+        historySearchHandler = e -> shellPane.showHistorySearch();
         evaluateHandler = e -> shellPane.eval();
+        evaluateLineHandler = e -> shellPane.evalLine();
 
         allSelected.bind(Bindings.createBooleanBinding(
                 () -> shellPane.getConsolePane().getFocusedArea() == null
@@ -403,7 +420,7 @@ public class Actions {
                 ActionUtils.ACTION_SEPARATOR, areaUndoAction, areaReduAction, ActionUtils.ACTION_SEPARATOR,
                 submitAction, submitLineAction, evalAction, evalLineAction, ActionUtils.ACTION_SEPARATOR,
                 historyUpAction, historyDownAction, ActionUtils.ACTION_SEPARATOR, insertDirPathAction,
-                insertFilePathAction, insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR, codeCompletionAction);
+                insertFilePathAction, insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR, codeCompletionAction, historySearchAction);
         ActionUtils.updateContextMenu(menu, actions);
 
         Nodes.addInputMap(area, sequence(
@@ -433,7 +450,10 @@ public class Actions {
                         e -> insertSaveFilePathAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
                 consume(keyPressed(codeCompletionAction.getAccelerator())
                         .onlyIf(e -> !codeCompletionAction.isDisabled()),
-                        e -> codeCompletionAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
+                        e -> codeCompletionAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+                consume(keyPressed(historySearchAction.getAccelerator())
+                        .onlyIf(e -> !historySearchAction.isDisabled()),
+                        e -> historySearchAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
     }
 
     private void setReadOnlyContextMenu(GenericStyledArea<?, ?, ?> area) {

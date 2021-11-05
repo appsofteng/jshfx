@@ -148,6 +148,10 @@ public class ShellPane extends PathPane {
             taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
         }
     }
+    
+    public void showHistorySearch() {
+        DialogUtils.showHistorySearch(getScene().getWindow(), consolePane.getHistory(), s -> consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), s));
+    }
 
     public void eval() {
         String text = consolePane.getInputArea().getSelectedText();
