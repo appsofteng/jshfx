@@ -15,6 +15,7 @@ import dev.jshfx.jfx.concurrent.CTask;
 import dev.jshfx.jfx.scene.control.AlertBuilder;
 import dev.jshfx.jfx.scene.control.ButtonTypes;
 import dev.jshfx.jfx.util.FXResourceBundle;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.scene.control.Alert.AlertType;
@@ -125,7 +126,7 @@ public class ActionController {
 
         String name = XFiles.getUniqueName(n -> rootPane.exists(n), FXResourceBundle.getBundle().getString​("new"));
 
-        var shellPane = create(Path.of(XFiles.appendFileExtension(name, FileManager.JAVA)));        
+        var shellPane = create(Path.of(XFiles.appendFileExtension(name, FileManager.JAVA)));
         rootPane.addSelect(shellPane);
     }
 
@@ -133,17 +134,32 @@ public class ActionController {
         List<Path> files = FileDialogUtils.getJavaFiles(rootPane.getScene().getWindow());
         List<Path> newFiles = rootPane.getNew(files);
         if (!files.isEmpty()) {
-            TaskManager.get().execute(
-                    CTask.create(() -> create(newFiles)).onSucceeded(contentPanes -> rootPane.add(contentPanes)));
+
+            var task = new Task<List<ContentPane>>() {
+
+                int i = 0;
+
+                @Override
+                protected List<ContentPane> call() throws Exception {
+                    List<ContentPane> panes = new ArrayList<>();
+
+                    newFiles.stream().filter(p -> FileManager.EXTENSIONS.contains(XFiles.getFileExtension(p)))
+                            .forEach(p -> {
+                                var contentPane = create(p);
+                                panes.add(contentPane);
+                                updateProgress(i++, newFiles.size());
+                            });
+
+                    return panes;
+                }
+            };
+
+            DialogUtils.showProgress(rootPane.getScene().getWindow(), task);
+
+            task.setOnSucceeded(e -> rootPane.add(task.getValue()));
+
+            TaskManager.get().execute(task);
         }
-    }
-
-    private List<ContentPane> create(List<Path> paths) {
-
-        var panes = paths.stream().filter(p -> FileManager.EXTENSIONS.contains(XFiles.getFileExtension(p)))
-                .map(this::create).collect(Collectors.toList());
-
-        return panes;
     }
 
     private ContentPane create(Path path) {

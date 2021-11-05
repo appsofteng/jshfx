@@ -6,12 +6,15 @@ import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.controlsfx.dialog.ProgressDialog;
+
 import dev.jshfx.base.MainApp;
 import dev.jshfx.j.beans.BeanConverter;
 import dev.jshfx.jfx.scene.control.AutoCompleteField;
 import dev.jshfx.util.chart.Charts;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Worker;
 import javafx.scene.Node;
 import javafx.scene.chart.Chart;
 import javafx.scene.control.Dialog;
@@ -27,6 +30,13 @@ public final class DialogUtils {
     private static final BeanConverter beanConverter = new BeanConverter(Map.of("dev.jshfx.util.chart", "javafx.scene.chart", "dev.jshfx.util.geometry", "javafx.geometry"));
     
     private DialogUtils() {
+    }
+    
+    public static void showProgress(Window window, Worker<?> worker) {
+        var progressDialog = new ProgressDialog(worker);
+        progressDialog.setHeaderText(null);
+        progressDialog.initOwner(window);
+        progressDialog.show();
     }
 
     public static void show(Window window, Object obj) {
