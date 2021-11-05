@@ -47,6 +47,7 @@ public class Actions {
     private Action saveAction;
     private Action saveAsAction;
     private Action saveAllAction;
+    private Action evaluateAction;
 
     private Action closeTabAction;
     private Action closeOtherTabsAction;
@@ -90,6 +91,7 @@ public class Actions {
     private Consumer<ActionEvent> insertFilePathHandler;
     private Consumer<ActionEvent> insertSaveFilePathHandler;
     private Consumer<ActionEvent> codeCompletionHandler;
+    private Consumer<ActionEvent> evaluateHandler;
     
 
     private BooleanExpression savedAllExpression;
@@ -159,6 +161,15 @@ public class Actions {
                 saveAllAction.getAccelerator().getDisplayText());
         saveAllAction.disabledProperty().bind(savedAll);
 
+        
+        evaluateAction = new Action(e -> evaluateHandler.accept(e));
+        evaluateAction.setGraphic(
+                GlyphFontRegistry.font(Fonts.FONT_AWESOME_5_FREE_SOLID).create(Fonts.FontAwesome.PLAY));
+        evaluateAction.setAccelerator(KeyCombination.keyCombination("Shortcut+E"));
+        FXResourceBundle.getBundle().put(evaluateAction.textProperty(), "evaluate");
+        FXResourceBundle.getBundle().put(evaluateAction.longTextProperty(), "evaluateLong",
+                evaluateAction.getAccelerator().getDisplayText());
+        
         // Tab actions
         closeTabAction = new Action(e -> actionController.close(e));
         FXResourceBundle.getBundle().put(closeTabAction.textProperty(), "close");
@@ -288,7 +299,7 @@ public class Actions {
 
     private ToolBar getToolbar() {
         ToolBar toolBar = ActionUtils.createToolBar(
-                List.of(newAction, openAction, saveAction, saveAsAction, saveAllAction), ActionTextBehavior.HIDE);
+                List.of(newAction, openAction, saveAction, saveAsAction, saveAllAction, evaluateAction), ActionTextBehavior.HIDE);
 
         toolBar.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
 
@@ -353,6 +364,7 @@ public class Actions {
         insertFilePathHandler = e -> shellPane.insertFilePaths();
         insertSaveFilePathHandler = e -> shellPane.insertSaveFilePath();
         codeCompletionHandler = e -> shellPane.showCodeCompletion();
+        evaluateHandler = e -> shellPane.eval();
 
         allSelected.bind(Bindings.createBooleanBinding(
                 () -> shellPane.getConsolePane().getFocusedArea() == null

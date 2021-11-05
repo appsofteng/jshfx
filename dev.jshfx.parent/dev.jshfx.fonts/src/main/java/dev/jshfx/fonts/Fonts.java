@@ -115,7 +115,6 @@ public class Fonts {
         public static final String IMPORT_CONTACTS = "\ue0e0";
         public static final String LIBRARY_BOOKS = "\ue02f";
         public static final String MENU = "\ue5d2";
-        public static final String SAVE_AS = "\ueb60";
         public static final String TEXTURE = "\ue421";
         public static final String TRANSFORM = "\ue428";
         public static final String VIDEO_LABEL = "\ue071";
