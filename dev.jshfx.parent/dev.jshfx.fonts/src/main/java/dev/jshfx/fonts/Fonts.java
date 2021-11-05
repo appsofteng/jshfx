@@ -77,6 +77,7 @@ public class Fonts {
         public static final String REDO = "\uf01e";
         public static final String RUNNING = "\uf70c";
         public static final String SEARCH = "\uf002";
+        public static final String SIGN_IN_ALT = "\uf2f6";
         public static final String SQUARE = "\uf0c8";
         public static final String TH_LARGE = "\uf009";
         public static final String TIMES = "\uf00d";
@@ -107,14 +108,17 @@ public class Fonts {
         public static final String CROP_7_5 = "\ue3c0";
         public static final String CROP_PORTRAIT = "\ue3c5";
         public static final String CROP_ROTATE = "\ue437";
+        public static final String EXIT_TO_APP = "\ue879";   
         public static final String EXPOSURE_ZERO = "\ue3cf";
         public static final String FOLDER = "\ue2c7";
         public static final String FONT_DOWNLOAD = "\ue167";
         public static final String GRADIENT = "\ue3e9";
         public static final String HIGHLIGHT = "\ue25f";
         public static final String IMPORT_CONTACTS = "\ue0e0";
+        public static final String INPUT = "\ue890";        
         public static final String LIBRARY_BOOKS = "\ue02f";
         public static final String MENU = "\ue5d2";
+        public static final String SEND = "\ue163";
         public static final String TEXTURE = "\ue421";
         public static final String TRANSFORM = "\ue428";
         public static final String VIDEO_LABEL = "\ue071";

@@ -15,6 +15,7 @@ import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.wellbehaved.event.Nodes;
 
 import dev.jshfx.base.sys.ResourceManager;
+import dev.jshfx.cfx.glyphfont.StyleGlyph;
 import dev.jshfx.fonts.Fonts;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import javafx.application.Platform;
@@ -26,8 +27,10 @@ import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Control;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.ToolBar;
 import javafx.scene.image.ImageView;
@@ -35,6 +38,7 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.text.Font;
 import javafx.util.Duration;
 
 public class Actions {
@@ -47,8 +51,6 @@ public class Actions {
     private Action saveAction;
     private Action saveAsAction;
     private Action saveAllAction;
-    private Action evaluateAction;
-    private Action evaluateLineAction;
 
     private Action closeTabAction;
     private Action closeOtherTabsAction;
@@ -68,13 +70,13 @@ public class Actions {
     private Action evalLineAction;
     private Action historyUpAction;
     private Action historyDownAction;
+    private Action historySearchAction;
 
     private Action insertDirPathAction;
     private Action insertFilePathAction;
     private Action insertSaveFilePathAction;
 
     private Action codeCompletionAction;
-    private Action historySearchAction;
 
     private Consumer<ActionEvent> copyHandler;
     private Consumer<ActionEvent> cutHandler;
@@ -89,13 +91,11 @@ public class Actions {
     private Consumer<ActionEvent> evalLineHandler;
     private Consumer<ActionEvent> historyUpHandler;
     private Consumer<ActionEvent> historyDownHandler;
+    private Consumer<ActionEvent> historySearchHandler;
     private Consumer<ActionEvent> insertDirPathHandler;
     private Consumer<ActionEvent> insertFilePathHandler;
     private Consumer<ActionEvent> insertSaveFilePathHandler;
     private Consumer<ActionEvent> codeCompletionHandler;
-    private Consumer<ActionEvent> historySearchHandler;
-    private Consumer<ActionEvent> evaluateHandler;
-    private Consumer<ActionEvent> evaluateLineHandler;
 
     private BooleanExpression savedAllExpression;
 
@@ -164,23 +164,6 @@ public class Actions {
                 saveAllAction.getAccelerator().getDisplayText());
         saveAllAction.disabledProperty().bind(savedAll);
 
-        
-        evaluateAction = new Action(e -> evaluateHandler.accept(e));
-        evaluateAction.setGraphic(
-                GlyphFontRegistry.font(Fonts.FONT_AWESOME_5_FREE_SOLID).create(Fonts.FontAwesome.PLAY));
-        evaluateAction.setAccelerator(KeyCombination.keyCombination("Shortcut+E"));
-        FXResourceBundle.getBundle().put(evaluateAction.textProperty(), "evaluate");
-        FXResourceBundle.getBundle().put(evaluateAction.longTextProperty(), "evaluateLong",
-                evaluateAction.getAccelerator().getDisplayText());
-        
-        evaluateLineAction = new Action(e -> evaluateLineHandler.accept(e));
-        evaluateLineAction.setGraphic(
-                GlyphFontRegistry.font(Fonts.FONT_AWESOME_5_FREE_SOLID).create(Fonts.FontAwesome.ARROW_RIGHT));
-        evaluateLineAction.setAccelerator(KeyCombination.keyCombination("Alt+E"));
-        FXResourceBundle.getBundle().put(evaluateLineAction.textProperty(), "evaluateLine");
-        FXResourceBundle.getBundle().put(evaluateLineAction.longTextProperty(), "evaluateLineLong",
-                evaluateLineAction.getAccelerator().getDisplayText());
-        
         // Tab actions
         closeTabAction = new Action(e -> actionController.close(e));
         FXResourceBundle.getBundle().put(closeTabAction.textProperty(), "close");
@@ -235,25 +218,33 @@ public class Actions {
         areaReduAction.setDisabled(true);
         areaReduAction.disabledProperty().bind(redoEmpty);
 
-        submitAction = new Action(e -> submitHandler.accept(e));
-        FXResourceBundle.getBundle().put(submitAction.textProperty(), "submit");
-        FXResourceBundle.getBundle().put(submitAction.longTextProperty(), "submit");
-        submitAction.setAccelerator(KeyCombination.keyCombination("Shift+Enter"));
-
-        submitLineAction = new Action(e -> submitLineHandler.accept(e));
-        FXResourceBundle.getBundle().put(submitLineAction.textProperty(), "submitLine");
-        FXResourceBundle.getBundle().put(submitLineAction.longTextProperty(), "submitLine");
-        submitLineAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Enter"));
-
         evalAction = new Action(e -> evalHandler.accept(e));
-        FXResourceBundle.getBundle().put(evalAction.textProperty(), "evaluate");
-        FXResourceBundle.getBundle().put(evalAction.longTextProperty(), "evaluate");
+        evalAction.setGraphic(new StyleGlyph(Fonts.FONT_AWESOME_5_FREE_SOLID, Fonts.FontAwesome.PLAY));
         evalAction.setAccelerator(KeyCombination.keyCombination("Shortcut+E"));
+        FXResourceBundle.getBundle().put(evalAction.textProperty(), "evaluate");
+        FXResourceBundle.getBundle().put(evalAction.longTextProperty(), "evaluateLong",
+                evalAction.getAccelerator().getDisplayText());
 
         evalLineAction = new Action(e -> evalLineHandler.accept(e));
-        FXResourceBundle.getBundle().put(evalLineAction.textProperty(), "evaluateLine");
-        FXResourceBundle.getBundle().put(evalLineAction.longTextProperty(), "evaluateLine");
+        evalLineAction.setGraphic(new StyleGlyph(Fonts.FONT_AWESOME_5_FREE_SOLID, Fonts.FontAwesome.ARROW_RIGHT));
         evalLineAction.setAccelerator(KeyCombination.keyCombination("Alt+E"));
+        FXResourceBundle.getBundle().put(evalLineAction.textProperty(), "evaluateLine");
+        FXResourceBundle.getBundle().put(evalLineAction.longTextProperty(), "evaluateLineLong",
+                evalLineAction.getAccelerator().getDisplayText());
+
+        submitAction = new Action(e -> submitHandler.accept(e));
+        submitAction.setGraphic(new StyleGlyph(Fonts.MATERIAL_ICONS, Fonts.Material.SEND));
+        submitAction.setAccelerator(KeyCombination.keyCombination("Shift+Enter"));
+        FXResourceBundle.getBundle().put(submitAction.textProperty(), "submit");
+        FXResourceBundle.getBundle().put(submitAction.longTextProperty(), "submitLong",
+                submitAction.getAccelerator().getDisplayText());
+
+        submitLineAction = new Action(e -> submitLineHandler.accept(e));
+        submitLineAction.setGraphic(new StyleGlyph(Fonts.MATERIAL_ICONS, Fonts.Material.INPUT).size(14));
+        submitLineAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Enter"));
+        FXResourceBundle.getBundle().put(submitLineAction.textProperty(), "submitLine");
+        FXResourceBundle.getBundle().put(submitLineAction.longTextProperty(), "submitLineLong",
+                submitLineAction.getAccelerator().getDisplayText());
 
         historyUpAction = new Action(e -> historyUpHandler.accept(e));
         FXResourceBundle.getBundle().put(historyUpAction.textProperty(), "historyUp");
@@ -266,6 +257,10 @@ public class Actions {
         FXResourceBundle.getBundle().put(historyDownAction.longTextProperty(), "historyDown");
         historyDownAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Down"));
         historyDownAction.disabledProperty().bind(historyEndReached);
+
+        historySearchAction = new Action(e -> historySearchHandler.accept(e));
+        FXResourceBundle.getBundle().put(historySearchAction.textProperty(), "historySearch");
+        historySearchAction.setAccelerator(KeyCombination.keyCombination("Shortcut+R"));
 
         insertDirPathAction = new Action(e -> insertDirPathHandler.accept(e));
         FXResourceBundle.getBundle().put(insertDirPathAction.textProperty(), "insertDirPath");
@@ -286,16 +281,12 @@ public class Actions {
         FXResourceBundle.getBundle().put(codeCompletionAction.textProperty(), "codeCompletion");
         FXResourceBundle.getBundle().put(codeCompletionAction.longTextProperty(), "codeCompletion");
         codeCompletionAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Space"));
-        
-        historySearchAction = new Action(e -> historySearchHandler.accept(e));
-        FXResourceBundle.getBundle().put(historySearchAction.textProperty(), "historySearch");
-        historySearchAction.setAccelerator(KeyCombination.keyCombination("Shortcut+R"));
     }
 
     public ActionController getActionController() {
         return actionController;
     }
-    
+
     public void empty() {
         saveAsAction.setDisabled(true);
     }
@@ -313,8 +304,8 @@ public class Actions {
     }
 
     private ToolBar getToolbar() {
-        ToolBar toolBar = ActionUtils.createToolBar(
-                List.of(newAction, openAction, saveAction, saveAsAction, saveAllAction, evaluateAction, evaluateLineAction), ActionTextBehavior.HIDE);
+        ToolBar toolBar = ActionUtils.createToolBar(List.of(newAction, openAction, saveAction, saveAsAction,
+                saveAllAction, evalAction, evalLineAction, submitAction, submitLineAction), ActionTextBehavior.HIDE);
 
         toolBar.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
 
@@ -353,11 +344,11 @@ public class Actions {
         setEditContextMenu(shellPane.getConsolePane().getInputArea());
         setReadOnlyContextMenu(shellPane.getConsolePane().getOutputArea());
     }
-    
+
     public void bind(ContentPane contentPane) {
         saved.bind(contentPane.modifiedProperty().not());
     }
-    
+
     public void bind(ShellPane shellPane) {
         var inputArea = shellPane.getConsolePane().getInputArea();
         var outputArea = shellPane.getConsolePane().getOutputArea();
@@ -380,8 +371,6 @@ public class Actions {
         insertSaveFilePathHandler = e -> shellPane.insertSaveFilePath();
         codeCompletionHandler = e -> shellPane.showCodeCompletion();
         historySearchHandler = e -> shellPane.showHistorySearch();
-        evaluateHandler = e -> shellPane.eval();
-        evaluateLineHandler = e -> shellPane.evalLine();
 
         allSelected.bind(Bindings.createBooleanBinding(
                 () -> shellPane.getConsolePane().getFocusedArea() == null
@@ -417,10 +406,10 @@ public class Actions {
     private void setEditContextMenu(GenericStyledArea<?, ?, ?> area) {
         var menu = getContextMenu(area);
         var actions = List.of(areaCopyAction, areaCutAction, areaPasteAction, areaSelectAllAction, areaClearAction,
-                ActionUtils.ACTION_SEPARATOR, areaUndoAction, areaReduAction, ActionUtils.ACTION_SEPARATOR,
-                submitAction, submitLineAction, evalAction, evalLineAction, ActionUtils.ACTION_SEPARATOR,
-                historyUpAction, historyDownAction, ActionUtils.ACTION_SEPARATOR, insertDirPathAction,
-                insertFilePathAction, insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR, codeCompletionAction, historySearchAction);
+                ActionUtils.ACTION_SEPARATOR, areaUndoAction, areaReduAction, ActionUtils.ACTION_SEPARATOR, evalAction,
+                evalLineAction, submitAction, submitLineAction, ActionUtils.ACTION_SEPARATOR, historyUpAction,
+                historyDownAction, ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction,
+                insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR, codeCompletionAction, historySearchAction);
         ActionUtils.updateContextMenu(menu, actions);
 
         Nodes.addInputMap(area, sequence(
@@ -451,8 +440,7 @@ public class Actions {
                 consume(keyPressed(codeCompletionAction.getAccelerator())
                         .onlyIf(e -> !codeCompletionAction.isDisabled()),
                         e -> codeCompletionAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(historySearchAction.getAccelerator())
-                        .onlyIf(e -> !historySearchAction.isDisabled()),
+                consume(keyPressed(historySearchAction.getAccelerator()).onlyIf(e -> !historySearchAction.isDisabled()),
                         e -> historySearchAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
     }
 
