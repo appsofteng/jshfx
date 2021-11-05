@@ -56,7 +56,7 @@ public class ActionController {
     public void closeAll() {
         close(new ArrayList<>(rootPane.getTabs()), null);
     }
-    
+
     public void closeApp(Event event) {
         close(new ArrayList<>(rootPane.getTabs()), event);
     }
@@ -99,7 +99,7 @@ public class ActionController {
         Runnable close = () -> {
             contentPane.dispose();
 
-            if (event == null || !(event.getSource()instanceof Tab)) {
+            if (event == null || !(event.getSource() instanceof Tab)) {
                 rootPane.getTabs().remove(tab);
             }
         };
@@ -125,8 +125,7 @@ public class ActionController {
 
         String name = XFiles.getUniqueName(n -> rootPane.exists(n), FXResourceBundle.getBundle().getString​("new"));
 
-        var shellPane = new ShellPane(name);
-        shellPane.setActions(rootPane.getActions());
+        var shellPane = create(Path.of(XFiles.appendFileExtension(name, FileManager.JAVA)));        
         rootPane.addSelect(shellPane);
     }
 
@@ -152,8 +151,12 @@ public class ActionController {
 
         if (FileManager.SHELL_EXTENSIONS.contains(XFiles.getFileExtension(path))) {
             try {
-                String input = Files.readString(path);
+                String input = "";
+                if (path.isAbsolute()) {
+                    input = Files.readString(path);
+                }
                 pane = new ShellPane(path, input);
+                pane.setActions(rootPane.getActions());
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -14,6 +14,10 @@ public final class XFiles {
     private XFiles() {
     }
     
+    public static String appendFileExtension(String name, String extension) {
+        return name + "." + extension;
+    }
+    
     public static String getFileExtension(Path path) {
         return getFileExtension(path.toString());
     }
