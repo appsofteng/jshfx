@@ -252,6 +252,8 @@ public class SplitConsolePane extends BorderPane {
         if (historyIndex > 0 && historyIndex <= history.size()) {
             historyIndex--;
             String text = history.get(historyIndex);
+            //Ensures highlighting when the next text is the same as the previous.
+            inputArea.replaceText("");
             inputArea.replaceText(text);
             historyStartReached.set(historyIndex == 0);
             historyEndReached.set(historyIndex == history.size());
@@ -263,6 +265,8 @@ public class SplitConsolePane extends BorderPane {
         if (historyIndex >= 0 && historyIndex < history.size() - 1) {
             historyIndex++;
             String text = history.get(historyIndex);
+            //Ensures highlighting when the next text is the same as the previous.
+            inputArea.replaceText("");
             inputArea.replaceText(text);
         } else {
             inputArea.replaceText("");
