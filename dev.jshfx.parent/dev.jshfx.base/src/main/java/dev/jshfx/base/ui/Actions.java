@@ -237,7 +237,7 @@ public class Actions {
                 submitAction.getAccelerator().getDisplayText());
 
         submitLineAction = new Action(e -> submitLineHandler.accept(e));
-        submitLineAction.setGraphic(new StyleGlyph(Fonts.MATERIAL_ICONS, Fonts.Material.INPUT).size(14));
+        submitLineAction.setGraphic(new StyleGlyph(Fonts.MATERIAL_ICONS, Fonts.Material.INPUT, 14));
         submitLineAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Enter"));
         FXResourceBundle.getBundle().put(submitLineAction.textProperty(), "submitLine");
         FXResourceBundle.getBundle().put(submitLineAction.longTextProperty(), "submitLineLong",
