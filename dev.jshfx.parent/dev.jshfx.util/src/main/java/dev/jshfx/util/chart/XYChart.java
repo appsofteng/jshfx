@@ -10,7 +10,8 @@ import dev.jshfx.util.lang.InitArgument;
 
 public class XYChart<X,Y> extends Chart {
 
-    private boolean alternativeColumnFillVisible​;
+    private boolean alternativeColumnFillVisible;
+    private boolean alternativeRowFillVisible;   
     private Axis<X> xAxis;
     private Axis<Y> yAxis;
     private List<Series<X,Y>> data = new ArrayList<>();
@@ -41,13 +42,29 @@ public class XYChart<X,Y> extends Chart {
         data.add((Series<X, Y>) s);
     }
     
-    public boolean isAlternativeColumnFillVisible​() {
-        return alternativeColumnFillVisible​;
+    public boolean isAlternativeColumnFillVisible() {
+        return alternativeColumnFillVisible;
     }
     
-    public void setAlternativeColumnFillVisible​(boolean alternativeColumnFillVisible​) {
-        this.alternativeColumnFillVisible​ = alternativeColumnFillVisible​;
+    public void setAlternativeColumnFillVisible(boolean alternativeColumnFillVisible) {
+        this.alternativeColumnFillVisible = alternativeColumnFillVisible;
     }
+    
+    public boolean isAlternativeRowFillVisible() {
+        return alternativeRowFillVisible;
+    }
+    
+    public void setAlternativeRowFillVisible(boolean alternativeRowFillVisible) {
+        this.alternativeRowFillVisible = alternativeRowFillVisible;
+    }
+    
+//    public boolean isAlternativeColumnFillVisible​() {
+//        return alternativeColumnFillVisible​;
+//    }
+//    
+//    public void setAlternativeColumnFillVisible​(boolean alternativeColumnFillVisible​) {
+//        this.alternativeColumnFillVisible​ = alternativeColumnFillVisible​;
+//    }
     
     @InitArgument(0)
     public Axis<X> getXAxis() {

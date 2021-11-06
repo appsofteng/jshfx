@@ -3,6 +3,7 @@ package dev.jshfx.j.beans;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -22,18 +23,18 @@ public final class BeanConverter {
     }
 
     public <T> T convert(Object obj) {
-        
+
         if (obj == null) {
             return null;
         }
-        
+
         T mirrorBean = (T) obj;
 
         Class<?> mirrorClass = getMirrorType(obj.getClass());
 
         if (mirrorClass != obj.getClass()) {
             try {
-                
+
                 mirrorBean = (T) newInstance(mirrorClass, obj);
 
                 BeanInfo info = Introspector.getBeanInfo(obj.getClass(), Object.class);
@@ -42,7 +43,7 @@ public final class BeanConverter {
                     if (pd.getReadMethod() == null) {
                         continue;
                     }
-                    
+
                     Object propertyValue = pd.getReadMethod().invoke(obj);
 
                     if (propertyValue instanceof List list) {
@@ -51,8 +52,9 @@ public final class BeanConverter {
                     } else {
                         if (pd.getWriteMethod() != null) {
                             Object mirrorPropertyValue = convert(propertyValue);
+                            var methodName = pd.getWriteMethod().getName();
                             mirrorClass
-                                    .getMethod(pd.getWriteMethod().getName(),
+                                    .getMethod(methodName,
                                             getMirrorType(pd.getReadMethod().getReturnType()))
                                     .invoke(mirrorBean, mirrorPropertyValue);
                         }
@@ -67,11 +69,11 @@ public final class BeanConverter {
     }
 
     private Class<?> getMirrorType(Class<?> type) {
-        
+
         if (type.isPrimitive()) {
             return type;
         }
-        
+
         String mirrorName = getMirrorName(type.getName());
         Class<?> mirrorClass = type;
 
