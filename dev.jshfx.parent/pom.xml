@@ -18,7 +18,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<ojfxVersion>17.0.0.1</ojfxVersion>
+		<ojfxVersion>17.0.1</ojfxVersion>
 		<picocliVersion>4.6.1</picocliVersion>
 		<mavenVersion>3.8.3</mavenVersion>
 		<mavenResolverVersion>1.7.2</mavenResolverVersion>

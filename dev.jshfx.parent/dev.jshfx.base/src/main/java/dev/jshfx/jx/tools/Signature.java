@@ -100,7 +100,7 @@ public class Signature {
                 topTypeFullName = enclosingType;
             }
         }
-        
+
         topTypeFullName = topTypeFullName.replaceAll("<.*>", "");
     }
 
@@ -110,7 +110,7 @@ public class Signature {
 
         if (i > 0) {
             typeFullName = type;
-        } else {            
+        } else {
             typeFullName = resolveFullTypeName.apply(type);
             typeFullName = typeFullName.replaceAll("<.*>", "");
         }
@@ -137,6 +137,7 @@ public class Signature {
         int p1 = signature.indexOf("(");
         int p2 = signature.lastIndexOf(")");
         var typeAndName = signature.substring(0, p1);
+        typeAndName = removeBracketContent(typeAndName);
         typeAndName = typeAndName.substring(typeAndName.lastIndexOf(" ") + 1);
         int i = typeAndName.lastIndexOf(".");
         String methodName = typeAndName;
@@ -162,6 +163,24 @@ public class Signature {
         var parameters = signature.substring(p1 + 1, p2);
         parseMethodParameterTypes(parameters);
 
+    }
+
+    private String removeBracketContent(String input) {
+        String result = "";
+        int delimiters = 0;
+
+        for (int i = 0; i < input.length(); i++) {
+
+            if (input.charAt(i) == '<' || input.charAt(i) == '[') {
+                delimiters++;
+            } else if (input.charAt(i) == '>' || input.charAt(i) == ']') {
+                delimiters--;
+            } else if (delimiters == 0) {
+                result += input.charAt(i);
+            } 
+        }
+
+        return result;
     }
 
     private void parseMethodParameterTypes(String parameters) {

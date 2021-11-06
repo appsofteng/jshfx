@@ -333,7 +333,7 @@ public class Session {
 
         close();
         try {
-            String[] options = env.getOptions(FileManager.UTIL_CLASSPATH, List.of("--enable-preview", "--release", System.getProperty("java.version")));
+            String[] options = env.getOptions(FileManager.UTIL_CLASSPATH, List.of("--enable-preview", "--release", FileManager.JAVA_RELEASE));
             
             jshell = JShell.builder().executionEngine(objectExecutionControlProvider, null).idGenerator(idGenerator)
                     .in(consoleModel.getIn()).out(consoleModel.getOut()).err(consoleModel.getErr())

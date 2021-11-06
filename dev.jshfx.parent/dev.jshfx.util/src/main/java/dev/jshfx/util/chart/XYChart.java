@@ -11,7 +11,8 @@ import dev.jshfx.util.lang.InitArgument;
 public class XYChart<X,Y> extends Chart {
 
     private boolean alternativeColumnFillVisible;
-    private boolean alternativeRowFillVisible;   
+    private boolean alternativeRowFillVisible = true;   
+    private boolean horizontalGridLinesVisible = true;
     private Axis<X> xAxis;
     private Axis<Y> yAxis;
     private List<Series<X,Y>> data = new ArrayList<>();
@@ -58,13 +59,13 @@ public class XYChart<X,Y> extends Chart {
         this.alternativeRowFillVisible = alternativeRowFillVisible;
     }
     
-//    public boolean isAlternativeColumnFillVisible​() {
-//        return alternativeColumnFillVisible​;
-//    }
-//    
-//    public void setAlternativeColumnFillVisible​(boolean alternativeColumnFillVisible​) {
-//        this.alternativeColumnFillVisible​ = alternativeColumnFillVisible​;
-//    }
+    public boolean isHorizontalGridLinesVisible() {
+        return horizontalGridLinesVisible;
+    }
+    
+    public void setHorizontalGridLinesVisible(boolean horizontalGridLinesVisible) {
+        this.horizontalGridLinesVisible = horizontalGridLinesVisible;
+    }
     
     @InitArgument(0)
     public Axis<X> getXAxis() {
@@ -76,6 +77,9 @@ public class XYChart<X,Y> extends Chart {
         return yAxis;
     }
     
+    /**
+     * Gets the value of the property data.
+     */
     public List<Series<X,Y>> getData() {
         return data;
     }

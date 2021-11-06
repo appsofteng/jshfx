@@ -183,6 +183,22 @@ public class SignatureTest {
     }
     
     @Test
+    public void testMethodGenericSpaces() {
+        String expectedTopTypeFullName = "com.example.Example";
+        String expectedTypeFullName = "com.example.Example";
+        String expectedFullName = "com.example.Example.method";
+        List<String> expectedMethodParamTypes = List.of("java.util.List", "java.util.List", "java.util.Map");
+
+        var signature = Signature.get("org.pckg.Type<A, B> com.example.Example<X, Y>.method(List<String> list1, List<List<Double>> list2, Map<String, List<Double>> map)", null, resolveType);
+
+        assertEquals(Signature.Kind.METHOD, signature.getKind());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
+        assertEquals(expectedTypeFullName, signature.getTypeFullName());
+        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
+    }
+    
+    @Test
     public void testMethodType() {
         String expectedTopTypeFullName = "org.example.Example";
         String expectedTypeFullName = "org.example.Example";

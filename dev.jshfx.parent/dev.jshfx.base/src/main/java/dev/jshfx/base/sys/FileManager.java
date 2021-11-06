@@ -24,7 +24,9 @@ import dev.jshfx.j.util.LU;
 public final class FileManager extends Manager {
 
     private static final FileManager INSTANCE = new FileManager();
-
+    
+    public static final String JAVA_RELEASE = getJavaRelease();
+    
     private static final String SYS_HOME_DIR = System.getProperty("user.home") + "/." + Constants.SYS_NAME + "/"
             + Constants.SYS_VERSION;
     private static final Path USER_CONF_DIR = Path.of(SYS_HOME_DIR + "/conf");
@@ -36,7 +38,7 @@ public final class FileManager extends Manager {
 
     private static final String START_DIR = System.getProperty("user.dir");
     public static final Path DEFAULT_PREFS_FILE = Path.of(START_DIR, "conf/preferences.properties");
-    private static final Path JDK_SOURCE_FILE = Path.of(START_DIR, "lib/src.zip");
+    private static final Path JDK_SOURCE_FILE = Path.of(START_DIR, "lib/java-src.zip");
     public static final String UTIL_CLASSPATH = START_DIR +  "/lib/dev.jshfx.util.jar";
     private static final Path UTIL_SOURCE_FILE = Path.of(START_DIR, "lib/dev.jshfx.util-sources.jar");
 
@@ -123,6 +125,17 @@ public final class FileManager extends Manager {
     public void deleteEnvs(Set<String> names) {
         names.stream().map(n -> Path.of(USER_ENV_DIR + "/" + n + CONFIG_FILE_EXTENSION))
                 .forEach(p -> LU.of(() -> Files.delete(p)));
+    }
+    
+    private static String getJavaRelease() {
+        var release = System.getProperty("java.version");
+        int i = release.indexOf('.');
+        
+        if (i > -1) {
+            release = release.substring(0, i);
+        }
+        
+        return release;
     }
 
     private void uncaughtException(Thread thread, Throwable throwable) {

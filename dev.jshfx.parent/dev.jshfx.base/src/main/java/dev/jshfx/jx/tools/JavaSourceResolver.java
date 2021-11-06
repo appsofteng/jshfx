@@ -40,6 +40,8 @@ import com.sun.source.util.JavacTask;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 
+import dev.jshfx.j.util.StringUtils;
+
 public class JavaSourceResolver {
 
     private JavaCompiler compiler;
@@ -92,13 +94,16 @@ public class JavaSourceResolver {
                 TreePath treePath = scanner.scan(unitTrees.iterator().next(), signature);
 
                 DocCommentTree docCommentTree = docTrees.getDocCommentTree(treePath);
-                HtmlDocTreePathScanner docScanner = new HtmlDocTreePathScanner();
+                
+                if (docCommentTree != null) {
+                    HtmlDocTreePathScanner docScanner = new HtmlDocTreePathScanner();
 
-                htmlBuilder.append("<p><strong>").append(signature.toString()).append("</strong></p>").append("\n");
-                docScanner.scan(new DocTreePath(treePath, docCommentTree), htmlBuilder);
+                    htmlBuilder.append("<p><strong>").append(StringUtils.escapeHTML(signature.toString())).append("</strong></p>").append("\n");
+                    docScanner.scan(new DocTreePath(treePath, docCommentTree), htmlBuilder);
 
-                htmlDoc = new HtmlDoc(signature, scanner.getPackageName(), scanner.getImports(),
-                        htmlBuilder.toString());
+                    htmlDoc = new HtmlDoc(signature, scanner.getPackageName(), scanner.getImports(),
+                             htmlBuilder.toString());
+                }
             }
 
         } catch (IOException e) {
