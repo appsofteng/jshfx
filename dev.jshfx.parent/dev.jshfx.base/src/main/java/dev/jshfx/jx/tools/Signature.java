@@ -85,6 +85,10 @@ public class Signature {
     public String toString() {
         return signature;
     }
+    
+    public String info() {
+        return String.format("Signature: %s, topTypeFullName: %s, typeFullName: %s, fullName: %s, kind: %s", signature, topTypeFullName, typeFullName, fullName, kind);
+    }
 
     private void parseTopTypeFullName() {
         int i = 0;

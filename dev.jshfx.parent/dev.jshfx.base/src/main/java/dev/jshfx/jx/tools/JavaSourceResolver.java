@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Name;
@@ -44,6 +45,7 @@ import dev.jshfx.j.util.StringUtils;
 
 public class JavaSourceResolver {
 
+    private static final Logger LOGGER = Logger.getLogger(JavaSourceResolver.class.getName());
     private JavaCompiler compiler;
     private StandardJavaFileManager fileManager;
     private Function<String, String> resourceBundle;
@@ -93,16 +95,23 @@ public class JavaSourceResolver {
                 SignatureTreePathScanner scanner = new SignatureTreePathScanner();
                 TreePath treePath = scanner.scan(unitTrees.iterator().next(), signature);
 
-                DocCommentTree docCommentTree = docTrees.getDocCommentTree(treePath);
-                
-                if (docCommentTree != null) {
-                    HtmlDocTreePathScanner docScanner = new HtmlDocTreePathScanner();
+                if (treePath != null) {
 
-                    htmlBuilder.append("<p><strong>").append(StringUtils.escapeHTML(signature.toString())).append("</strong></p>").append("\n");
-                    docScanner.scan(new DocTreePath(treePath, docCommentTree), htmlBuilder);
+                    DocCommentTree docCommentTree = docTrees.getDocCommentTree(treePath);
 
-                    htmlDoc = new HtmlDoc(signature, scanner.getPackageName(), scanner.getImports(),
-                             htmlBuilder.toString());
+                    if (docCommentTree != null) {
+                        HtmlDocTreePathScanner docScanner = new HtmlDocTreePathScanner();
+
+                        htmlBuilder.append("<p><strong>").append(StringUtils.escapeHTML(signature.toString()))
+                                .append("</strong></p>").append("\n");
+                        docScanner.scan(new DocTreePath(treePath, docCommentTree), htmlBuilder);
+
+                        htmlDoc = new HtmlDoc(signature, scanner.getPackageName(), scanner.getImports(),
+                                htmlBuilder.toString());
+                    }
+                } else {
+                    // This happens when the signature parsing is wrong and no match is found in the source code.
+                    LOGGER.severe(String.format("Treepath is null for: %s", signature.info()));
                 }
             }
 
