@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>dev.jshfx</groupId>
+		<artifactId>dev.jshfx.parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>dev.jshfx.image</artifactId>
+	<packaging>jlink</packaging>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-jlink-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<sourceJdkModules>${sourceJdkModules}</sourceJdkModules>
+					<addModules>
+						<addModule>jdk.unsupported.desktop</addModule>
+					</addModules>
+					<noHeaderFiles>true</noHeaderFiles>
+					<noManPages>true</noManPages>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

@@ -13,6 +13,7 @@
 		<module>dev.jshfx.util</module>
 		<module>dev.jshfx.distribution</module>
 		<module>dev.jshfx.automatic</module>
+		<module>dev.jshfx.image</module>
 	</modules>
 
 	<properties>
@@ -241,9 +242,70 @@
 						</execution>
 					</executions>
 				</plugin>
+				<plugin>
+					<artifactId>maven-jlink-plugin</artifactId>
+					<version>3.1.0</version>
+					<extensions>true</extensions>
+					<configuration>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
+	
+	<profiles>
+		<profile>
+			<id>linux</id>
+			<!-- <activation> -->
+			<!-- <os> -->
+			<!-- <name>linux</name> -->
+			<!-- </os> -->
+			<!-- </activation> -->
+			<properties>
+				<javafx.platform>linux</javafx.platform>
+				<sourceJdkModules>${env.JAVA_HOME_LINUX}</sourceJdkModules>
+				<scriptExtension>sh</scriptExtension>
+				<pathSeparator>:</pathSeparator>
+				<osHomeDir>~</osHomeDir>
+				<distFormat>tgz</distFormat>
+			</properties>
+		</profile>
+		<profile>
+			<id>macosx</id>
+			<activation>
+				<os>
+					<name>mac os x</name>
+				</os>
+			</activation>
+			<properties>
+				<javafx.platform>mac</javafx.platform>
+			</properties>
+		</profile>
+		<profile>
+			<id>windows</id>
+			<!-- <activation> -->
+			<!-- <os> -->
+			<!-- <family>windows</family> -->
+			<!-- </os> -->
+			<!-- </activation> -->
+			<properties>
+				<javafx.platform>win</javafx.platform>
+				<pathSeparator>;</pathSeparator>
+				<osHomeDir>"%HOME%"</osHomeDir>
+			</properties>
+		</profile>
+		<profile>
+			<id>javafx.platform.custom</id>
+			<activation>
+				<property>
+					<name>javafx.platform</name>
+				</property>
+			</activation>
+			<properties>
+				<javafx.platform>${javafx.platform}</javafx.platform>
+			</properties>
+		</profile>
+	</profiles>	
 
 	<repositories>
 		<repository>
