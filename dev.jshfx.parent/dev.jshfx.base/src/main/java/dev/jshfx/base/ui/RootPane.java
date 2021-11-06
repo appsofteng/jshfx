@@ -100,7 +100,7 @@ public class RootPane extends BorderPane {
         centerPane.getSelectionModel().select(tab);
     }
 
-    public Tab add(ContentPane contentPane) {
+    private Tab add(ContentPane contentPane) {
         Tab tab = new Tab();
         actions.setTabContextMenu(tab);
         tab.setContent(contentPane);
@@ -115,6 +115,7 @@ public class RootPane extends BorderPane {
         centerPane.getTabs().add(tab);
 
         contentPane.setOnCloseRequest(e -> actions.getActionController().close(tab));
+        contentPane.init();
 
         return tab;
     }

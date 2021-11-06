@@ -45,7 +45,8 @@ public class ShellPane extends PathPane {
         consolePane = new SplitConsolePane(history, List.of("block-delimiter-match"));
         getProperties().put(getClass(), consolePane.getInputArea());
         session = new Session(consolePane, taskQueuer);
-        session.setOnExitCommand(() -> Platform.runLater(() -> onCloseRequest.handle(new Event(this, this, Event.ANY))));
+        session.setOnExitCommand(
+                () -> Platform.runLater(() -> onCloseRequest.handle(new Event(this, this, Event.ANY))));
         session.setOnResult(this::handleResult);
         completion = new Completion(consolePane.getInputArea(), session);
 
@@ -68,22 +69,22 @@ public class ShellPane extends PathPane {
         super.setActions(actions);
         actions.setActions(this);
     }
-    
+
     @Override
     public void bind(Actions actions) {
         super.bind(actions);
         actions.bind(this);
     }
-    
+
     @Override
     public void saved(Path path) {
         super.saved(path);
         consolePane.forgetEdit();
     }
-    
+
     private void handleResult(SnippetEvent event, Object obj) {
-        
-        if(event.snippet().subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
+
+        if (event.snippet().subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
             Platform.runLater(() -> DialogUtils.show(getScene().getWindow(), obj));
         }
     }
@@ -136,7 +137,7 @@ public class ShellPane extends PathPane {
     }
 
     public void showCodeCompletion() {
-        
+
         Optional<Bounds> boundsOption = consolePane.getInputArea().caretBoundsProperty().getValue();
         if (boundsOption.isPresent()) {
             Bounds bounds = boundsOption.get();
@@ -144,13 +145,15 @@ public class ShellPane extends PathPane {
             CompletionPopup.get().setCompletionItem(completion.getCompletor()::getCompletionItem);
             CompletionPopup.get().clear();
             CompletionPopup.get().show(consolePane.getInputArea(), bounds.getMaxX(), bounds.getMaxY());
-            CTask<Void> task = CTask.create(() -> completion.getCompletor().getCompletionItems(i -> CompletionPopup.get().add(i)));
+            CTask<Void> task = CTask
+                    .create(() -> completion.getCompletor().getCompletionItems(i -> CompletionPopup.get().add(i)));
             taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
         }
     }
-    
+
     public void showHistorySearch() {
-        DialogUtils.showHistorySearch(getScene().getWindow(), consolePane.getHistory(), s -> consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), s));
+        DialogUtils.showHistorySearch(getScene().getWindow(), consolePane.getHistory(),
+                s -> consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), s));
     }
 
     public void eval() {
@@ -258,6 +261,11 @@ public class ShellPane extends PathPane {
         file.ifPresent(f -> {
             consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), f.toString() + " ");
         });
+    }
+
+    @Override
+    public void init() {
+        session.getSnippetProcessor().doImports(consolePane.getInputArea().getText());
     }
 
     @Override

@@ -2,11 +2,32 @@ package dev.jshfx.util.chart;
 
 import dev.jshfx.util.geometry.Side;
 
+/**
+ * Base class for all charts. It has 3 parts the title, legend and chartContent. The chart content is populated by the specific subclass of Chart.
+ *
+ */
 public abstract class Chart {
 
+    private Side legendSide = Side.BOTTOM;
+    private boolean legendVisible;
     private String title;
     private Side titleSide = Side.TOP;
-    private boolean legendVisible;
+    
+    public Side getLegendSide() {
+        return legendSide;
+    }
+    
+    public void setLegendSide(Side legendSide) {
+        this.legendSide = legendSide;
+    }
+    
+    public boolean isLegendVisible() {
+        return legendVisible;
+    }
+    
+    public void setLegendVisible(boolean legendVisible) {
+        this.legendVisible = legendVisible;
+    }
     
     public String getTitle() {
         return title;
@@ -22,13 +43,5 @@ public abstract class Chart {
     
     public void setTitleSide(Side titleSide) {
         this.titleSide = titleSide;
-    }
-    
-    public boolean isLegendVisible() {
-        return legendVisible;
-    }
-    
-    public void setLegendVisible(boolean legendVisible) {
-        this.legendVisible = legendVisible;
-    }
+    }    
 }

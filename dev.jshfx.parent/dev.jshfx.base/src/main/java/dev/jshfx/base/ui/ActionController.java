@@ -71,7 +71,7 @@ public class ActionController {
         result = Optional.of(ButtonType.NO);
         List<ButtonType> buttons = List.of();
 
-        if (tabs.size() > 1) {
+        if (tabs.stream().filter(t -> ((ContentPane)t.getContent()).isModified()).limit(2).toList().size() == 2) {
             buttons = List.of(ButtonTypes.YES_ALL, ButtonTypes.NO_ALL);
         }
 
@@ -171,8 +171,9 @@ public class ActionController {
                 if (path.isAbsolute()) {
                     input = Files.readString(path);
                 }
-                pane = new ShellPane(path, input);
-                pane.setActions(rootPane.getActions());
+                var shellPane = new ShellPane(path, input);
+                shellPane.setActions(rootPane.getActions());
+                pane = shellPane;
             } catch (IOException e) {
                 e.printStackTrace();
             }

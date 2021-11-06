@@ -63,6 +63,8 @@ public class ContentPane extends StackPane {
         actions.setActions(this);
     }
     
+    public void init() {}
+    
     public void bind(Actions actions) {
         actions.bind(this);
     }

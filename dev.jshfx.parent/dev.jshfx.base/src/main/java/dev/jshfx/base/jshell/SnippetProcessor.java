@@ -59,6 +59,11 @@ public class SnippetProcessor extends Processor {
                         FXResourceBundle.getBundle().getString​("unknown") + "  " + sb.toString().strip() + "\n");
                 sb.delete(0, sb.length());
                 continue;
+            } else if (info.completeness() == Completeness.COMPLETE) {
+                if (i + 1 < lines.length && lines[i + 1].trim().startsWith(".")) {
+                    sb.delete(sb.length() - 1, sb.length());
+                    continue;
+                }
             }
 
             String source = info.source();
@@ -68,6 +73,13 @@ public class SnippetProcessor extends Processor {
         }
 
         session.getFeedback().flush();
+    }
+
+    public void doImports(String input) {
+        
+        input.lines().map(line -> line.trim()).dropWhile(String::isEmpty).takeWhile(line -> line.startsWith("import"))
+                .forEach(line -> analyseAndEvaluate(line));
+
     }
 
     public List<SnippetEvent> process(Snippet snippet, boolean quiet) {
@@ -99,7 +111,7 @@ public class SnippetProcessor extends Processor {
         return allSnippetEvents;
     }
 
-    private void setFeedback(SnippetEvent event, boolean quiet) {        
+    private void setFeedback(SnippetEvent event, boolean quiet) {
 
         String message = "";
 
@@ -119,8 +131,8 @@ public class SnippetProcessor extends Processor {
 
             if (snippet.kind() == Kind.EXPRESSION || snippet.subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
                 session.getFeedback().snippetExpression(message);
-            } else if (snippet.kind() == Kind.TYPE_DECL || snippet.kind() == Kind.METHOD
-                    || snippet.kind() == Kind.VAR || snippet.kind() == Kind.IMPORT) {
+            } else if (snippet.kind() == Kind.TYPE_DECL || snippet.kind() == Kind.METHOD || snippet.kind() == Kind.VAR
+                    || snippet.kind() == Kind.IMPORT) {
                 session.getFeedback().snippetDeclaration(message);
             }
         }

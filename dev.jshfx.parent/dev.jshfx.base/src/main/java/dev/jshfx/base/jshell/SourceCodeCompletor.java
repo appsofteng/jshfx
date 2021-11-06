@@ -1,21 +1,15 @@
 package dev.jshfx.base.jshell;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jshfx.fxmisc.richtext.CompletionItem;
 import dev.jshfx.jx.tools.JavaSourceResolver.HtmlDoc;
-import javafx.collections.ObservableList;
 import dev.jshfx.jx.tools.Signature;
 import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.QualifiedNames;
@@ -29,8 +23,6 @@ class SourceCodeCompletor extends Completor {
 
     @Override
     public void getCompletionItems(Consumer<CompletionItem> items) {
-
-      //  doImports();
 
         int[] relativeAnchor = new int[1];
         StringBuffer relativeInput = new StringBuffer();
@@ -100,22 +92,6 @@ class SourceCodeCompletor extends Completor {
         }
         
         items.accept(null);
-    }
-    
-    private void doImports() {
-        for (var p : inputArea.getParagraphs()) {
-            String text = p.getText().trim();
-            
-            if (text.isEmpty()) {
-                continue;
-            }
-            
-            if (text.startsWith("import")) {
-                session.getSnippetProcessor().analyseAndEvaluate(text);
-            } else {
-                break;
-            }
-        }
     }
 
     private String getDocInput(String input, Suggestion suggestion, int anchor) {

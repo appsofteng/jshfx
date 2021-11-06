@@ -10,9 +10,10 @@ import dev.jshfx.util.lang.InitArgument;
 
 public class XYChart<X,Y> extends Chart {
 
+    private boolean alternativeColumnFillVisible​;
     private Axis<X> xAxis;
     private Axis<Y> yAxis;
-    private List<Series<X,Y>> series = new ArrayList<>();
+    private List<Series<X,Y>> data = new ArrayList<>();
     
     public XYChart(Axis<X> xAxis, Axis<Y> yAxis) {
         this.xAxis = xAxis;
@@ -25,7 +26,7 @@ public class XYChart<X,Y> extends Chart {
         yAxis = (Axis<Y>) new NumberAxis();
         
         Series<? extends Number,? extends Number> s = new Series<>(x,y);
-        series.add((Series<X, Y>) s);
+        data.add((Series<X, Y>) s);
     }
     
     @SuppressWarnings("unchecked")
@@ -37,7 +38,15 @@ public class XYChart<X,Y> extends Chart {
         s.setX((Stream<Number>) x);
         s.setY((Function<Number, Number>) y);
         
-        series.add((Series<X, Y>) s);
+        data.add((Series<X, Y>) s);
+    }
+    
+    public boolean isAlternativeColumnFillVisible​() {
+        return alternativeColumnFillVisible​;
+    }
+    
+    public void setAlternativeColumnFillVisible​(boolean alternativeColumnFillVisible​) {
+        this.alternativeColumnFillVisible​ = alternativeColumnFillVisible​;
     }
     
     @InitArgument(0)
@@ -51,7 +60,7 @@ public class XYChart<X,Y> extends Chart {
     }
     
     public List<Series<X,Y>> getData() {
-        return series;
+        return data;
     }
     
     public static class Data<X,Y> {
