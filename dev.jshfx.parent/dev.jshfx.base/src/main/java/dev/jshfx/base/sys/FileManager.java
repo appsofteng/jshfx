@@ -38,6 +38,7 @@ public final class FileManager extends Manager {
     public static final Path DEFAULT_PREFS_FILE = Path.of(START_DIR, "conf/preferences.properties");
     private static final Path JDK_SOURCE_FILE = Path.of(START_DIR, "lib/src.zip");
     public static final String UTIL_CLASSPATH = START_DIR +  "/lib/dev.jshfx.util.jar";
+    private static final Path UTIL_SOURCE_FILE = Path.of(START_DIR, "lib/dev.jshfx.util-sources.jar");
 
     public static final Path HISTORY_FILE = Path.of(USER_CONF_DIR + "/history.json");
     public static final Path SET_FILE = Path.of(USER_CONF_DIR + "/set.json");
@@ -55,7 +56,7 @@ public final class FileManager extends Manager {
     private PrintStream out;
     
     private FileSystem jdkSource;
-    private List<Path> jdkPaths;
+    private List<Path> sourcePaths;
 
     private FileManager() {
     }
@@ -75,15 +76,17 @@ public final class FileManager extends Manager {
 
         URI uri = URI.create("jar:" + JDK_SOURCE_FILE.toUri());
         jdkSource = FileSystems.newFileSystem(uri, Collections.emptyMap());
-        jdkPaths = new ArrayList<>();
+        sourcePaths = new ArrayList<>();
         Path root = jdkSource.getRootDirectories().iterator().next();
         try (DirectoryStream<Path> ds = Files.newDirectoryStream(root)) {
             for (Path p : ds) {
                 if (Files.isDirectory(p)) {
-                    jdkPaths.add(p);
+                    sourcePaths.add(p);
                 }
             }
         }
+        
+        sourcePaths.add(UTIL_SOURCE_FILE);
     }
 
     @Override
@@ -96,8 +99,8 @@ public final class FileManager extends Manager {
         System.setOut(out);
     }
     
-    public List<Path> getJdkPaths() {
-        return jdkPaths;
+    public List<Path> getSourcePaths() {
+        return sourcePaths;
     }
     
     public Path getEnvFile(String name) {

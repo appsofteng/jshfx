@@ -195,7 +195,7 @@ public class Session {
     }
 
     private void setSources() {
-        List<Path> sources = new ArrayList<>(FileManager.get().getJdkPaths());
+        List<Path> sources = new ArrayList<>(FileManager.get().getSourcePaths());
         env.getSourcePaths().forEach(p -> sources.add(Path.of(p)));
         javaSourceResolver.setSourcePaths(sources);
     }

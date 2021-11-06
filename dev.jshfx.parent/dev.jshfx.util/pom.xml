@@ -74,7 +74,8 @@
 								<resource>
 									<directory>target</directory>
 									<includes>
-										<include>dev.jshfx.util.jar</include>
+										<include>${project.artifactId}.jar</include>
+										<include>${project.artifactId}-sources.jar</include>
 									</includes>
 								</resource>
 							</resources>
@@ -92,6 +93,13 @@
 							<Automatic-Module-Name>${project.artifactId}</Automatic-Module-Name>
 						</manifestEntries>
 					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<configuration>
+					<finalName>${project.artifactId}</finalName>
 				</configuration>
 			</plugin>
 		</plugins>
