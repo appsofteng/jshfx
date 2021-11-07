@@ -1,0 +1,137 @@
+<component
+	xmlns="http://maven.apache.org/ASSEMBLY-COMPONENT/2.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/ASSEMBLY-COMPONENT/2.0.0 http://maven.apache.org/xsd/assembly-component-2.0.0.xsd">
+
+	<dependencySets>
+		<!-- <dependencySet> -->
+		<!-- <outputDirectory>lib/mp</outputDirectory> -->
+		<!-- <useProjectArtifact>false</useProjectArtifact> -->
+		<!-- <useTransitiveDependencies>true</useTransitiveDependencies> -->
+		<!-- <useTransitiveFiltering>true</useTransitiveFiltering> -->
+		<!-- <excludes> -->
+		<!-- <exclude>org.apache.maven.resolver:*:*</exclude> -->
+		<!-- <exclude>org.apache.maven:*:*</exclude> -->
+		<!-- <exclude>org.slf4j:*:*</exclude> -->
+		<!-- <exclude>dev.jshfx:dev.jshfx.automatic</exclude> -->
+		<!-- <exclude>dev.jshfx:dev.jshfx.util</exclude> -->
+		<!-- </excludes> -->
+		<!-- </dependencySet> -->
+		<dependencySet>
+			<outputDirectory>lib/cp</outputDirectory>
+			<useProjectArtifact>false</useProjectArtifact>
+			<useTransitiveDependencies>true</useTransitiveDependencies>
+			<useTransitiveFiltering>true</useTransitiveFiltering>
+			<includes>
+				<include>org.apache.maven.resolver:*:*</include>
+				<include>org.apache.maven:*:*</include>
+				<include>org.slf4j:*:*</include>
+			</includes>
+		</dependencySet>
+		<dependencySet>
+			<outputDirectory>lib/cp</outputDirectory>
+			<useProjectArtifact>false</useProjectArtifact>
+			<includes>
+				<include>org.glassfish:jakarta.json:*</include>
+			</includes>
+		</dependencySet>
+		<dependencySet>
+			<outputDirectory>lib/mp</outputDirectory>
+			<useProjectArtifact>false</useProjectArtifact>
+			<useTransitiveDependencies>true</useTransitiveDependencies>
+			<useTransitiveFiltering>true</useTransitiveFiltering>
+			<includes>
+				<include>org.openjfx:*</include>
+				<include>org.controlsfx:*</include>
+				<include>org.fxmisc.richtext:richtextfx</include>
+				<include>info.picocli:picocli</include>
+			</includes>
+		</dependencySet>
+		<dependencySet>
+			<outputDirectory>lib/mp</outputDirectory>
+			<useProjectArtifact>false</useProjectArtifact>
+			<includes>
+				<include>jakarta.json:jakarta.json-api</include>
+				<include>jakarta.json.bind:jakarta.json.bind-api</include>
+				<include>org.eclipse:yasson</include>
+			</includes>
+		</dependencySet>
+		<dependencySet>
+			<outputDirectory>modules</outputDirectory>
+			<outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+			<useProjectArtifact>false</useProjectArtifact>
+			<useTransitiveDependencies>false</useTransitiveDependencies>
+			<includes>
+				<include>dev.jshfx:dev.jshfx.base</include>
+				<include>dev.jshfx:dev.jshfx.fonts</include>
+				<include>dev.jshfx:dev.jshfx.automatic</include>
+				<include>dev.jshfx:dev.jshfx.util</include>
+			</includes>
+		</dependencySet>
+	</dependencySets>
+
+	<!-- <moduleSets> -->
+	<!-- <moduleSet> -->
+	<!-- <useAllReactorProjects>true</useAllReactorProjects> -->
+	<!-- <includes> -->
+	<!-- <include>dev.jshfx:dev.jshfx.base</include> -->
+	<!-- <include>dev.jshfx:dev.jshfx.fonts</include> -->
+	<!-- </includes> -->
+	<!-- <binaries> -->
+	<!-- <outputDirectory>modules/mp</outputDirectory> -->
+	<!-- <unpack>false</unpack> -->
+	<!-- <dependencySets> -->
+	<!-- <dependencySet> -->
+	<!-- <excludes> -->
+	<!-- <exclude>*:*:*</exclude> -->
+	<!-- </excludes> -->
+	<!-- </dependencySet> -->
+	<!-- </dependencySets> -->
+	<!-- </binaries> -->
+	<!-- </moduleSet> -->
+	<!-- <moduleSet> -->
+	<!-- <useAllReactorProjects>true</useAllReactorProjects> -->
+	<!-- <includes> -->
+	<!-- <include>dev.jshfx:dev.jshfx.automatic</include> -->
+	<!-- <include>dev.jshfx:dev.jshfx.util</include> -->
+	<!-- </includes> -->
+	<!-- <binaries> -->
+	<!-- <outputDirectory>modules/cp</outputDirectory> -->
+	<!-- <unpack>false</unpack> -->
+	<!-- <dependencySets> -->
+	<!-- <dependencySet> -->
+	<!-- <excludes> -->
+	<!-- <exclude>*:*:*</exclude> -->
+	<!-- </excludes> -->
+	<!-- </dependencySet> -->
+	<!-- </dependencySets> -->
+	<!-- </binaries> -->
+	<!-- </moduleSet> -->
+	<!-- </moduleSets> -->
+
+	<fileSets>
+		<fileSet>
+			<directory>src/main/conf</directory>
+			<outputDirectory>conf</outputDirectory>
+			<includes>
+				<include>**/*.properties</include>
+			</includes>
+			<filtered>true</filtered>
+		</fileSet>
+		<fileSet>
+			<directory>src/main/scripts</directory>
+			<outputDirectory>.</outputDirectory>
+			<includes>
+				<include>**/options*</include>
+			</includes>
+			<filtered>true</filtered>
+		</fileSet>
+		<fileSet>
+			<directory>working/src</directory>
+			<outputDirectory>src</outputDirectory>
+			<includes>
+				<include>**/*</include>
+			</includes>
+		</fileSet>
+	</fileSets>
+</component>

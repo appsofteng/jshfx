@@ -9,53 +9,6 @@
 	</parent>
 	<artifactId>dev.jshfx.util</artifactId>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.apache.maven.resolver</groupId>
-			<artifactId>maven-resolver-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven.resolver</groupId>
-			<artifactId>maven-resolver-spi</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven.resolver</groupId>
-			<artifactId>maven-resolver-util</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven.resolver</groupId>
-			<artifactId>maven-resolver-impl</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven.resolver</groupId>
-			<artifactId>maven-resolver-connector-basic</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven.resolver</groupId>
-			<artifactId>maven-resolver-transport-file</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven.resolver</groupId>
-			<artifactId>maven-resolver-transport-http</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-resolver-provider</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-model-builder</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-		</dependency>
-	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>
@@ -63,18 +16,35 @@
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>copy-resource-one</id>
+						<id>copy-binary</id>
 						<phase>install</phase>
 						<goals>
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.parent.basedir}/dev.jshfx.distribution/dist/lib</outputDirectory>
+							<outputDirectory>${project.parent.basedir}/dev.jshfx.distribution/working/modules</outputDirectory>
 							<resources>
 								<resource>
 									<directory>target</directory>
 									<includes>
 										<include>${project.artifactId}.jar</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-sources</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.parent.basedir}/dev.jshfx.distribution/working/src</outputDirectory>
+							<resources>
+								<resource>
+									<directory>target</directory>
+									<includes>
 										<include>${project.artifactId}-sources.jar</include>
 									</includes>
 								</resource>
@@ -87,7 +57,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
-					<finalName>${project.artifactId}</finalName>
+				<finalName>${project.artifactId}</finalName>
 					<archive>
 						<manifestEntries>
 							<Automatic-Module-Name>${project.artifactId}</Automatic-Module-Name>

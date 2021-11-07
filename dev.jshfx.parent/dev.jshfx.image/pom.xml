@@ -17,6 +17,7 @@
 				<configuration>
 					<sourceJdkModules>${sourceJdkModules}</sourceJdkModules>
 					<addModules>
+						<addModule>java.net.http</addModule>
 						<addModule>jdk.unsupported.desktop</addModule>
 					</addModules>
 					<noHeaderFiles>true</noHeaderFiles>

@@ -11,25 +11,19 @@
 		<module>dev.jshfx.base</module>
 		<module>dev.jshfx.fonts</module>
 		<module>dev.jshfx.util</module>
-		<module>dev.jshfx.distribution</module>
 		<module>dev.jshfx.automatic</module>
-		<module>dev.jshfx.image</module>
 	</modules>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<project.reporting.outputEncoding>UTF-8
+		</project.reporting.outputEncoding>
 		<ojfxVersion>17.0.1</ojfxVersion>
 		<picocliVersion>4.6.1</picocliVersion>
 		<mavenVersion>3.8.3</mavenVersion>
 		<mavenResolverVersion>1.7.2</mavenResolverVersion>
 		<slf4jVersion>1.7.32</slf4jVersion>
 		<javafx.platform>win</javafx.platform>
-		<scriptExtension>bat</scriptExtension>
-		<pathSeparator>;</pathSeparator>
-		<osHomeDir>"%HOME%"</osHomeDir>
-		<distFormat>zip</distFormat>
-		<sourceJdkModules>${java.home}</sourceJdkModules>
 		<sysName>jshfx</sysName>
 		<distName>${sysName}-${project.version}</distName>
 		<homeDir>.${sysName}/${project.version}</homeDir>
@@ -51,6 +45,11 @@
 			<dependency>
 				<groupId>dev.jshfx</groupId>
 				<artifactId>dev.jshfx.util</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.jshfx</groupId>
+				<artifactId>dev.jshfx.base</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -208,8 +207,19 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>3.0.0-M5</version>
+					<configuration>
+						<argLine>--enable-preview</argLine>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
 					<version>3.2.0</version>
+					<configuration>
+						<finalName>${project.artifactId}</finalName>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -249,18 +259,25 @@
 					<configuration>
 					</configuration>
 				</plugin>
+				<plugin>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>3.3.0</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+
 	<profiles>
 		<profile>
 			<id>linux</id>
-			<!-- <activation> -->
-			<!-- <os> -->
-			<!-- <name>linux</name> -->
-			<!-- </os> -->
-			<!-- </activation> -->
+			<modules>
+				<module>dev.jshfx.base</module>
+				<module>dev.jshfx.fonts</module>
+				<module>dev.jshfx.util</module>
+				<module>dev.jshfx.automatic</module>
+				<module>dev.jshfx.image</module>
+				<module>dev.jshfx.distribution</module>
+			</modules>
 			<properties>
 				<javafx.platform>linux</javafx.platform>
 				<sourceJdkModules>${env.JAVA_HOME_LINUX}</sourceJdkModules>
@@ -271,7 +288,7 @@
 			</properties>
 		</profile>
 		<profile>
-			<id>macosx</id>
+			<id>mac</id>
 			<activation>
 				<os>
 					<name>mac os x</name>
@@ -282,30 +299,25 @@
 			</properties>
 		</profile>
 		<profile>
-			<id>windows</id>
-			<!-- <activation> -->
-			<!-- <os> -->
-			<!-- <family>windows</family> -->
-			<!-- </os> -->
-			<!-- </activation> -->
+			<id>win</id>
+			<modules>
+				<module>dev.jshfx.base</module>
+				<module>dev.jshfx.fonts</module>
+				<module>dev.jshfx.util</module>
+				<module>dev.jshfx.automatic</module>
+				<module>dev.jshfx.image</module>
+				<module>dev.jshfx.distribution</module>
+			</modules>
 			<properties>
 				<javafx.platform>win</javafx.platform>
+				<sourceJdkModules>${java.home}</sourceJdkModules>
+				<scriptExtension>bat</scriptExtension>
 				<pathSeparator>;</pathSeparator>
 				<osHomeDir>"%HOME%"</osHomeDir>
+				<distFormat>zip</distFormat>
 			</properties>
 		</profile>
-		<profile>
-			<id>javafx.platform.custom</id>
-			<activation>
-				<property>
-					<name>javafx.platform</name>
-				</property>
-			</activation>
-			<properties>
-				<javafx.platform>${javafx.platform}</javafx.platform>
-			</properties>
-		</profile>
-	</profiles>	
+	</profiles>
 
 	<repositories>
 		<repository>
