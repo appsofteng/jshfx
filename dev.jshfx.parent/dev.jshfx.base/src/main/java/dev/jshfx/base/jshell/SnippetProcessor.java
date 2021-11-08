@@ -69,7 +69,8 @@ public class SnippetProcessor extends Processor {
             String source = info.source();
             sb.delete(0, sb.length()).append(info.remaining());
             List<SnippetEvent> snippetEvents = session.getJshell().eval(source);
-            snippetEvents.forEach(e -> setFeedback(e, false));
+            var ln = i;
+            snippetEvents.forEach(e -> setFeedback(e, false, ln));
         }
 
         session.getFeedback().flush();
@@ -88,7 +89,7 @@ public class SnippetProcessor extends Processor {
             session.getFeedback().commandResult(snippet.source().strip() + "\n");
         }
         List<SnippetEvent> snippetEvents = session.getJshell().eval(snippet.source());
-        snippetEvents.forEach(e -> setFeedback(e, quiet));
+        snippetEvents.forEach(e -> setFeedback(e, quiet, -1));
 
         session.getFeedback().flush();
 
@@ -103,7 +104,7 @@ public class SnippetProcessor extends Processor {
             session.getFeedback().commandResult(snippet.source().strip() + "\n");
             List<SnippetEvent> snippetEvents = session.getJshell().eval(snippet.source());
             allSnippetEvents.addAll(snippetEvents);
-            snippetEvents.forEach(e -> setFeedback(e, false));
+            snippetEvents.forEach(e -> setFeedback(e, false, -1));
         }
 
         session.getFeedback().flush();
@@ -111,13 +112,16 @@ public class SnippetProcessor extends Processor {
         return allSnippetEvents;
     }
 
-    private void setFeedback(SnippetEvent event, boolean quiet) {
+    private void setFeedback(SnippetEvent event, boolean quiet, int line) {
 
         String message = "";
 
         if (event.exception() != null) {
             message = getExceptionMessage(event);
             message = message.strip() + "\n";
+            if (line >= 0) {
+                message = (line + 1) + ": " + message;
+            }
             session.getFeedback().snippetError(message);
         } else if (event.status() == Status.REJECTED) {
             message = getRejectedMessage(event);

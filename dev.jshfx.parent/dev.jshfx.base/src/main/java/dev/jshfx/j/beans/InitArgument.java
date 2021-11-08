@@ -1,4 +1,4 @@
-package dev.jshfx.util.lang;
+package dev.jshfx.j.beans;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

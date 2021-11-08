@@ -1,23 +1,17 @@
 package dev.jshfx.base.ui;
 
-import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.controlsfx.dialog.ProgressDialog;
 
 import dev.jshfx.base.MainApp;
-import dev.jshfx.j.beans.BeanConverter;
 import dev.jshfx.jfx.scene.control.AutoCompleteField;
 import dev.jshfx.util.chart.Charts;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.scene.Node;
-import javafx.scene.chart.Chart;
-import javafx.scene.chart.LineChart;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.ScrollPane;
@@ -26,9 +20,6 @@ import javafx.scene.layout.TilePane;
 import javafx.stage.Window;
 
 public final class DialogUtils {
-
-    
-    private static final BeanConverter beanConverter = new BeanConverter(Map.of("dev.jshfx.util.chart", "javafx.scene.chart", "dev.jshfx.util.geometry", "javafx.geometry"));
     
     private DialogUtils() {
     }
@@ -43,15 +34,13 @@ public final class DialogUtils {
     public static void show(Window window, Object obj) {
 
         if (obj instanceof Charts charts) {
-            
-            List<Chart> chartsFX = charts.getCharts().stream().map(c -> (Chart) beanConverter.convert(c)).collect(Collectors.toList());            
-
+                                 
             Dialog<Void> dialog = createPlainDialog(window);
             dialog.setDialogPane(new PlainDialogPane());
             dialog.initOwner(window);
             TilePane tilePane = new TilePane();
             tilePane.setPrefColumns(charts.getColumns());
-            tilePane.getChildren().addAll(chartsFX);
+            tilePane.getChildren().addAll(charts.getCharts());
 
             ScrollPane scrollPane = new ScrollPane(tilePane);
             scrollPane.prefViewportWidthProperty().bind(Bindings.createDoubleBinding(
@@ -63,27 +52,7 @@ public final class DialogUtils {
             dialog.getDialogPane().setContent(scrollPane);
 
             dialog.show();
-        } else  if (obj instanceof LineChart chart) {
-            
-
-            Dialog<Void> dialog = createPlainDialog(window);
-            dialog.setDialogPane(new PlainDialogPane());
-            dialog.initOwner(window);
-            TilePane tilePane = new TilePane();
-            tilePane.setPrefColumns(1);
-            tilePane.getChildren().addAll(chart);
-
-            ScrollPane scrollPane = new ScrollPane(tilePane);
-            scrollPane.prefViewportWidthProperty().bind(Bindings.createDoubleBinding(
-                    () -> Math.min(tilePane.getWidth(), MainApp.WINDOW_PREF_WIDTH), tilePane.widthProperty()));
-            scrollPane.prefViewportHeightProperty().bind(Bindings.createDoubleBinding(
-                    () -> Math.min(tilePane.getHeight(), MainApp.WINDOW_PREF_HEIGHT), tilePane.heightProperty()));
-            scrollPane.setPannable(true);
-
-            dialog.getDialogPane().setContent(scrollPane);
-
-            dialog.show();
-        }
+        } 
     }
     
     public static void showHistorySearch(Window window, ObservableList<String> history, Consumer<String> onSelection) {        

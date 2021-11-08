@@ -9,6 +9,14 @@
 	</parent>
 	<artifactId>dev.jshfx.util</artifactId>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-controls</artifactId>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
