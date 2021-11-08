@@ -85,9 +85,11 @@ public class Signature {
     public String toString() {
         return signature;
     }
-    
+
     public String info() {
-        return String.format("Signature: %s, topTypeFullName: %s, typeFullName: %s, fullName: %s, kind: %s", signature, topTypeFullName, typeFullName, fullName, kind);
+        return String.format(
+                "Signature: %s, topTypeFullName: %s, typeFullName: %s, fullName: %s, kind: %s, methodParameterTypes: %s",
+                signature, topTypeFullName, typeFullName, fullName, kind, methodParameterTypes);
     }
 
     private void parseTopTypeFullName() {
@@ -181,7 +183,7 @@ public class Signature {
                 delimiters--;
             } else if (delimiters == 0) {
                 result += input.charAt(i);
-            } 
+            }
         }
 
         return result;
@@ -200,7 +202,7 @@ public class Signature {
             } else if (c == '>') {
                 genericDelimiters--;
                 typeEndIndex = i;
-            } else if (c == ' ' || c == ']' || c == '.') {
+            } else if (c == ' ' || c == ']') {
                 typeEndIndex = i;
             }
 

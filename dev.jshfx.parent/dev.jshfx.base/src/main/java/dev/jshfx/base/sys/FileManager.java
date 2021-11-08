@@ -1,5 +1,6 @@
 package dev.jshfx.base.sys;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
@@ -19,14 +20,15 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import dev.jshfx.base.Constants;
+import dev.jshfx.j.module.ModuleUtils;
 import dev.jshfx.j.util.LU;
 
 public final class FileManager extends Manager {
 
     private static final FileManager INSTANCE = new FileManager();
-    
+
     public static final String JAVA_RELEASE = getJavaRelease();
-    
+
     private static final String SYS_HOME_DIR = System.getProperty("user.home") + "/." + Constants.SYS_NAME + "/"
             + Constants.SYS_VERSION;
     private static final Path USER_CONF_DIR = Path.of(SYS_HOME_DIR + "/conf");
@@ -39,8 +41,11 @@ public final class FileManager extends Manager {
     private static final String START_DIR = System.getProperty("user.dir");
     public static final Path DEFAULT_PREFS_FILE = Path.of(START_DIR, "conf/preferences.properties");
     private static final Path JDK_SOURCE_FILE = Path.of(START_DIR, "src/java-src.zip");
-    public static final String UTIL_CLASSPATH = START_DIR +  "/modules/dev.jshfx.util.jar";
-    private static final Path UTIL_SOURCE_FILE = Path.of(START_DIR, "src/dev.jshfx.util-sources.jar");
+    public static final String UTIL_CLASSPATH = START_DIR + "/modules/dev.jshfx.util.jar";
+    private static final Path FX_DIR = Path.of(START_DIR, "fx");
+    private static final String FX_MODULES = ModuleUtils.getModuleNames(FX_DIR);
+    private static final String FX_CLASSPATH = getFXClassPath();
+    private static final Path SOURCE_DIR = Path.of(START_DIR, "src/lib");
 
     public static final Path HISTORY_FILE = Path.of(USER_CONF_DIR + "/history.json");
     public static final Path SET_FILE = Path.of(USER_CONF_DIR + "/set.json");
@@ -56,7 +61,7 @@ public final class FileManager extends Manager {
     private static final Logger LOGGER = Logger.getLogger(FileManager.class.getName());
     private PrintStream err;
     private PrintStream out;
-    
+
     private FileSystem jdkSource;
     private List<Path> sourcePaths;
 
@@ -87,8 +92,8 @@ public final class FileManager extends Manager {
                 }
             }
         }
-        
-        sourcePaths.add(UTIL_SOURCE_FILE);
+
+        Files.list(SOURCE_DIR).forEach(p -> sourcePaths.add(p));
     }
 
     @Override
@@ -100,11 +105,23 @@ public final class FileManager extends Manager {
         System.setErr(err);
         System.setOut(out);
     }
-    
+
     public List<Path> getSourcePaths() {
         return sourcePaths;
     }
+
+    public String getClassPath() {
+        return UTIL_CLASSPATH + File.pathSeparator + FX_CLASSPATH;
+    }
     
+    public String getModulePath() {
+        return FX_DIR.toString();
+    }
+    
+    public String getModules() {
+        return FX_MODULES;
+    }
+
     public Path getEnvFile(String name) {
         return Path.of(USER_ENV_DIR + "/" + name + FileManager.CONFIG_FILE_EXTENSION);
     }
@@ -126,15 +143,27 @@ public final class FileManager extends Manager {
         names.stream().map(n -> Path.of(USER_ENV_DIR + "/" + n + CONFIG_FILE_EXTENSION))
                 .forEach(p -> LU.of(() -> Files.delete(p)));
     }
-    
+
+    private static String getFXClassPath() {
+        String path = "";
+        try {
+            path = Files.list(FX_DIR).map(Path::toString).collect(Collectors.joining(File.pathSeparator));
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+
+        return path;
+    }
+
     private static String getJavaRelease() {
         var release = System.getProperty("java.version");
         int i = release.indexOf('.');
-        
+
         if (i > -1) {
             release = release.substring(0, i);
         }
-        
+
         return release;
     }
 

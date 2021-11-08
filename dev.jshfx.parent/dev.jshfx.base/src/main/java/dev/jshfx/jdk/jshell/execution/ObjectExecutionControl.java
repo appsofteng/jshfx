@@ -28,9 +28,18 @@ public class ObjectExecutionControl extends DirectExecutionControl {
     @Override
     protected String invoke(Method doitMethod) throws Exception {
         var future = executorService.submit(() -> doitMethod.invoke(null, new Object[0]));
-
-        Object result = future.get();
-        results.add(result);
+        Object result = null;
+        try {
+            result = future.get();
+            results.add(result);
+        } catch (Exception e) {
+            var cause = e.getCause();
+            if (cause instanceof Exception ex) {
+                throw ex;
+            } else {
+                throw e;
+            }
+        }
 
         return valueString(result);
     }

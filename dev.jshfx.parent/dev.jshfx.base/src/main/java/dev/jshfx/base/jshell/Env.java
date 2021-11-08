@@ -84,23 +84,52 @@ public class Env implements Comparable<Env> {
         return modulePaths.stream().collect(Collectors.joining(File.pathSeparator));
     }
 
-    private List<String> getOptionList(String classpath) {
+    private List<String> getOptionList(String classpath, String modulepath, String modules) {
 
         List<String> options = new ArrayList<>();
 
-        if (!classPaths.isEmpty()) {
+        if (!classPaths.isEmpty() || !classpath.isEmpty()) {
             options.add("--class-path");
-            options.add(getClassPath() + File.pathSeparator + classpath);
+            String path = getClassPath();
+            
+            if (path.isEmpty()) {
+                path = classpath;
+            } else {
+                if (!classpath.isEmpty()) {
+                    path += File.pathSeparator + classpath;
+                }
+            }
+            options.add(path);
         }
 
-        if (!modulePaths.isEmpty()) {
+        if (!modulePaths.isEmpty() || !modulepath.isEmpty()) {
             options.add("--module-path");
-            options.add(getModulePath());
+            String path = getModulePath();
+            
+            if (path.isEmpty()) {
+                path = modulepath;
+            } else {
+                if (!modulepath.isEmpty()) {
+                    path += File.pathSeparator + modulepath;
+                }
+            }
+            options.add(path);
         }
 
-        if (!addModules.isEmpty()) {
+        if (!addModules.isEmpty() || !modules.isEmpty()) {
             options.add("--add-modules");
-            options.add(addModules.stream().collect(Collectors.joining(",")));
+            
+            String addm = addModules.stream().collect(Collectors.joining(","));
+            
+            if (addm.isEmpty()) {
+                addm = modules;
+            } else {
+                if (!modules.isEmpty()) {
+                    addm += "," + modules;
+                }
+            }
+            
+            options.add(addm);
         }
 
         if (!addExports.isEmpty()) {
@@ -114,8 +143,8 @@ public class Env implements Comparable<Env> {
     }
 
     @JsonbTransient
-    public String[] getOptions(String classpath, List<String> additionalOptions) {
-        var options = getOptionList(classpath);
+    public String[] getOptions(String classpath, String modulepath, String modules, List<String> additionalOptions) {
+        var options = getOptionList(classpath, modulepath, modules);
         options.addAll(additionalOptions);
 
         return options.toArray(new String[] {});
@@ -123,7 +152,7 @@ public class Env implements Comparable<Env> {
 
     @Override
     public String toString() {
-        return name + "\n" + getOptionList("").stream().collect(Collectors.joining(" "));
+        return name + "\n" + getOptionList("", "", "").stream().collect(Collectors.joining(" "));
     }
 
     @Override

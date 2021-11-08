@@ -17,6 +17,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.scene.Node;
 import javafx.scene.chart.Chart;
+import javafx.scene.chart.LineChart;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.ScrollPane;
@@ -51,6 +52,26 @@ public final class DialogUtils {
             TilePane tilePane = new TilePane();
             tilePane.setPrefColumns(charts.getColumns());
             tilePane.getChildren().addAll(chartsFX);
+
+            ScrollPane scrollPane = new ScrollPane(tilePane);
+            scrollPane.prefViewportWidthProperty().bind(Bindings.createDoubleBinding(
+                    () -> Math.min(tilePane.getWidth(), MainApp.WINDOW_PREF_WIDTH), tilePane.widthProperty()));
+            scrollPane.prefViewportHeightProperty().bind(Bindings.createDoubleBinding(
+                    () -> Math.min(tilePane.getHeight(), MainApp.WINDOW_PREF_HEIGHT), tilePane.heightProperty()));
+            scrollPane.setPannable(true);
+
+            dialog.getDialogPane().setContent(scrollPane);
+
+            dialog.show();
+        } else  if (obj instanceof LineChart chart) {
+            
+
+            Dialog<Void> dialog = createPlainDialog(window);
+            dialog.setDialogPane(new PlainDialogPane());
+            dialog.initOwner(window);
+            TilePane tilePane = new TilePane();
+            tilePane.setPrefColumns(1);
+            tilePane.getChildren().addAll(chart);
 
             ScrollPane scrollPane = new ScrollPane(tilePane);
             scrollPane.prefViewportWidthProperty().bind(Bindings.createDoubleBinding(

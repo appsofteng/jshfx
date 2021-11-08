@@ -56,6 +56,11 @@
 				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-base</artifactId>
 				<version>${ojfxVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openjfx</groupId>
+				<artifactId>javafx-base</artifactId>
+				<version>${ojfxVersion}</version>
 				<classifier>${javafx.platform}</classifier>
 			</dependency>
 			<dependency>
@@ -74,7 +79,17 @@
 				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-web</artifactId>
 				<version>${ojfxVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openjfx</groupId>
+				<artifactId>javafx-web</artifactId>
+				<version>${ojfxVersion}</version>
 				<classifier>${javafx.platform}</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.openjfx</groupId>
+				<artifactId>javafx-swing</artifactId>
+				<version>${ojfxVersion}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.openjfx</groupId>

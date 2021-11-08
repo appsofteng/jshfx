@@ -40,7 +40,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.parent.basedir}/dev.jshfx.distribution/working/src</outputDirectory>
+							<outputDirectory>${project.parent.basedir}/dev.jshfx.distribution/working/src/lib</outputDirectory>
 							<resources>
 								<resource>
 									<directory>target</directory>

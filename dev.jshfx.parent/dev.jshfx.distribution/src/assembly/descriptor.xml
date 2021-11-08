@@ -4,19 +4,6 @@
 	xsi:schemaLocation="http://maven.apache.org/ASSEMBLY-COMPONENT/2.0.0 http://maven.apache.org/xsd/assembly-component-2.0.0.xsd">
 
 	<dependencySets>
-		<!-- <dependencySet> -->
-		<!-- <outputDirectory>lib/mp</outputDirectory> -->
-		<!-- <useProjectArtifact>false</useProjectArtifact> -->
-		<!-- <useTransitiveDependencies>true</useTransitiveDependencies> -->
-		<!-- <useTransitiveFiltering>true</useTransitiveFiltering> -->
-		<!-- <excludes> -->
-		<!-- <exclude>org.apache.maven.resolver:*:*</exclude> -->
-		<!-- <exclude>org.apache.maven:*:*</exclude> -->
-		<!-- <exclude>org.slf4j:*:*</exclude> -->
-		<!-- <exclude>dev.jshfx:dev.jshfx.automatic</exclude> -->
-		<!-- <exclude>dev.jshfx:dev.jshfx.util</exclude> -->
-		<!-- </excludes> -->
-		<!-- </dependencySet> -->
 		<dependencySet>
 			<outputDirectory>lib/cp</outputDirectory>
 			<useProjectArtifact>false</useProjectArtifact>
@@ -41,11 +28,13 @@
 			<useTransitiveDependencies>true</useTransitiveDependencies>
 			<useTransitiveFiltering>true</useTransitiveFiltering>
 			<includes>
-				<include>org.openjfx:*</include>
 				<include>org.controlsfx:*</include>
 				<include>org.fxmisc.richtext:richtextfx</include>
 				<include>info.picocli:picocli</include>
 			</includes>
+			<excludes>
+				<exclude>org.openjfx:*</exclude>
+			</excludes>
 		</dependencySet>
 		<dependencySet>
 			<outputDirectory>lib/mp</outputDirectory>
@@ -54,6 +43,15 @@
 				<include>jakarta.json:jakarta.json-api</include>
 				<include>jakarta.json.bind:jakarta.json.bind-api</include>
 				<include>org.eclipse:yasson</include>
+			</includes>
+		</dependencySet>
+		<dependencySet>
+			<outputDirectory>lib/fx</outputDirectory>
+			<useProjectArtifact>false</useProjectArtifact>
+			<useTransitiveDependencies>true</useTransitiveDependencies>
+			<useTransitiveFiltering>true</useTransitiveFiltering>
+			<includes>
+				<include>org.openjfx:*</include>
 			</includes>
 		</dependencySet>
 		<dependencySet>
