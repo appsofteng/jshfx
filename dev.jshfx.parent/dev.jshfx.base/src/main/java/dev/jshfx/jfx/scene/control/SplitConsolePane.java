@@ -11,6 +11,7 @@ import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 
+import dev.jshfx.fxmisc.richtext.CustomCodeArea;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -33,8 +34,8 @@ public class SplitConsolePane extends BorderPane {
     private static final int HISTORY_LIMIT = 100;
     private static final int OUTPUT_AREA_LIMIT = 1500;
     private ConsoleModel consoleModel;
-    private CodeArea inputArea = new CodeArea();
-    private CodeArea outputArea = new CodeArea();
+    private CodeArea inputArea = new CustomCodeArea();
+    private CodeArea outputArea = new CustomCodeArea();
     private ObjectProperty<CodeArea> focusedArea = new SimpleObjectProperty<>();
     private Label outputHeader = new Label();
     private ObservableList<String> history = FXCollections.observableArrayList();
