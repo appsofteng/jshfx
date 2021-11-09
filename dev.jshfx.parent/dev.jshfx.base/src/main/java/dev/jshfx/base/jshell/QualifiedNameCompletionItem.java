@@ -15,7 +15,7 @@ public class QualifiedNameCompletionItem extends SourceCodeCompletionItem {
 
     @Override
     public void complete() {
-        input.accept(String.format("import %s;\n", getSignature().toString()));
+        input.accept(String.format("import %s", getSignature().toString()));
     }
 
     @Override
