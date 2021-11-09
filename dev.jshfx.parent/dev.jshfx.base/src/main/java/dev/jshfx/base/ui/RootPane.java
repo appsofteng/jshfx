@@ -16,6 +16,8 @@ import javafx.scene.layout.BorderPane;
 
 public class RootPane extends BorderPane {
 
+    private static RootPane instance;
+    
     private TabPane centerPane;
     private Actions actions;
     private ContentPane contentPane;
@@ -30,8 +32,13 @@ public class RootPane extends BorderPane {
 
         actions.getActionController().newShell();
         centerPane.setTabDragPolicy(TabDragPolicy.REORDER);
+        instance = this;
     }
 
+    public static RootPane get() {
+        return instance;
+    }
+    
     public Actions getActions() {
         return actions;
     }

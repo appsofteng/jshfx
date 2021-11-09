@@ -43,16 +43,17 @@ public class IndentationWrapper<T extends GenericStyledArea<?,?,?>> extends Gene
         if (selectionRange.getLength() == 0) {
             insertIndentationForCaret();
         } else {
-            changeParagraphs(selectionRange, this::insertIndentationForParagraph);
+            changeParagraphs(this::insertIndentationForParagraph);
         }
     }
 
     void deleteIndentation() {
         IndexRange selectionRange = getArea().getSelection();
+        
         if (selectionRange.getLength() == 0) {
            deleteIndentationForCaret();
         } else {
-            changeParagraphs(selectionRange, this::deleteIndentationForParagraph);
+            changeParagraphs(this::deleteIndentationForParagraph);
         }
     }
 

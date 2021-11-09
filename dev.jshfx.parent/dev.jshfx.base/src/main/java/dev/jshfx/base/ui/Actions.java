@@ -4,6 +4,7 @@ import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -17,6 +18,7 @@ import org.fxmisc.wellbehaved.event.Nodes;
 import dev.jshfx.base.sys.ResourceManager;
 import dev.jshfx.cfx.glyphfont.StyleGlyph;
 import dev.jshfx.fonts.Fonts;
+import dev.jshfx.jfx.scene.NodeUtils;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -74,6 +76,9 @@ public class Actions {
     private Action insertSaveFilePathAction;
 
     private Action codeCompletionAction;
+    private Action toggleCommentAction;
+
+    private Action saveSnapshotAction;
 
     private Consumer<ActionEvent> copyHandler;
     private Consumer<ActionEvent> cutHandler;
@@ -93,6 +98,8 @@ public class Actions {
     private Consumer<ActionEvent> insertFilePathHandler;
     private Consumer<ActionEvent> insertSaveFilePathHandler;
     private Consumer<ActionEvent> codeCompletionHandler;
+    private Consumer<ActionEvent> toggleCommentHandler;
+    private Consumer<ActionEvent> saveSnapshotHandler;
 
     private BooleanExpression savedAllExpression;
 
@@ -278,6 +285,14 @@ public class Actions {
         FXResourceBundle.getBundle().put(codeCompletionAction.textProperty(), "codeCompletion");
         FXResourceBundle.getBundle().put(codeCompletionAction.longTextProperty(), "codeCompletion");
         codeCompletionAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Space"));
+
+        toggleCommentAction = new Action(e -> toggleCommentHandler.accept(e));
+        FXResourceBundle.getBundle().put(toggleCommentAction.textProperty(), "toggleComment");
+        toggleCommentAction.setAccelerator(KeyCombination.keyCombination("Shortcut+/"));
+
+        saveSnapshotAction = new Action(e -> saveSnapshotHandler.accept(e));
+        FXResourceBundle.getBundle().put(saveSnapshotAction.textProperty(), "save");
+
     }
 
     public ActionController getActionController() {
@@ -326,6 +341,21 @@ public class Actions {
         tab.setContextMenu(menu);
     }
 
+    public void setSnapshotContextMenu(Node node, String name) {
+        var menu = ActionUtils.createContextMenu(List.of(saveSnapshotAction));
+
+        saveSnapshotHandler = e -> {
+            var path = FileDialogUtils.saveImageFile(node.getScene().getWindow(), Path.of(name));
+            path.ifPresent(p -> NodeUtils.saveSnapshot(node, p));
+        };
+
+        node.setOnContextMenuRequested(e -> {
+            menu.show(node, e.getScreenX(), e.getScreenY());
+        });
+
+        node.setOnMouseClicked(e -> menu.hide());
+    }
+
     public void setActions(ContentPane contentPane) {
         saveAsAction.setDisabled(false);
         if (savedAllExpression == null) {
@@ -363,11 +393,12 @@ public class Actions {
         evalLineHandler = e -> shellPane.evalLine();
         historyUpHandler = e -> shellPane.getConsolePane().historyUp();
         historyDownHandler = e -> shellPane.getConsolePane().historyDown();
+        historySearchHandler = e -> shellPane.showHistorySearch();
         insertDirPathHandler = e -> shellPane.insertDirPath();
         insertFilePathHandler = e -> shellPane.insertFilePaths();
         insertSaveFilePathHandler = e -> shellPane.insertSaveFilePath();
         codeCompletionHandler = e -> shellPane.showCodeCompletion();
-        historySearchHandler = e -> shellPane.showHistorySearch();
+        toggleCommentHandler = e -> shellPane.toggleComment();
 
         allSelected.bind(Bindings.createBooleanBinding(
                 () -> shellPane.getConsolePane().getFocusedArea() == null
@@ -406,7 +437,8 @@ public class Actions {
                 ActionUtils.ACTION_SEPARATOR, areaUndoAction, areaReduAction, ActionUtils.ACTION_SEPARATOR, evalAction,
                 evalLineAction, submitAction, submitLineAction, ActionUtils.ACTION_SEPARATOR, historyUpAction,
                 historyDownAction, ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction,
-                insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR, codeCompletionAction, historySearchAction);
+                insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR, codeCompletionAction, historySearchAction,
+                ActionUtils.ACTION_SEPARATOR, toggleCommentAction);
         ActionUtils.updateContextMenu(menu, actions);
 
         Nodes.addInputMap(area, sequence(
@@ -437,6 +469,8 @@ public class Actions {
                 consume(keyPressed(codeCompletionAction.getAccelerator())
                         .onlyIf(e -> !codeCompletionAction.isDisabled()),
                         e -> codeCompletionAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+                consume(keyPressed(toggleCommentAction.getAccelerator()).onlyIf(e -> !toggleCommentAction.isDisabled()),
+                        e -> toggleCommentAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
                 consume(keyPressed(historySearchAction.getAccelerator()).onlyIf(e -> !historySearchAction.isDisabled()),
                         e -> historySearchAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
     }

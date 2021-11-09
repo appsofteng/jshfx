@@ -14,17 +14,28 @@ import javafx.scene.chart.XYChart.Series;
 
 public final class Charts {
 
+    private String title;
     private int columns;
     
     private List<Chart> charts;
     
-    private Charts (int columns, Chart... charts) {
+    private Charts (String title, int columns, Chart... charts) {
+        this.title = title;
         this.columns = columns;
         this.charts = Arrays.asList(charts);
     }
     
     
-    public static <X extends Number, Y extends Number> LineChart<X, Y> lineChart(Stream<X> x, Stream<Y> y) {
+    public static <X extends Number, Y extends Number> LineChart<X, Y> getLineChart(Stream<X> x, Stream<Y> y) {
+        LineChart<X, Y> lineChart = (LineChart<X, Y>) new LineChart<Number,Number>(new NumberAxis(), new NumberAxis());
+       
+       var series = getSeries(x, y);
+       lineChart.getData().add(series);
+       
+       return lineChart;
+    }
+    
+    public static <X extends Number, Y extends Number> LineChart<X, Y> getLineChart(Stream<X> x, Function<X,Y> y) {
         LineChart<X, Y> lineChart = (LineChart<X, Y>) new LineChart<Number,Number>(new NumberAxis(), new NumberAxis());
        
        var series = getSeries(x, y);
@@ -43,6 +54,18 @@ public final class Charts {
         return series;
     }
     
+    public static <X, Y> Series<X, Y> getSeries(Stream<X> xs, Function<X,Y> yf) {
+        Series<X, Y> series = new Series<>();
+        
+        xs.map(x -> new Data<>(x, yf.apply(x))).takeWhile(e -> e.getYValue() != null).collect(Collectors.toCollection(() -> series.getData()));
+        
+        return series;
+    }
+    
+    public String getTitle() {
+        return title;
+    }
+    
     public int getColumns() {
         return columns;
     }
@@ -56,9 +79,19 @@ public final class Charts {
         return show(columns, charts);
     }
     
-    public static Charts show(int columns, Chart... charts) {        
+    public static Charts show(int columns, Chart... charts) {                
         
-        Charts result = new Charts(columns, charts);
+        return show("", columns, charts);
+    }
+    
+    public static Charts show(String title, Chart... charts) {   
+        var columns = charts.length > 1 ? 2 : 1;
+        return show(title, columns, charts);
+    }
+    
+    public static Charts show(String title, int columns, Chart... charts) {        
+        
+        Charts result = new Charts(title, columns, charts);
         
         return result;
     }

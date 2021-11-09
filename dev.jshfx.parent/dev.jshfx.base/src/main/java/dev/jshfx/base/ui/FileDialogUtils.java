@@ -62,6 +62,10 @@ public class FileDialogUtils {
     public static Optional<Path> saveSourceJavaFile(Window window, Path initialPath) {
         return saveFile(window, initialPath, new ExtensionFilter("Java", "*.java", "*.jsh"));
     }
+    
+    public static Optional<Path> saveImageFile(Window window, Path initialPath) {
+        return saveFile(window, initialPath, new ExtensionFilter(FXResourceBundle.getBundle().getString​("image"), "*.png"));
+    }
 
     public static Optional<Path> saveFile(Window window, Path initialPath, ExtensionFilter... filter) {
 

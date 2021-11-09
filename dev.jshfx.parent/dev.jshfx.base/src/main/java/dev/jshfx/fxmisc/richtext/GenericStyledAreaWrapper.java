@@ -56,8 +56,18 @@ public abstract class GenericStyledAreaWrapper<T extends GenericStyledArea<?, ?,
         return getArea().offsetToPosition(position, Forward).getMinor();
     }
 
-    void changeParagraphs(IndexRange range, Function<Integer, String> change) {
+    void changeParagraphs(Function<Integer, String> change) {
 
+        IndexRange selectionRange = getArea().getSelection();        
+        IndexRange range = selectionRange;
+        
+        if (selectionRange.getLength() == 0) {
+            int i = area.getCurrentParagraph();
+            int start = area.getAbsolutePosition(i, 0);
+            int end = area.getAbsolutePosition(i, area.getParagraphLength(i));
+            range = new IndexRange(start, end);
+        }
+        
         int startParagraph = getParagraphForAbsolutePosition(range.getStart());
         int endParagraph = getParagraphForAbsolutePosition(range.getEnd());
         boolean caretAtEnd = getArea().getCaretPosition() == range.getEnd();
@@ -81,7 +91,7 @@ public abstract class GenericStyledAreaWrapper<T extends GenericStyledArea<?, ?,
         getArea().replaceText(getArea().getAbsolutePosition(startParagraph, 0),
                 getArea().getAbsolutePosition(endParagraph, getArea().getParagraphLength(endParagraph)), newText);
 
-        if (range.getLength() > 0) {
+        if (selectionRange.getLength() > 0) {
             if (caretAtEnd) {
                 getArea().selectRange(startParagraph, 0, endParagraph, getArea().getParagraphLength(endParagraph));
             } else {

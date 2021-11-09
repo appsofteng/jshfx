@@ -13,6 +13,7 @@ import dev.jshfx.base.jshell.JShellUtils;
 import dev.jshfx.base.jshell.Session;
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.fxmisc.richtext.CodeAreaWrappers;
+import dev.jshfx.fxmisc.richtext.CommentWrapper;
 import dev.jshfx.fxmisc.richtext.CompletionPopup;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import dev.jshfx.j.util.json.JsonUtils;
@@ -149,6 +150,10 @@ public class ShellPane extends PathPane {
                     .create(() -> completion.getCompletor().getCompletionItems(i -> CompletionPopup.get().add(i)));
             taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
         }
+    }
+    
+    public void toggleComment() {
+        new CommentWrapper<>(consolePane.getInputArea()).toggleComment();
     }
 
     public void showHistorySearch() {
