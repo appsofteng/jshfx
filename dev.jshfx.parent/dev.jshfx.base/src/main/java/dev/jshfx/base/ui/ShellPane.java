@@ -156,6 +156,10 @@ public class ShellPane extends PathPane {
         new CommentWrapper<>(consolePane.getInputArea()).toggleComment();
     }
 
+    public void find() {
+        DialogUtils.showFindDialog(getScene().getWindow());
+    }
+    
     public void showHistorySearch() {
         DialogUtils.showHistorySearch(getScene().getWindow(), consolePane.getHistory(),
                 s -> consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), s));

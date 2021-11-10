@@ -22,9 +22,12 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.text.Font;
+import javafx.stage.Modality;
 import javafx.stage.Window;
 
 public final class DialogUtils {
+
+    private static Dialog<Void> findDialog;
 
     private DialogUtils() {
     }
@@ -47,13 +50,13 @@ public final class DialogUtils {
             TilePane tilePane = new TilePane();
             tilePane.setPrefColumns(charts.getColumns());
             tilePane.getChildren().addAll(charts.getCharts());
-            
+
             var name = charts.getTitle().isEmpty() ? charts.getCharts().get(0).getTitle() : charts.getTitle();
-            
+
             if (name == null || name.isEmpty()) {
                 name = FXResourceBundle.getBundle().getString​("chart");
             }
-            
+
             RootPane.get().getActions().setSnapshotContextMenu(tilePane, name);
 
             BorderPane borderPane = new BorderPane(tilePane);
@@ -92,6 +95,15 @@ public final class DialogUtils {
 
         popup.setGraphic(autoCompleteField);
         popup.show(window);
+    }
+
+    public static void showFindDialog(Window window) {
+        if (findDialog == null) {
+            findDialog = new Dialog<>();
+            findDialog.initOwner(window);
+            findDialog.initModality(Modality.NONE);
+            findDialog.show();
+        }
     }
 
     private static <T> Dialog<T> createPlainDialog(Window window) {

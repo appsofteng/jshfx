@@ -77,6 +77,7 @@ public class Actions {
 
     private Action codeCompletionAction;
     private Action toggleCommentAction;
+    private Action findAction;
 
     private Action saveSnapshotAction;
 
@@ -100,6 +101,7 @@ public class Actions {
     private Consumer<ActionEvent> codeCompletionHandler;
     private Consumer<ActionEvent> toggleCommentHandler;
     private Consumer<ActionEvent> saveSnapshotHandler;
+    private Consumer<ActionEvent> findHandler;
 
     private BooleanExpression savedAllExpression;
 
@@ -268,22 +270,18 @@ public class Actions {
 
         insertDirPathAction = new Action(e -> insertDirPathHandler.accept(e));
         FXResourceBundle.getBundle().put(insertDirPathAction.textProperty(), "insertDirPath");
-        FXResourceBundle.getBundle().put(insertDirPathAction.longTextProperty(), "insertDirPath");
         insertDirPathAction.setAccelerator(KeyCombination.keyCombination("Alt+D"));
 
         insertFilePathAction = new Action(e -> insertFilePathHandler.accept(e));
         FXResourceBundle.getBundle().put(insertFilePathAction.textProperty(), "insertFilePaths");
-        FXResourceBundle.getBundle().put(insertFilePathAction.longTextProperty(), "insertFilePaths");
         insertFilePathAction.setAccelerator(KeyCombination.keyCombination("Alt+O"));
 
         insertSaveFilePathAction = new Action(e -> insertSaveFilePathHandler.accept(e));
         FXResourceBundle.getBundle().put(insertSaveFilePathAction.textProperty(), "insertSaveFilePath");
-        FXResourceBundle.getBundle().put(insertSaveFilePathAction.longTextProperty(), "insertSaveFilePath");
         insertSaveFilePathAction.setAccelerator(KeyCombination.keyCombination("Alt+S"));
 
         codeCompletionAction = new Action(e -> codeCompletionHandler.accept(e));
         FXResourceBundle.getBundle().put(codeCompletionAction.textProperty(), "codeCompletion");
-        FXResourceBundle.getBundle().put(codeCompletionAction.longTextProperty(), "codeCompletion");
         codeCompletionAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Space"));
 
         toggleCommentAction = new Action(e -> toggleCommentHandler.accept(e));
@@ -292,6 +290,10 @@ public class Actions {
 
         saveSnapshotAction = new Action(e -> saveSnapshotHandler.accept(e));
         FXResourceBundle.getBundle().put(saveSnapshotAction.textProperty(), "save");
+        
+        findAction = new Action(e -> findHandler.accept(e));
+        FXResourceBundle.getBundle().put(findAction.textProperty(), "find");
+        findAction.setAccelerator(KeyCombination.keyCombination("Shortcut+F"));
 
     }
 
@@ -399,6 +401,7 @@ public class Actions {
         insertSaveFilePathHandler = e -> shellPane.insertSaveFilePath();
         codeCompletionHandler = e -> shellPane.showCodeCompletion();
         toggleCommentHandler = e -> shellPane.toggleComment();
+        findHandler = e -> shellPane.find();
 
         allSelected.bind(Bindings.createBooleanBinding(
                 () -> shellPane.getConsolePane().getFocusedArea() == null
@@ -437,7 +440,7 @@ public class Actions {
                 ActionUtils.ACTION_SEPARATOR, areaUndoAction, areaReduAction, ActionUtils.ACTION_SEPARATOR, evalAction,
                 evalLineAction, submitAction, submitLineAction, ActionUtils.ACTION_SEPARATOR, historyUpAction,
                 historyDownAction, ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction,
-                insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR, codeCompletionAction, historySearchAction,
+                insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR, codeCompletionAction, historySearchAction, findAction,
                 ActionUtils.ACTION_SEPARATOR, toggleCommentAction);
         ActionUtils.updateContextMenu(menu, actions);
 
@@ -471,6 +474,8 @@ public class Actions {
                         e -> codeCompletionAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
                 consume(keyPressed(toggleCommentAction.getAccelerator()).onlyIf(e -> !toggleCommentAction.isDisabled()),
                         e -> toggleCommentAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+                consume(keyPressed(findAction.getAccelerator()).onlyIf(e -> !findAction.isDisabled()),
+                        e -> findAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
                 consume(keyPressed(historySearchAction.getAccelerator()).onlyIf(e -> !historySearchAction.isDisabled()),
                         e -> historySearchAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
     }
