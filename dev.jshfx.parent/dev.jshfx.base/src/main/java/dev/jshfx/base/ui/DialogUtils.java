@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import org.controlsfx.dialog.ProgressDialog;
 
 import dev.jshfx.base.MainApp;
-import dev.jshfx.jfx.scene.control.AutoCompleteField;
+import dev.jshfx.jfx.scene.control.AutoCompleteArea;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.util.chart.Charts;
 import javafx.beans.binding.Bindings;
@@ -83,7 +83,7 @@ public final class DialogUtils {
     public static void showHistorySearch(Window window, ObservableList<String> history, Consumer<String> onSelection) {
         Tooltip popup = new Tooltip();
         popup.setAutoHide(true);
-        AutoCompleteField<String> autoCompleteField = new AutoCompleteField<>(new TreeSet<>(history));
+        AutoCompleteArea<String> autoCompleteField = new AutoCompleteArea<>(new TreeSet<>(history));
         autoCompleteField.setOnAction(s -> {
             popup.hide();
             onSelection.accept(s);

@@ -22,7 +22,7 @@ import javafx.scene.layout.Region;
 import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
 
-public class AutoCompleteField<T> extends Region {
+public class AutoCompleteArea<T> extends Region {
 
     private Collection<T> suggestions;
     private TextArea textArea;
@@ -33,19 +33,19 @@ public class AutoCompleteField<T> extends Region {
     private Consumer<T> onAction;
     private Runnable onCancel;
 
-    public AutoCompleteField() {
+    public AutoCompleteArea() {
         this("");
     }
 
-    public AutoCompleteField(String text) {
+    public AutoCompleteArea(String text) {
         this(text, new TreeSet<>());
     }
 
-    public AutoCompleteField(Collection<T> suggestions) {
+    public AutoCompleteArea(Collection<T> suggestions) {
         this("", suggestions);
     }
 
-    public AutoCompleteField(String text, Collection<T> suggestions) {
+    public AutoCompleteArea(String text, Collection<T> suggestions) {
         this.suggestions = suggestions;
         textArea = new TextArea();
         textArea.setPrefRowCount(5);
