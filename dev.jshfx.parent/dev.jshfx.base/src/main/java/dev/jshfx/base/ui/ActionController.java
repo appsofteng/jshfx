@@ -20,11 +20,13 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 
 public class ActionController {
 
+    private static FindDialog findDialog;
     private RootPane rootPane;
     private Optional<ButtonType> result = Optional.of(ButtonType.NO);
 
@@ -229,5 +231,15 @@ public class ActionController {
         var modifiedPanes = rootPane.getModified();
         modifiedPanes.forEach(cp -> save(cp));
 
+    }
+    
+    public void showFindDialog() {
+        if (findDialog == null) {
+            findDialog = new FindDialog(rootPane.getScene().getWindow(), rootPane.contentPaneProperty());
+            findDialog.show();
+            findDialog.setOnCloseRequest(e -> findDialog = null);
+        } else {
+            findDialog.setSelection();
+        }
     }
 }

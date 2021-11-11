@@ -101,7 +101,6 @@ public class Actions {
     private Consumer<ActionEvent> codeCompletionHandler;
     private Consumer<ActionEvent> toggleCommentHandler;
     private Consumer<ActionEvent> saveSnapshotHandler;
-    private Consumer<ActionEvent> findHandler;
 
     private BooleanExpression savedAllExpression;
 
@@ -291,7 +290,7 @@ public class Actions {
         saveSnapshotAction = new Action(e -> saveSnapshotHandler.accept(e));
         FXResourceBundle.getBundle().put(saveSnapshotAction.textProperty(), "save");
         
-        findAction = new Action(e -> findHandler.accept(e));
+        findAction = new Action(e -> actionController.showFindDialog());
         FXResourceBundle.getBundle().put(findAction.textProperty(), "find");
         findAction.setAccelerator(KeyCombination.keyCombination("Shortcut+F"));
 
@@ -401,7 +400,6 @@ public class Actions {
         insertSaveFilePathHandler = e -> shellPane.insertSaveFilePath();
         codeCompletionHandler = e -> shellPane.showCodeCompletion();
         toggleCommentHandler = e -> shellPane.toggleComment();
-        findHandler = e -> shellPane.find();
 
         allSelected.bind(Bindings.createBooleanBinding(
                 () -> shellPane.getConsolePane().getFocusedArea() == null

@@ -69,6 +69,14 @@ public class ContentPane extends StackPane {
         actions.bind(this);
     }
     
+    public String getSelection() {
+        return "";
+    }
+    
+    public Finder getFinder() {
+        return null;
+    }
+    
     public void activate() {}
     
     public void dispose() {

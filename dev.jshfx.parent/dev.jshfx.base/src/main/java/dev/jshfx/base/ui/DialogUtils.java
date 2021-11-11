@@ -27,8 +27,6 @@ import javafx.stage.Window;
 
 public final class DialogUtils {
 
-    private static Dialog<Void> findDialog;
-
     private DialogUtils() {
     }
 
@@ -95,15 +93,6 @@ public final class DialogUtils {
 
         popup.setGraphic(autoCompleteField);
         popup.show(window);
-    }
-
-    public static void showFindDialog(Window window) {
-        if (findDialog == null) {
-            findDialog = new Dialog<>();
-            findDialog.initOwner(window);
-            findDialog.initModality(Modality.NONE);
-            findDialog.show();
-        }
     }
 
     private static <T> Dialog<T> createPlainDialog(Window window) {

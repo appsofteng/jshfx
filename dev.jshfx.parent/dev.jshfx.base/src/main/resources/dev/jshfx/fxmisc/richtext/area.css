@@ -2,8 +2,13 @@
     -fx-fill: mediumblue;
 }
 
-.styled-text-area .jsh-find {
+.paragraph-box .jsh-find {
+    -fx-background-color: rgba(255, 0, 255);
+}
+
+.styled-text-area .paragraph-box .jsh-find {
     -rtfx-background-color: rgba(255, 0, 255, 0.5);
+    -fx-fill: rgba(255, 0, 255, 0.5);
 }
 
 .styled-text-area .jsh-find-selected {

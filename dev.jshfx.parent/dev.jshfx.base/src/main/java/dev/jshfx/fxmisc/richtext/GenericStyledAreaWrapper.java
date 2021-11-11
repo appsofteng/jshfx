@@ -1,10 +1,13 @@
 package dev.jshfx.fxmisc.richtext;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.fxmisc.richtext.GenericStyledArea;
+import org.fxmisc.richtext.model.Paragraph;
 
 import javafx.scene.control.IndexRange;
 
@@ -56,18 +59,33 @@ public abstract class GenericStyledAreaWrapper<T extends GenericStyledArea<?, ?,
         return getArea().offsetToPosition(position, Forward).getMinor();
     }
 
+    public List<Integer> getSelectedParagraphs(IndexRange selectionRange) {
+        List<Integer> paragraphs = List.of();
+
+        if (selectionRange.getLength() > 0) {
+            int startParagraph = getParagraphForAbsolutePosition(selectionRange.getStart());
+            int endParagraph = getParagraphForAbsolutePosition(selectionRange.getEnd());
+            paragraphs = new ArrayList<>();
+            for (int i = startParagraph; i <= endParagraph; i++) {
+                paragraphs.add(i);
+            }
+        }
+
+        return paragraphs;
+    }
+
     void changeParagraphs(Function<Integer, String> change) {
 
-        IndexRange selectionRange = getArea().getSelection();        
+        IndexRange selectionRange = getArea().getSelection();
         IndexRange range = selectionRange;
-        
+
         if (selectionRange.getLength() == 0) {
             int i = area.getCurrentParagraph();
             int start = area.getAbsolutePosition(i, 0);
             int end = area.getAbsolutePosition(i, area.getParagraphLength(i));
             range = new IndexRange(start, end);
         }
-        
+
         int startParagraph = getParagraphForAbsolutePosition(range.getStart());
         int endParagraph = getParagraphForAbsolutePosition(range.getEnd());
         boolean caretAtEnd = getArea().getCaretPosition() == range.getEnd();

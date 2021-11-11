@@ -6,6 +6,9 @@ import java.util.stream.Collectors;
 
 import dev.jshfx.base.sys.FileManager;
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -20,7 +23,7 @@ public class RootPane extends BorderPane {
     
     private TabPane centerPane;
     private Actions actions;
-    private ContentPane contentPane;
+    private ObjectProperty<ContentPane> contentPane = new SimpleObjectProperty<>();
 
     public RootPane() {
         centerPane = new TabPane();
@@ -50,9 +53,9 @@ public class RootPane extends BorderPane {
     private void setListeners() {
         centerPane.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
             if (n != null) {
-                contentPane = (ContentPane) n.getContent();
-                contentPane.activate();
-                contentPane.bind(actions);
+                contentPane.set((ContentPane) n.getContent());
+                contentPane.get().activate();
+                contentPane.get().bind(actions);
             } else {
                 actions.empty();
                 FileManager.get().restoreOutput();
@@ -61,6 +64,10 @@ public class RootPane extends BorderPane {
     }
 
     public ContentPane getContentPane() {
+        return  contentPane.get();
+    }
+    
+    public ReadOnlyObjectProperty<ContentPane> contentPaneProperty() {
         return contentPane;
     }
     

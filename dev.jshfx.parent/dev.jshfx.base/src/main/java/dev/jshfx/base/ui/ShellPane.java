@@ -5,7 +5,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
 import dev.jshfx.base.jshell.Completion;
@@ -15,6 +18,7 @@ import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.fxmisc.richtext.CodeAreaWrappers;
 import dev.jshfx.fxmisc.richtext.CommentWrapper;
 import dev.jshfx.fxmisc.richtext.CompletionPopup;
+import dev.jshfx.fxmisc.richtext.StyleClassedTextAreaWrapper;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.CTask;
@@ -34,6 +38,7 @@ public class ShellPane extends PathPane {
     private Completion completion;
     private Session session;
     private TaskQueuer taskQueuer = new TaskQueuer();
+    private Finder finder;
 
     public ShellPane(String name) {
         this(Path.of(name), "");
@@ -63,6 +68,7 @@ public class ShellPane extends PathPane {
         consolePane.getInputArea().replaceText(input);
         setBehavior();
         consolePane.forgetEdit();
+        finder = new FinderImpl(consolePane.getInputArea());
     }
 
     @Override
@@ -81,6 +87,16 @@ public class ShellPane extends PathPane {
     public void saved(Path path) {
         super.saved(path);
         consolePane.forgetEdit();
+    }
+
+    @Override
+    public String getSelection() {
+        return consolePane.getInputArea().getSelectedText();
+    }
+
+    @Override
+    public Finder getFinder() {
+        return finder;
     }
 
     private void handleResult(SnippetEvent event, Object obj) {
@@ -151,15 +167,11 @@ public class ShellPane extends PathPane {
             taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
         }
     }
-    
+
     public void toggleComment() {
         new CommentWrapper<>(consolePane.getInputArea()).toggleComment();
     }
 
-    public void find() {
-        DialogUtils.showFindDialog(getScene().getWindow());
-    }
-    
     public void showHistorySearch() {
         DialogUtils.showHistorySearch(getScene().getWindow(), consolePane.getHistory(),
                 s -> consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), s));
@@ -288,5 +300,116 @@ public class ShellPane extends PathPane {
         session.close();
         consolePane.dispose();
         taskQueuer.clear();
+    }
+
+    private static class FinderImpl implements Finder {
+
+        private static final String FIND_STYLE = "jsh-find";
+        
+        private StyleClassedTextAreaWrapper areaWrapper;
+        private IndexRange selectionRange = new IndexRange(0, 0);
+        private String selectedText = null;
+        private int position;
+        private String input = "";
+
+        public FinderImpl(CodeArea area) {
+            this.areaWrapper = new StyleClassedTextAreaWrapper(area);
+
+            area.focusedProperty().addListener((v, o, n) -> {
+                if (n) {
+                    areaWrapper.getSelectedParagraphs(selectionRange).forEach(i ->  areaWrapper.getArea().clearParagraphStyle(i));
+                    selectionRange = new IndexRange(0, 0);
+                    selectedText = null;     
+                    position = 0;
+                    input = "";
+                }
+            });
+        }
+
+        @Override
+        public void findPrevious(Pattern pattern, boolean inSelection) {
+            update(inSelection);
+
+            Matcher matcher = pattern.matcher(input);
+            int start = -1;
+            int end = 0;
+            
+            while (matcher.find() && matcher.end() < position) {
+                start = matcher.start();
+                end = matcher.end();
+            }
+            
+            if (start > -1) {
+                areaWrapper.getArea().selectRange(start + selectionRange.getStart(),
+                        end + selectionRange.getStart());
+                position = end;
+            } else {
+                while (matcher.find(position)) {
+                    start = matcher.start();
+                    end = matcher.end();
+                    position = end;
+                }
+                
+                if (start > -1) {
+                    areaWrapper.getArea().selectRange(start + selectionRange.getStart(),
+                            end + selectionRange.getStart());
+                }
+            }
+        }
+
+        @Override
+        public void findNext(Pattern pattern, boolean inSelection) {
+            update(inSelection);
+
+            Matcher matcher = pattern.matcher(input);
+
+            if (matcher.find(position)) {
+                areaWrapper.getArea().selectRange(matcher.start() + selectionRange.getStart(),
+                        matcher.end() + selectionRange.getStart());
+                position = matcher.end();
+            } else {
+                position = 0;
+                if (matcher.find(position)) {
+                    areaWrapper.getArea().selectRange(matcher.start() + selectionRange.getStart(),
+                            matcher.end() + selectionRange.getStart());
+                    position = matcher.end();
+                }
+            }
+        }
+        
+        private void update(boolean inSelection) {
+            if (inSelection) {
+                if (selectedText == null) {
+                    input = areaWrapper.getArea().getSelectedText();
+                    selectionRange = areaWrapper.getArea().getSelection();
+                    selectedText = input;
+                    areaWrapper.getSelectedParagraphs(selectionRange).forEach(i ->  areaWrapper.getArea().setParagraphStyle(i, List.of(FIND_STYLE)));
+                    areaWrapper.getArea().deselect();
+                } else {
+                    input = selectedText;
+                }
+            } else {
+                input = areaWrapper.getArea().getText();
+                position = areaWrapper.getArea().getCaretPosition();
+            }
+        }
+
+        @Override
+        public void replacePrevious(Pattern pattern, boolean inSelection) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void replaceNext(Pattern pattern, boolean inSelection) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void replaceAll(Pattern pattern, boolean inSelection) {
+            // TODO Auto-generated method stub
+
+        }
     }
 }
