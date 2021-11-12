@@ -244,4 +244,11 @@ public class ActionController {
             findDialog.setSelection();
         }
     }
+
+    public void closeFindDialog() {
+
+        if (findDialog != null) {
+            findDialog.close();
+        }
+    }
 }

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import dev.jshfx.base.sys.FileManager;
 import javafx.application.Platform;
+import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -59,6 +60,12 @@ public class RootPane extends BorderPane {
             } else {
                 actions.empty();
                 FileManager.get().restoreOutput();
+            }
+        });
+        
+        centerPane.getTabs().addListener((Observable o) -> {
+            if (centerPane.getTabs().isEmpty()) {
+                actions.getActionController().closeFindDialog();
             }
         });
     }
