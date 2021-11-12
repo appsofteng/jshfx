@@ -88,6 +88,10 @@ public class AutoCompleteField<T> extends Region {
 
         return true;
     }
+    
+    public Collection<T> getSuggestions() {
+        return suggestions;
+    }
 
     public void setOnAction(Consumer<T> onAction) {
         this.onAction = onAction;

@@ -20,7 +20,6 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 
@@ -73,7 +72,7 @@ public class ActionController {
         result = Optional.of(ButtonType.NO);
         List<ButtonType> buttons = List.of();
 
-        if (tabs.stream().filter(t -> ((ContentPane)t.getContent()).isModified()).limit(2).toList().size() == 2) {
+        if (tabs.stream().filter(t -> ((ContentPane) t.getContent()).isModified()).limit(2).toList().size() == 2) {
             buttons = List.of(ButtonTypes.YES_ALL, ButtonTypes.NO_ALL);
         }
 
@@ -232,12 +231,15 @@ public class ActionController {
         modifiedPanes.forEach(cp -> save(cp));
 
     }
-    
+
     public void showFindDialog() {
         if (findDialog == null) {
             findDialog = new FindDialog(rootPane.getScene().getWindow(), rootPane.contentPaneProperty());
             findDialog.show();
-            findDialog.setOnCloseRequest(e -> findDialog = null);
+            findDialog.setOnCloseRequest(e -> {
+                findDialog.store();
+                findDialog = null;
+            });
         } else {
             findDialog.setSelection();
         }

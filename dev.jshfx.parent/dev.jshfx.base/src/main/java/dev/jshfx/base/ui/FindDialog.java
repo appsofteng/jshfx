@@ -1,11 +1,15 @@
 package dev.jshfx.base.ui;
 
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.fonts.Fonts;
+import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.scene.control.AutoCompleteField;
 import dev.jshfx.jfx.util.FXResourceBundle;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
@@ -24,8 +28,8 @@ public class FindDialog extends Dialog<Void> {
 
     private ReadOnlyObjectProperty<ContentPane> contentPane;
 
-    private AutoCompleteField<String> findField = new AutoCompleteField<>();
-    private AutoCompleteField<String> replaceField = new AutoCompleteField<>();
+    private AutoCompleteField<String> findField;
+    private AutoCompleteField<String> replaceField;
 
     private Button findPreviousButton;
     private Button findNextButton;
@@ -45,6 +49,11 @@ public class FindDialog extends Dialog<Void> {
         initModality(Modality.NONE);
         setTitle(FXResourceBundle.getBundle().getString​("find"));
 
+        Set<String> findSuggestions = new TreeSet<>(JsonUtils.get().fromJson(FileManager.FIND_SUGGESTONS_FILE, List.class, List.of()));
+        findField = new AutoCompleteField<>(findSuggestions);
+        Set<String> replaceSuggestions = new TreeSet<>(JsonUtils.get().fromJson(FileManager.REPLACE_SUGGESTONS_FILE, List.class, List.of()));
+        replaceField = new AutoCompleteField<>(replaceSuggestions);
+        
         FXResourceBundle.getBundle().put(findField.promptTextProperty(), "findText");
         FXResourceBundle.getBundle().put(replaceField.promptTextProperty(), "replaceText");
 
@@ -131,6 +140,11 @@ public class FindDialog extends Dialog<Void> {
         contentPane.get().getFinder().setScope(inSelectionCheck.isSelected());
     }
 
+    public void store() {
+        JsonUtils.get().toJson(findField.getSuggestions(), FileManager.FIND_SUGGESTONS_FILE);
+        JsonUtils.get().toJson(replaceField.getSuggestions(), FileManager.REPLACE_SUGGESTONS_FILE);
+    }
+    
     private Pattern getPattern() {
 
         String regex = findField.getText();
