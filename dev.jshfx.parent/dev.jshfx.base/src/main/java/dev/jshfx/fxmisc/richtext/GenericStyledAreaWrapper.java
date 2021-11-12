@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.richtext.model.Paragraph;
@@ -72,6 +73,10 @@ public abstract class GenericStyledAreaWrapper<T extends GenericStyledArea<?, ?,
         }
 
         return paragraphs;
+    }
+    
+    public String getSelectedParagraphText(IndexRange selectionRange) {
+        return getSelectedParagraphs(selectionRange).stream().map(i -> area.getParagraph(i).getText()).collect(Collectors.joining("\n"));
     }
 
     void changeParagraphs(Function<Integer, String> change) {

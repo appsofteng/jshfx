@@ -48,6 +48,8 @@ public class AutoCompleteField<T> extends Region {
         textField.focusedProperty().addListener((v, o, n) -> {
             if (n) {
                 Platform.runLater(() -> textField.deselect());
+            } else {
+                store();
             }
         });
 

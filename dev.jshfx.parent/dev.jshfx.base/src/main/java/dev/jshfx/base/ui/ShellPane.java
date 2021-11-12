@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
@@ -305,111 +306,155 @@ public class ShellPane extends PathPane {
     private static class FinderImpl implements Finder {
 
         private static final String FIND_STYLE = "jsh-find";
-        
+
         private StyleClassedTextAreaWrapper areaWrapper;
-        private IndexRange selectionRange = new IndexRange(0, 0);
-        private String selectedText = null;
-        private int position;
-        private String input = "";
+        private boolean inSelection;
+        private List<Integer> selectionParagraphs = List.of();
 
         public FinderImpl(CodeArea area) {
             this.areaWrapper = new StyleClassedTextAreaWrapper(area);
 
             area.focusedProperty().addListener((v, o, n) -> {
                 if (n) {
-                    areaWrapper.getSelectedParagraphs(selectionRange).forEach(i ->  areaWrapper.getArea().clearParagraphStyle(i));
-                    selectionRange = new IndexRange(0, 0);
-                    selectedText = null;     
-                    position = 0;
-                    input = "";
+                    selectionParagraphs.forEach(i -> areaWrapper.getArea().clearParagraphStyle(i));
+                    selectionParagraphs = List.of();
+                    inSelection = false;
                 }
             });
         }
 
         @Override
-        public void findPrevious(Pattern pattern, boolean inSelection) {
-            update(inSelection);
+        public void setScope(boolean inSelection) {
+            this.inSelection = inSelection;
+            if (inSelection) {
+                if (selectionParagraphs.isEmpty()) {
+                    var selectionRange = areaWrapper.getArea().getSelection();
+                    if (selectionRange.getLength() == 0) {
+                        int currentParagraph = areaWrapper.getArea().getCurrentParagraph();
+                        int start = areaWrapper.getArea().getAbsolutePosition(currentParagraph, 0);
+                        int end = areaWrapper.getArea().getAbsolutePosition(currentParagraph,
+                                areaWrapper.getArea().getParagraphLength(currentParagraph));
+                        selectionRange = new IndexRange(start, end);
+                    }
+                    selectionParagraphs = areaWrapper.getSelectedParagraphs(selectionRange);
+                    areaWrapper.getArea().deselect();
+                }
 
-            Matcher matcher = pattern.matcher(input);
+                selectionParagraphs.forEach(i -> areaWrapper.getArea().setParagraphStyle(i, List.of(FIND_STYLE)));
+                areaWrapper.getArea().moveTo(selectionParagraphs.get(0), 0);
+            } else {
+                selectionParagraphs.forEach(i -> areaWrapper.getArea().clearParagraphStyle(i));
+            }
+        }
+
+        private int getOffset() {
+            return inSelection ? areaWrapper.getArea().getAbsolutePosition(selectionParagraphs.get(0), 0) : 0;
+        }
+
+        private int getPosition() {
+            return inSelection ? areaWrapper.getArea().getCaretPosition() - getOffset()
+                    : areaWrapper.getArea().getCaretPosition();
+        }
+
+        private String getInput() {
+            return inSelection ? selectionParagraphs.stream().map(i -> areaWrapper.getArea().getParagraph(i).getText())
+                    .collect(Collectors.joining("\n")) : areaWrapper.getArea().getText();
+        }
+
+        @Override
+        public void findPrevious(Pattern pattern) {
+
+            Matcher matcher = pattern.matcher(getInput());
             int start = -1;
             int end = 0;
-            
-            while (matcher.find() && matcher.end() < position) {
+
+            var selection = areaWrapper.getArea().getSelection();
+
+            if (selection.getLength() == 0) {
+                selection = new IndexRange(areaWrapper.getArea().getCaretPosition(),
+                        areaWrapper.getArea().getCaretPosition());
+            }
+
+            int offset = getOffset();
+
+            while (matcher.find() && matcher.start() < selection.getStart() - offset) {
                 start = matcher.start();
                 end = matcher.end();
             }
-            
+
             if (start > -1) {
-                areaWrapper.getArea().selectRange(start + selectionRange.getStart(),
-                        end + selectionRange.getStart());
-                position = end;
+                areaWrapper.getArea().selectRange(start + offset, end + offset);
             } else {
-                while (matcher.find(position)) {
+                while (matcher.find(getPosition())) {
                     start = matcher.start();
                     end = matcher.end();
-                    position = end;
+                    areaWrapper.getArea().moveTo(end + offset);
                 }
-                
+
                 if (start > -1) {
-                    areaWrapper.getArea().selectRange(start + selectionRange.getStart(),
-                            end + selectionRange.getStart());
+                    areaWrapper.getArea().selectRange(start + offset, end + offset);
                 }
             }
         }
 
         @Override
-        public void findNext(Pattern pattern, boolean inSelection) {
-            update(inSelection);
+        public void findNext(Pattern pattern) {
 
-            Matcher matcher = pattern.matcher(input);
+            Matcher matcher = pattern.matcher(getInput());
+            int offset = getOffset();
 
-            if (matcher.find(position)) {
-                areaWrapper.getArea().selectRange(matcher.start() + selectionRange.getStart(),
-                        matcher.end() + selectionRange.getStart());
-                position = matcher.end();
+            if (matcher.find(getPosition())) {
+                areaWrapper.getArea().selectRange(matcher.start() + offset, matcher.end() + offset);
             } else {
-                position = 0;
-                if (matcher.find(position)) {
-                    areaWrapper.getArea().selectRange(matcher.start() + selectionRange.getStart(),
-                            matcher.end() + selectionRange.getStart());
-                    position = matcher.end();
+                if (matcher.find(0)) {
+                    areaWrapper.getArea().selectRange(matcher.start() + offset, matcher.end() + offset);
                 }
             }
         }
-        
-        private void update(boolean inSelection) {
+
+        @Override
+        public void replacePrevious(Pattern pattern, String replacement) {
+            String selection = areaWrapper.getArea().getSelectedText();
+
+            if (selection.matches(pattern.pattern())) {
+                areaWrapper.getArea().replaceSelection(replacement);
+                if (inSelection) {
+                    selectionParagraphs.forEach(i -> areaWrapper.getArea().setParagraphStyle(i, List.of(FIND_STYLE)));
+                }
+            }
+
+            findPrevious(pattern);
+
+        }
+
+        @Override
+        public void replaceNext(Pattern pattern, String replacement) {
+            String selection = areaWrapper.getArea().getSelectedText();
+
+            if (selection.matches(pattern.pattern())) {
+                areaWrapper.getArea().replaceSelection(replacement);
+                if (inSelection) {
+                    selectionParagraphs.forEach(i -> areaWrapper.getArea().setParagraphStyle(i, List.of(FIND_STYLE)));
+                }
+            }
+
+            findNext(pattern);
+        }
+
+        @Override
+        public void replaceAll(Pattern pattern, String replacement) {
+            Matcher matcher = pattern.matcher(getInput());
+
+            var result = matcher.replaceAll(replacement);
+
             if (inSelection) {
-                if (selectedText == null) {
-                    input = areaWrapper.getArea().getSelectedText();
-                    selectionRange = areaWrapper.getArea().getSelection();
-                    selectedText = input;
-                    areaWrapper.getSelectedParagraphs(selectionRange).forEach(i ->  areaWrapper.getArea().setParagraphStyle(i, List.of(FIND_STYLE)));
-                    areaWrapper.getArea().deselect();
-                } else {
-                    input = selectedText;
-                }
+                int lastParagraph = selectionParagraphs.get(selectionParagraphs.size() - 1);
+                areaWrapper.getArea().replaceText(selectionParagraphs.get(0), 0, lastParagraph,
+                        areaWrapper.getArea().getParagraphLength(lastParagraph), result);
+                selectionParagraphs.forEach(i -> areaWrapper.getArea().setParagraphStyle(i, List.of(FIND_STYLE)));
             } else {
-                input = areaWrapper.getArea().getText();
-                position = areaWrapper.getArea().getCaretPosition();
+                areaWrapper.getArea().replaceText(result);
             }
-        }
-
-        @Override
-        public void replacePrevious(Pattern pattern, boolean inSelection) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void replaceNext(Pattern pattern, boolean inSelection) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void replaceAll(Pattern pattern, boolean inSelection) {
-            // TODO Auto-generated method stub
-
         }
     }
 }

@@ -45,26 +45,22 @@ public class FindDialog extends Dialog<Void> {
         initModality(Modality.NONE);
         setTitle(FXResourceBundle.getBundle().getString​("find"));
 
-        setSelection();
-
         FXResourceBundle.getBundle().put(findField.promptTextProperty(), "findText");
         FXResourceBundle.getBundle().put(replaceField.promptTextProperty(), "replaceText");
 
         findPreviousButton = new Button(Fonts.FontAwesome.CHEVRON_UP);
         findPreviousButton.setFont(Font.font(Fonts.FONT_AWESOME_5_FREE_SOLID));
-        findPreviousButton.setFocusTraversable(false);
         findPreviousButton.setMaxHeight(Double.MAX_VALUE);
         findPreviousButton.setMinWidth(Region.USE_PREF_SIZE);
         findPreviousButton.disableProperty().bind(findField.textProperty().isEmpty());
-        findPreviousButton.setOnAction(e -> contentPane.get().getFinder().findPrevious(getPattern(), inSelectionCheck.isSelected()));
+        findPreviousButton.setOnAction(e -> contentPane.get().getFinder().findPrevious(getPattern()));
 
         findNextButton = new Button(Fonts.FontAwesome.CHEVRON_DOWN);
         findNextButton.setFont(Font.font(Fonts.FONT_AWESOME_5_FREE_SOLID));
-        findNextButton.setFocusTraversable(false);
         findNextButton.setMaxHeight(Double.MAX_VALUE);
         findNextButton.setMinWidth(Region.USE_PREF_SIZE);
         findNextButton.disableProperty().bind(findField.textProperty().isEmpty());
-        findNextButton.setOnAction(e -> contentPane.get().getFinder().findNext(getPattern(), inSelectionCheck.isSelected()));
+        findNextButton.setOnAction(e -> contentPane.get().getFinder().findNext(getPattern()));
 
         HBox.setHgrow(findField, Priority.ALWAYS);
         HBox fieldBox = new HBox(findField, findPreviousButton, findNextButton);
@@ -81,27 +77,28 @@ public class FindDialog extends Dialog<Void> {
 
         replacePreviousButton = new Button(Fonts.FontAwesome.CHEVRON_UP);
         replacePreviousButton.setFont(Font.font(Fonts.FONT_AWESOME_5_FREE_SOLID));
-        replacePreviousButton.setFocusTraversable(false);
         replacePreviousButton.setMaxHeight(Double.MAX_VALUE);
         replacePreviousButton.setMinWidth(Region.USE_PREF_SIZE);
         replacePreviousButton.disableProperty().bind(findField.textProperty().isEmpty());
-        replacePreviousButton.setOnAction(e -> contentPane.get().getFinder().replacePrevious(getPattern(), inSelectionCheck.isSelected()));
+        replacePreviousButton
+                .setOnAction(e -> contentPane.get().getFinder().replacePrevious(getPattern(), replaceField.getText()));
 
         replaceNextButton = new Button(Fonts.FontAwesome.CHEVRON_DOWN);
         replaceNextButton.setFont(Font.font(Fonts.FONT_AWESOME_5_FREE_SOLID));
-        replaceNextButton.setFocusTraversable(false);
         replaceNextButton.setMaxHeight(Double.MAX_VALUE);
         replaceNextButton.setMinWidth(Region.USE_PREF_SIZE);
         replaceNextButton.disableProperty().bind(findField.textProperty().isEmpty());
-        replaceNextButton.setOnAction(e -> contentPane.get().getFinder().replaceNext(getPattern(), inSelectionCheck.isSelected()));
-        
+        replaceNextButton
+                .setOnAction(e -> contentPane.get().getFinder().replaceNext(getPattern(), replaceField.getText()));
+
         HBox.setHgrow(replaceField, Priority.ALWAYS);
         HBox replaceFieldBox = new HBox(replaceField, replacePreviousButton, replaceNextButton);
-        
+
         FXResourceBundle.getBundle().put(replaceAllButton.textProperty(), "replaceAll");
 
         replaceAllButton.disableProperty().bind(findField.textProperty().isEmpty());
-        replaceAllButton.setOnAction(e -> contentPane.get().getFinder().replaceAll(getPattern(), inSelectionCheck.isSelected()));
+        replaceAllButton
+                .setOnAction(e -> contentPane.get().getFinder().replaceAll(getPattern(), replaceField.getText()));
 
         ButtonBar buttonBar = new ButtonBar();
         buttonBar.getButtons().addAll(replaceAllButton);
@@ -112,10 +109,26 @@ public class FindDialog extends Dialog<Void> {
 
         getDialogPane().setContent(vbox);
         findField.requestFocus();
+
+        inSelectionCheck.setOnAction(e -> contentPane.get().getFinder().setScope(inSelectionCheck.isSelected()));
+
+        setSelection();
+
+        getDialogPane().getScene().getWindow().focusedProperty().addListener((v, o, n) -> {
+            if (!n) {
+                inSelectionCheck.setSelected(false);
+            }
+        });
+
     }
 
     public void setSelection() {
-        findField.setText(contentPane.get().getSelection());
+        String selection = contentPane.get().getSelection();
+        findField.setText(selection);
+
+        inSelectionCheck.setSelected(selection.contains("\n"));
+
+        contentPane.get().getFinder().setScope(inSelectionCheck.isSelected());
     }
 
     private Pattern getPattern() {
