@@ -2,6 +2,7 @@ package dev.jshfx.base;
 
 import org.controlsfx.glyphfont.GlyphFontRegistry;
 
+import dev.jshfx.base.sys.CustomSecurityManager;
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.base.sys.PreferenceManager;
 import dev.jshfx.base.sys.RepositoryManager;
@@ -36,6 +37,7 @@ public class MainApp extends Application {
 	
 	@Override
 	public void init() throws Exception {
+	    System.setSecurityManager(new CustomSecurityManager());
 		FileManager.get().init();
 		TaskManager.get().init();
 		Fonts.getUrls().forEach((k, v) -> GlyphFontRegistry.register(k, v, 10));		

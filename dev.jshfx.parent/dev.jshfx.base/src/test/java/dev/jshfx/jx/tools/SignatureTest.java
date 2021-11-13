@@ -107,8 +107,8 @@ public class SignatureTest {
         String expectedTopTypeFullName = "java.lang.String";
         String expectedTypeFullName = "java.lang.String";
         String expectedFullName = "java.lang.String.formatted";
-        List<String> expectedMethodParamTypes = List.of("java.lang.Object...");
-
+        List<String> expectedMethodParamTypes = List.of("java.lang.Object[]");
+ 
         var signature = Signature.get("String String.formatted(Object...)", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());

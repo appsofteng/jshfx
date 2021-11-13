@@ -3,6 +3,8 @@ package dev.jshfx.automatic;
 import java.io.File;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.DefaultModelBuilderFactory;
@@ -38,6 +40,7 @@ import org.eclipse.aether.util.filter.DependencyFilterUtils;
 
 public final class RepositoryUtils {
 
+    private static final Logger LOGGER = Logger.getLogger(RepositoryUtils.class.getName());
     private RepositorySystem system;
     private RepositorySystemSession session;
     private List<RemoteRepository> repositories;
@@ -99,17 +102,23 @@ public final class RepositoryUtils {
         }
     }
 
-    private Artifact resolve(Artifact artifact) throws ArtifactResolutionException {
+    private Artifact resolve(Artifact artifact) {
 
-        ArtifactRequest artifactRequest = new ArtifactRequest();
-        artifactRequest.setArtifact(artifact);
-        artifactRequest.setRepositories(repositories);
+        Artifact result = null;
 
-        ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
+        try {
+            ArtifactRequest artifactRequest = new ArtifactRequest();
+            artifactRequest.setArtifact(artifact);
+            artifactRequest.setRepositories(repositories);
 
-        artifact = artifactResult.getArtifact();
+            ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
 
-        return artifact;
+            result = artifactResult.getArtifact();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
+        }
+
+        return result;
     }
 
     private RepositorySystem newRepositorySystem() {

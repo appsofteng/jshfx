@@ -99,7 +99,7 @@ public class ConsoleModel {
         return new ConsoleOutputStream(style);
     }
 
-    public void addNewLineOutput(TextStyleSpans textStyleSpans) {
+    public synchronized void addNewLineOutput(TextStyleSpans textStyleSpans) {
 
         if (textStyleSpans.getText().isEmpty()) {
             return;
@@ -112,10 +112,6 @@ public class ConsoleModel {
         if (!textStyleSpans.getText().isBlank()) {
             output.add(textStyleSpans);
         }
-    }
-
-    private synchronized void addOutput(TextStyleSpans textStyleSpans) {
-        output.add(textStyleSpans);
     }
 
     private class ConsoleOutputStream extends ByteArrayOutputStream {
@@ -139,7 +135,7 @@ public class ConsoleModel {
 
             TextStyleSpans textStyleSpans = new TextStyleSpans(string, style);
 
-            addOutput(textStyleSpans);
+            addNewLineOutput(textStyleSpans);
             reset();
         }
     }
