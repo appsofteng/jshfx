@@ -8,11 +8,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javafx.scene.chart.XYChart.Data;
+import javafx.scene.chart.AreaChart;
+import javafx.scene.chart.Axis;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.Chart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.PieChart;
+import javafx.scene.chart.ScatterChart;
+import javafx.scene.chart.StackedAreaChart;
+import javafx.scene.chart.StackedBarChart;
 import javafx.scene.chart.XYChart.Series;
 
 public final class Charts {
@@ -28,13 +34,85 @@ public final class Charts {
         this.charts = Arrays.asList(charts);
     }
 
-    public static <X extends Number, Y extends Number> LineChart<X, Y> getLineChart(Stream<X> x, Stream<Y> y) {
-        LineChart<X, Y> lineChart = (LineChart<X, Y>) new LineChart<Number, Number>(new NumberAxis(), new NumberAxis());
+    public static <X, Y extends Number> BarChart<X, Y> getBarChart(Map<X, Y>... data) {
+        Axis<X> axis = null;
+
+        Object key = data[0].entrySet().iterator().next().getKey();
+
+        if (key instanceof String) {
+            axis = (Axis<X>) new CategoryAxis();
+        } else {
+            axis = (Axis<X>) new NumberAxis();
+        }
+
+        BarChart<X, Y> chart = (BarChart<X, Y>) new BarChart<>(axis, new NumberAxis());
+        
+        Arrays.asList(data).stream().map(Charts::getSeries).forEach(series -> chart.getData().add(series));
+
+        return chart;
+    }    
+    
+    public static <X, Y extends Number> StackedBarChart<X, Y> getStackedBarChart(Map<X, Y>... data) {
+        Axis<X> axis = null;
+
+        Object key = data[0].entrySet().iterator().next().getKey();
+
+        if (key instanceof String) {
+            axis = (Axis<X>) new CategoryAxis();
+        } else {
+            axis = (Axis<X>) new NumberAxis();
+        }
+
+        StackedBarChart<X, Y> chart = (StackedBarChart<X, Y>) new StackedBarChart<>(axis, new NumberAxis());
+        
+        Arrays.asList(data).stream().map(Charts::getSeries).forEach(series -> chart.getData().add(series));
+
+        return chart;
+    }  
+    
+    public static <X extends Number, Y extends Number> AreaChart<X, Y> getAreaChart(Stream<X> x, Stream<Y> y) {
+        AreaChart<X, Y> chart = (AreaChart<X, Y>) new AreaChart<Number, Number>(new NumberAxis(), new NumberAxis());
 
         var series = getSeries(x, y);
-        lineChart.getData().add(series);
+        chart.getData().add(series);
 
-        return lineChart;
+        return chart;
+    }
+
+    public static <X extends Number, Y extends Number> AreaChart<X, Y> getAreaChart(Stream<X> x, Function<X, Y> y) {
+        AreaChart<X, Y> chart = (AreaChart<X, Y>) new AreaChart<Number, Number>(new NumberAxis(), new NumberAxis());
+
+        var series = getSeries(x, y);
+        chart.getData().add(series);
+
+        return chart;
+    }
+    
+    public static <X extends Number, Y extends Number> StackedAreaChart<X, Y> getStackedAreaChart(Stream<X> x, Stream<Y> y) {
+        StackedAreaChart<X, Y> chart = (StackedAreaChart<X, Y>) new StackedAreaChart<Number, Number>(new NumberAxis(), new NumberAxis());
+
+        var series = getSeries(x, y);
+        chart.getData().add(series);
+
+        return chart;
+    }
+
+    public static <X extends Number, Y extends Number> StackedAreaChart<X, Y> getStackedAreaChart(Stream<X> x, Function<X, Y> y) {
+        StackedAreaChart<X, Y> chart = (StackedAreaChart<X, Y>) new StackedAreaChart<Number, Number>(new NumberAxis(), new NumberAxis());
+
+        var series = getSeries(x, y);
+        chart.getData().add(series);
+
+        return chart;
+    } 
+       
+    public static <X extends Number, Y extends Number> LineChart<X, Y> getLineChart(Stream<X> x, Stream<Y> y) {
+        LineChart<X, Y> chart = (LineChart<X, Y>) new LineChart<Number, Number>(new NumberAxis(), new NumberAxis());
+
+        var series = getSeries(x, y);
+        chart.getData().add(series);
+
+        return chart;
     }
 
     public static <X extends Number, Y extends Number> LineChart<X, Y> getLineChart(Stream<X> x, Function<X, Y> y) {
@@ -45,20 +123,30 @@ public final class Charts {
 
         return chart;
     }
+    
+    public static <X extends Number, Y extends Number> ScatterChart<X, Y> getScatterChart(Stream<X> x, Stream<Y> y) {
+        ScatterChart<X, Y> chart = (ScatterChart<X, Y>) new ScatterChart<Number, Number>(new NumberAxis(), new NumberAxis());
 
-    public static <Y extends Number> BarChart<String, Y> getCategoryBarChart(Map<String, Y> map) {
-        BarChart<String, Y> chart = (BarChart<String, Y>) new BarChart<String, Number>(new CategoryAxis(),
-                new NumberAxis());
-        var series = getSeries(map);
+        var series = getSeries(x, y);
+        chart.getData().add(series);
+
+        return chart;
+    }
+    
+    public static <X extends Number, Y extends Number> ScatterChart<X, Y> getScatterChart(Stream<X> x, Function<X, Y> y) {
+        ScatterChart<X, Y> chart = (ScatterChart<X, Y>) new ScatterChart<Number, Number>(new NumberAxis(), new NumberAxis());
+
+        var series = getSeries(x, y);
         chart.getData().add(series);
 
         return chart;
     }
 
-    public static <X extends Number, Y extends Number> BarChart<X, Y> getBarChart(Map<X, Y> map) {
-        BarChart<X, Y> chart = (BarChart<X, Y>) new BarChart<Number, Number>(new NumberAxis(), new NumberAxis());
-        var series = getSeries(map);
-        chart.getData().add(series);
+    public static PieChart getPieChart(Map<String, Double> data) {
+        PieChart chart = new PieChart();
+
+        data.entrySet().stream().map(e -> new PieChart.Data(e.getKey(), e.getValue()))
+                .collect(Collectors.toCollection(() -> chart.getData()));
 
         return chart;
     }
@@ -83,10 +171,10 @@ public final class Charts {
         return series;
     }
 
-    public static <X, Y> Series<X, Y> getSeries(Map<X, Y> map) {
+    public static <X, Y> Series<X, Y> getSeries(Map<X, Y> data) {
         Series<X, Y> series = new Series<>();
 
-        map.entrySet().stream().map(e -> new Data<>(e.getKey(), e.getValue()))
+        data.entrySet().stream().map(e -> new Data<>(e.getKey(), e.getValue()))
                 .collect(Collectors.toCollection(() -> series.getData()));
 
         return series;

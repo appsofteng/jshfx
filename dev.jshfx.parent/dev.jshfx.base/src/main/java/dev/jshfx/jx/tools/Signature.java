@@ -168,7 +168,6 @@ public class Signature {
 
         var parameters = signature.substring(p1 + 1, p2);
         parseMethodParameterTypes(parameters);
-
     }
 
     private String removeBracketContent(String input) {
@@ -202,7 +201,7 @@ public class Signature {
             } else if (c == '>') {
                 genericDelimiters--;
                 typeEndIndex = i;
-            } else if (c == ' ' || c == ']') {
+            } else if (c == ' ' || c == ']' || c == '.') {
                 typeEndIndex = i;
             }
 
@@ -227,8 +226,8 @@ public class Signature {
             noArrayType = noArrayType.substring(0, noArrayType.indexOf("["));
             array = "[]";
         } else if (noArrayType.endsWith("...")) {
-            noArrayType = noArrayType.substring(0, noArrayType.indexOf("."));
-            array = "...";
+            noArrayType = noArrayType.substring(0, noArrayType.indexOf("..."));
+            array = "[]";
         }
 
         int i = noArrayType.lastIndexOf(".");

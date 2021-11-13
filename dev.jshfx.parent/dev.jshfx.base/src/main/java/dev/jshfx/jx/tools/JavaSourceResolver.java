@@ -110,7 +110,8 @@ public class JavaSourceResolver {
                                 htmlBuilder.toString());
                     }
                 } else {
-                    // This happens when the signature parsing is wrong and no match is found in the source code.
+                    // This happens when the signature parsing is wrong and no match is found in the
+                    // source code.
                     LOGGER.severe(String.format("Treepath is null for: %s", signature.info()));
                 }
             }
@@ -166,9 +167,11 @@ public class JavaSourceResolver {
                 return names;
             }
 
-            var raw = name.replaceAll("<.*>", "");
+            var raw = name.replaceAll("<.*>|\\[\\]", "");
 
-            names = imports.stream().filter(i -> i.endsWith("." + raw)).collect(Collectors.toList());
+            String array = name.endsWith("[]") ? "[]" : "";
+
+            names = imports.stream().filter(i -> i.endsWith("." + raw)).map(i -> i + array).toList();
 
             if (names.isEmpty()) {
                 names = imports.stream().filter(i -> i.endsWith("*")).map(i -> i.substring(0, i.lastIndexOf("*")) + raw)
