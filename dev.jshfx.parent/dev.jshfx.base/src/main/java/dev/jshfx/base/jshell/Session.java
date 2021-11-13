@@ -178,9 +178,16 @@ public class Session {
         });
     }
 
-    public void setClasspath(Set<String> paths) {
-        env.getClassPaths().clear();
-        env.getClassPaths().addAll(paths);
+    public boolean setClasspath(Set<String> paths) {
+        boolean change = false;
+        
+        if (!env.getClassPaths().equals(paths)) {
+            env.getClassPaths().clear();
+            env.getClassPaths().addAll(paths);
+            change = true;
+        }
+
+        return change;
     }
 
     public void addToSourcepath(Set<String> paths) {
@@ -333,8 +340,8 @@ public class Session {
 
         close();
         try {
-            String[] options = env.getOptions(FileManager.get().getClassPath(), "",
-                    "", List.of("--enable-preview", "--release", FileManager.JAVA_RELEASE));
+            String[] options = env.getOptions(FileManager.get().getClassPath(), "", "",
+                    List.of("--enable-preview", "--release", FileManager.JAVA_RELEASE));
 
             jshell = JShell.builder().executionEngine(objectExecutionControlProvider, null).idGenerator(idGenerator)
                     .in(consoleModel.getIn()).out(consoleModel.getOut()).err(consoleModel.getErr())
@@ -410,6 +417,15 @@ public class Session {
                 }
             }
         }
+    }
+
+    public void doImports(String input) {
+
+        String imports = input.lines().map(line -> line.trim()).dropWhile(String::isEmpty)
+                .dropWhile(line -> line.startsWith("//") || line.startsWith("/*") || line.startsWith("*"))
+                .takeWhile(line -> line.startsWith("import") || line.startsWith("/") || line.isEmpty())
+                .collect(Collectors.joining("\n"));
+        process(imports);
     }
 
     public void process(String input) {

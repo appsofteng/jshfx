@@ -76,13 +76,6 @@ public class SnippetProcessor extends Processor {
         session.getFeedback().flush();
     }
 
-    public void doImports(String input) {
-        
-        String imports = input.lines().map(line -> line.trim()).dropWhile(String::isEmpty).takeWhile(line -> line.startsWith("import"))
-                .collect(Collectors.joining("\n"));
-        process(imports);
-    }
-
     public List<SnippetEvent> process(Snippet snippet, boolean quiet) {
 
         if (!quiet) {

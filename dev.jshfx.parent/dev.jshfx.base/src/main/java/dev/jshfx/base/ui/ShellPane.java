@@ -287,7 +287,7 @@ public class ShellPane extends PathPane {
 
     @Override
     public void init() {
-        session.getSnippetProcessor().doImports(consolePane.getInputArea().getText());
+        session.doImports(consolePane.getInputArea().getText());
     }
 
     @Override
