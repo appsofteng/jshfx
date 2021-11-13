@@ -180,7 +180,7 @@ public class Session {
 
     public boolean setClasspath(Set<String> paths) {
         boolean change = false;
-        
+
         if (!env.getClassPaths().equals(paths)) {
             env.getClassPaths().clear();
             env.getClassPaths().addAll(paths);
@@ -437,24 +437,40 @@ public class Session {
         history.add(input.strip());
 
         String[] lines = input.split("\n");
-        StringBuilder sb = new StringBuilder();
+        StringBuilder command = new StringBuilder();
+        StringBuilder snippets = new StringBuilder();
+        int lineNumber = 0;
 
         for (String line : lines) {
-
+            lineNumber++;
             if (CommandProcessor.isCommand(line)) {
-                if (sb.length() > 0) {
-                    String snippets = sb.toString();
-                    snippetProcessor.process(snippets);
-                    sb.delete(0, sb.length());
+                if (snippets.length() > 0) {
+                    snippetProcessor.process(snippets.toString(), lineNumber);
+                    snippets.delete(0, snippets.length());
                 }
-                commandProcessor.process(line);
+
+                if (line.trim().endsWith("\\")) {
+                    if (command.isEmpty()) {
+                        command.append(line.substring(0, line.lastIndexOf("\\")));
+                    } else {
+                        command.append(line.substring(1, line.lastIndexOf("\\")));
+                    }
+                } else {
+                    if (command.isEmpty()) {
+                        commandProcessor.process(line, lineNumber);
+                    } else {
+                        command.append(line.substring(1));
+                        commandProcessor.process(command.toString(), lineNumber);
+                        command.delete(0, command.length());
+                    }
+                }
             } else {
-                sb.append(line).append("\n");
+                snippets.append(line).append("\n");
             }
         }
 
-        if (sb.length() > 0) {
-            snippetProcessor.process(sb.toString());
+        if (snippets.length() > 0) {
+            snippetProcessor.process(snippets.toString(), lineNumber);
         }
     }
 }

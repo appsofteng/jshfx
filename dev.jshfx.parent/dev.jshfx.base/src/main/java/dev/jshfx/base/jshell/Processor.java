@@ -12,6 +12,6 @@ public abstract class Processor {
 		return session;
 	}
 
-	abstract void process(String input);
+	abstract void process(String input, int lineOffset);
 
 }

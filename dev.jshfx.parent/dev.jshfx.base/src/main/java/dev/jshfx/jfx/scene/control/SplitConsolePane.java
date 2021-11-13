@@ -195,7 +195,7 @@ public class SplitConsolePane extends BorderPane {
         });
     }
 
-    public void submit(int from, String text, String originalText) {
+    public void submit(int from, String text) {
         
         // Null char may come from clipboard.
 //        if (text.contains("\0")) {
@@ -208,7 +208,7 @@ public class SplitConsolePane extends BorderPane {
 
         TextStyleSpans span = new TextStyleSpans(text + "\n", filterStyles(from, text.length()));  
 
-        history.add(originalText);
+        history.add(text);
 
         if (history.size() > HISTORY_LIMIT) {
             history.remove(0);

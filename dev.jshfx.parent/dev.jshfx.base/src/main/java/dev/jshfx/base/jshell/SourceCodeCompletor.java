@@ -138,7 +138,7 @@ class SourceCodeCompletor extends Completor {
             });
         }
 
-        session.getSnippetProcessor().process(newImport);
+        session.getSnippetProcessor().process(newImport, 0);
     }
 
     private String getDocInput(String input, Suggestion suggestion, int anchor) {

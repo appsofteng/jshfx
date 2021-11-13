@@ -26,17 +26,18 @@ public class SnippetProcessor extends Processor {
     }
 
     @Override
-    public void process(String input) {
-        Task<Void> task = getSession().getTaskQueuer().add(() -> analyseAndEvaluate(input));
+    public void process(String input, int lineOffset) {
+        Task<Void> task = getSession().getTaskQueuer().add(() -> analyseAndEvaluate(input, lineOffset));
         task.setOnSucceeded(e -> getSession().getTimer().stop());
         task.setOnFailed(e -> getSession().getTimer().stop());
     }
 
-    public void analyseAndEvaluate(String input) {
+    public void analyseAndEvaluate(String input, int lineOffset) {
 
         SourceCodeAnalysis sourceAnalysis = session.getJshell().sourceCodeAnalysis();
 
         String[] lines = input.split("\n");
+        int lnOffset = lineOffset - lines.length;
         StringBuffer sb = new StringBuffer();
 
         for (int i = 0; i < lines.length; i++) {
@@ -69,7 +70,7 @@ public class SnippetProcessor extends Processor {
             String source = info.source();
             sb.delete(0, sb.length()).append(info.remaining());
             List<SnippetEvent> snippetEvents = session.getJshell().eval(source);
-            var ln = i;
+            var ln = lnOffset + i;
             snippetEvents.forEach(e -> setFeedback(e, false, ln));
         }
 

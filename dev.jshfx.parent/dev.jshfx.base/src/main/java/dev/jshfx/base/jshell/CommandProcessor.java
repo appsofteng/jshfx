@@ -156,7 +156,7 @@ public class CommandProcessor extends Processor {
 	}
 
 	@Override
-	void process(String input) {
+	void process(String input, int lineOffset) {
 
 	    List<String> args = lexer.tokenize(input).stream().map(Token::getValue).collect(Collectors.toCollection(() -> new ArrayList<>()));
 	    

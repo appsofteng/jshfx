@@ -57,41 +57,6 @@ public final class JShellUtils {
         return new LineSpan(text, originalText, firstParagraphIndex, i, caretPosition);
     }
 
-    public static String joinCommandLines(String input) {
-
-        return joinCommandLines(input, false);
-    }
-
-    public static String joinCommandLines(String input, boolean keepLength) {
-        StringBuffer output = new StringBuffer();
-        String replacement = keepLength ? " " : "";
-
-        input.lines().forEach(line -> {
-
-            if (CommandProcessor.isCommand(line)) {
-
-                if (output.toString().endsWith("\\")) {
-                    int length = output.length();
-                    output.replace(length - 1, length, replacement);
-                    output.append(replacement);
-                    line = line.replaceFirst("/", replacement);
-                }
-
-                if (line.endsWith("\\")) {
-                    output.append(line);
-                } else {
-                    output.append(line).append("\n");
-                }
-
-            } else {
-
-                output.append(line).append("\n");
-            }
-        });
-
-        return output.toString().stripTrailing();
-    }
-
     public static Snippet getSnippet(JShell jshell, Integer id) {
         Snippet snippet = jshell.snippets().filter(s -> s.id().equals(id.toString())).findFirst().orElse(null);
 

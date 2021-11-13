@@ -156,7 +156,7 @@ public class ShellPane extends PathPane {
 
     public void showCodeCompletion() {
 
-        Optional<Bounds> boundsOption = consolePane.getInputArea().caretBoundsProperty().getValue();
+        Optional<Bounds> boundsOption = consolePane.getInputArea().getCaretBounds();
         if (boundsOption.isPresent()) {
             Bounds bounds = boundsOption.get();
             CompletionPopup.get().setDocumentation(completion.getCompletor()::loadDocumentation);
@@ -185,13 +185,11 @@ public class ShellPane extends PathPane {
             text = consolePane.getInputArea().getText();
         }
 
-        text = JShellUtils.joinCommandLines(text);
-
         eval(text);
     }
 
     public void evalLine() {
-        String text = JShellUtils.getCurrentLineSpan(consolePane.getInputArea()).text();
+        String text = JShellUtils.getCurrentLineSpan(consolePane.getInputArea()).originalText();
         eval(text);
     }
 
@@ -214,10 +212,7 @@ public class ShellPane extends PathPane {
             from = selection.getStart();
         }
 
-        String original = text;
-
-        text = JShellUtils.joinCommandLines(text);
-        consolePane.submit(from, text, original);
+        consolePane.submit(from, text);
 
         if (consolePane.getInputArea().getSelectedText().isEmpty()) {
             consolePane.getInputArea().clear();
@@ -230,7 +225,7 @@ public class ShellPane extends PathPane {
         var lineSpan = JShellUtils.getCurrentLineSpan(consolePane.getInputArea());
         int from = consolePane.getInputArea().getAbsolutePosition(lineSpan.firstParagraphIndex(), 0);
 
-        consolePane.submit(from, lineSpan.text(), lineSpan.originalText());
+        consolePane.submit(from, lineSpan.originalText());
 
         consolePane.getInputArea().deleteText(lineSpan.firstParagraphIndex(), 0, lineSpan.lastParagraphIndex(),
                 consolePane.getInputArea().getParagraphLength(lineSpan.lastParagraphIndex()));
