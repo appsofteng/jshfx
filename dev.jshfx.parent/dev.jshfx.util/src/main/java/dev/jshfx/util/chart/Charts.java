@@ -142,10 +142,10 @@ public final class Charts {
         return chart;
     }
 
-    public static PieChart getPieChart(Map<String, Double> data) {
+    public static <Y extends Number> PieChart getPieChart(Map<String, Y> data) {
         PieChart chart = new PieChart();
 
-        data.entrySet().stream().map(e -> new PieChart.Data(e.getKey(), e.getValue()))
+        data.entrySet().stream().map(e -> new PieChart.Data(e.getKey(), e.getValue().doubleValue()))
                 .collect(Collectors.toCollection(() -> chart.getData()));
 
         return chart;
