@@ -115,7 +115,7 @@ public final class RepositoryUtils {
 
             result = artifactResult.getArtifact();
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, e.getMessage(), e);
+            LOGGER.log(Level.INFO, e.getMessage(), e);
         }
 
         return result;
