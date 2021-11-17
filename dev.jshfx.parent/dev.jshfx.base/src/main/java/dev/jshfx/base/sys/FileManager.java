@@ -58,8 +58,8 @@ public final class FileManager extends Manager {
     public static final List<String> EXTENSIONS = List.of(JAVA, JSH);
     public static final List<String> SHELL_EXTENSIONS = List.of(JAVA, JSH);
     
-    public static final Path FIND_SUGGESTONS_FILE = Path.of(USER_CONF_DIR + "/findSuggestions.json");
-    public static final Path REPLACE_SUGGESTONS_FILE = Path.of(USER_CONF_DIR + "/replaceSuggestions.json");
+    public static final Path FIND_SUGGESTONS_FILE = Path.of(USER_CONF_DIR + "/find-suggestions.json");
+    public static final Path REPLACE_SUGGESTONS_FILE = Path.of(USER_CONF_DIR + "/replace-suggestions.json");
 
     private static final Logger LOGGER = Logger.getLogger(FileManager.class.getName());
     private PrintStream err;
