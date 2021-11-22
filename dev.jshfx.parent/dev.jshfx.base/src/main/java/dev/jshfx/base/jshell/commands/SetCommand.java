@@ -60,11 +60,11 @@ public class SetCommand extends BaseCommand {
                 if (Settings.PREDEFINED_STARTUP_FILES.keySet().contains(f)) {
                     commandProcessor.getSession().getSettings().getPredefinedStartupFiles().add(f);
                     commandProcessor.getSession().getSettings().setLoadStartupFiles(true);
-                } else if ("-none".equals(f)) {
+                } else if (Settings.NONE.equals(f)) {
                     commandProcessor.getSession().getSettings().setLoadStartupFiles(false);
-                } else if ("-all".equals(f)) {
+                } else if (Settings.ALL.equals(f)) {
                     commandProcessor.getSession().getSettings().setLoadStartupFiles(true);
-                } else if ("-clear".equals(f)) {
+                } else if (Settings.CLEAR.equals(f)) {
                     commandProcessor.getSession().getSettings().getPredefinedStartupFiles().clear();
                     commandProcessor.getSession().getSettings().getStartupFiles().clear();
                 } else {
@@ -91,7 +91,7 @@ public class SetCommand extends BaseCommand {
 
         @Override
         public Iterator<String> iterator() {
-            return List.of("-all", "-clear", "-none", Settings.DEFAULT, Settings.PRINTING).iterator();
+            return List.of(Settings.ALL, Settings.CLEAR, Settings.NONE, Settings.DEFAULT, Settings.PRINTING).iterator();
         }
     }
 }
