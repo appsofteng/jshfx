@@ -146,8 +146,7 @@ public class Actions {
         FXResourceBundle.getBundle().put(openAction.longTextProperty(), "open");
 
         saveAction = new Action(e -> actionController.saveFile());
-        saveAction.setGraphic(
-                GlyphFontRegistry.font(Fonts.FONT_AWESOME_5_FREE_SOLID).create(Fonts.Unicode.FLOPPY_DISK).size(14));
+        saveAction.setGraphic(GlyphFontRegistry.font(Fonts.MATERIAL_ICONS).create(Fonts.Material.SAVE).size(16));
         saveAction.setAccelerator(KeyCombination.keyCombination("Shortcut+S"));
         FXResourceBundle.getBundle().put(saveAction.textProperty(), "save");
         FXResourceBundle.getBundle().put(saveAction.longTextProperty(), "saveLong",
@@ -289,7 +288,7 @@ public class Actions {
 
         saveSnapshotAction = new Action(e -> saveSnapshotHandler.accept(e));
         FXResourceBundle.getBundle().put(saveSnapshotAction.textProperty(), "save");
-        
+
         findAction = new Action(e -> actionController.showFindDialog());
         FXResourceBundle.getBundle().put(findAction.textProperty(), "find");
         findAction.setAccelerator(KeyCombination.keyCombination("Shortcut+F"));
@@ -354,7 +353,11 @@ public class Actions {
             menu.show(node, e.getScreenX(), e.getScreenY());
         });
 
-        node.setOnMouseClicked(e -> menu.hide());
+        node.setOnMousePressed(e -> {
+            if (e.isPrimaryButtonDown()) {
+                menu.hide();
+            }
+        });
     }
 
     public void setActions(ContentPane contentPane) {
@@ -438,8 +441,8 @@ public class Actions {
                 ActionUtils.ACTION_SEPARATOR, areaUndoAction, areaReduAction, ActionUtils.ACTION_SEPARATOR, evalAction,
                 evalLineAction, submitAction, submitLineAction, ActionUtils.ACTION_SEPARATOR, historyUpAction,
                 historyDownAction, ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction,
-                insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR, codeCompletionAction, historySearchAction, findAction,
-                ActionUtils.ACTION_SEPARATOR, toggleCommentAction);
+                insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR, codeCompletionAction, historySearchAction,
+                findAction, ActionUtils.ACTION_SEPARATOR, toggleCommentAction);
         ActionUtils.updateContextMenu(menu, actions);
 
         Nodes.addInputMap(area, sequence(

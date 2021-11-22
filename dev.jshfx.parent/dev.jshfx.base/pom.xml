@@ -24,18 +24,19 @@
 		</dependency>
 		<dependency>
 			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-base</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-controls</artifactId>
-			<classifier>${javafx.platform}</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-web</artifactId>
-			<classifier>${javafx.platform}</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-swing</artifactId>
-			<classifier>${javafx.platform}</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.controlsfx</groupId>
@@ -97,7 +98,7 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-						<useBaseVersion>true</useBaseVersion>
+							<useBaseVersion>true</useBaseVersion>
 							<includeGroupIds>org.openjfx</includeGroupIds>
 							<classifier>sources</classifier>
 							<outputDirectory>${project.parent.basedir}/dev.jshfx.distribution/working/src/lib</outputDirectory>

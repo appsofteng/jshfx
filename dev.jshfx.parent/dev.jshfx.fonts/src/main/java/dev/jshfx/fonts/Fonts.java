@@ -118,6 +118,7 @@ public class Fonts {
         public static final String INPUT = "\ue890";        
         public static final String LIBRARY_BOOKS = "\ue02f";
         public static final String MENU = "\ue5d2";
+        public static final String SAVE = "\ue161";
         public static final String SEND = "\ue163";
         public static final String TEXTURE = "\ue421";
         public static final String TRANSFORM = "\ue428";

@@ -27,6 +27,36 @@
 			<groupId>dev.jshfx</groupId>
 			<artifactId>dev.jshfx.fonts</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-base</artifactId>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-controls</artifactId>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-graphics</artifactId>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-media</artifactId>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-web</artifactId>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-swing</artifactId>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -44,7 +74,7 @@
 							<finalName>${distName}</finalName>
 							<appendAssemblyId>true</appendAssemblyId>
 							<descriptors>
-								<descriptor>src/assembly/descriptor-os.xml</descriptor>
+<!-- 								<descriptor>src/assembly/descriptor-os.xml</descriptor> -->
 								<descriptor>src/assembly/descriptor-os-image.xml</descriptor>
 							</descriptors>
 						</configuration>

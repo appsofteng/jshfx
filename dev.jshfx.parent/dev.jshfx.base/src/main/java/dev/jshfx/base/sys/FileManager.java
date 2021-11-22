@@ -42,7 +42,7 @@ public final class FileManager extends Manager {
     public static final Path DEFAULT_PREFS_FILE = Path.of(START_DIR, "conf/preferences.properties");
     private static final Path JDK_SOURCE_FILE = Path.of(START_DIR, "src/java-src.zip");
     public static final String UTIL_CLASSPATH = START_DIR + "/modules/dev.jshfx.util.jar";
-    private static final Path FX_DIR = Path.of(START_DIR, "fx");
+    private static final Path FX_DIR = Path.of(START_DIR, "lib", "fx");
     private static final String FX_MODULES = ModuleUtils.getModuleNames(FX_DIR);
     private static final String FX_CLASSPATH = getFXClassPath();
     private static final Path SOURCE_DIR = Path.of(START_DIR, "src/lib");
@@ -153,7 +153,7 @@ public final class FileManager extends Manager {
             path = Files.list(FX_DIR).map(Path::toString).collect(Collectors.joining(File.pathSeparator));
         } catch (IOException e) {
 
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
 
         return path;

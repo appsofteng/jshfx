@@ -51,7 +51,7 @@
 			<useTransitiveDependencies>true</useTransitiveDependencies>
 			<useTransitiveFiltering>true</useTransitiveFiltering>
 			<includes>
-				<include>org.openjfx:*</include>
+				<include>*:${javafx.platform}</include>
 			</includes>
 		</dependencySet>
 		<dependencySet>
@@ -108,6 +108,14 @@
 	<!-- </moduleSets> -->
 
 	<fileSets>
+		<fileSet>
+			<directory>src/main/conf</directory>
+			<outputDirectory>conf</outputDirectory>
+			<includes>
+				<include>**/*.properties</include>
+			</includes>
+			<filtered>true</filtered>
+		</fileSet>
 		<fileSet>
 			<directory>src/main/scripts</directory>
 			<outputDirectory>.</outputDirectory>
