@@ -13,6 +13,9 @@ import picocli.CommandLine.Option;
 
 @Command(name = "/set")
 public class SetCommand extends BaseCommand {
+    private static final String ALL = "-all";
+    private static final String CLEAR = "-clear";
+    private static final String NONE = "-none";
 
     @Option(names = "feedback", arity = "0..1", paramLabel = "<mode>", descriptionKey = "/set.feedback", completionCandidates = FeedbakcModes.class)
     private String feedback;
@@ -60,11 +63,11 @@ public class SetCommand extends BaseCommand {
                 if (Settings.PREDEFINED_STARTUP_FILES.keySet().contains(f)) {
                     commandProcessor.getSession().getSettings().getPredefinedStartupFiles().add(f);
                     commandProcessor.getSession().getSettings().setLoadStartupFiles(true);
-                } else if (Settings.NONE.equals(f)) {
+                } else if (NONE.equals(f)) {
                     commandProcessor.getSession().getSettings().setLoadStartupFiles(false);
-                } else if (Settings.ALL.equals(f)) {
+                } else if (ALL.equals(f)) {
                     commandProcessor.getSession().getSettings().setLoadStartupFiles(true);
-                } else if (Settings.CLEAR.equals(f)) {
+                } else if (CLEAR.equals(f)) {
                     commandProcessor.getSession().getSettings().getPredefinedStartupFiles().clear();
                     commandProcessor.getSession().getSettings().getStartupFiles().clear();
                 } else {
@@ -91,7 +94,7 @@ public class SetCommand extends BaseCommand {
 
         @Override
         public Iterator<String> iterator() {
-            return List.of(Settings.ALL, Settings.CLEAR, Settings.NONE, Settings.DEFAULT, Settings.PRINTING).iterator();
+            return List.of(ALL, CLEAR, NONE, Settings.DEFAULT, Settings.PRINTING).iterator();
         }
     }
 }

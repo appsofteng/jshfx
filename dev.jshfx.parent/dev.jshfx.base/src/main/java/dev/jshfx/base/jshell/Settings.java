@@ -7,9 +7,6 @@ import java.util.Set;
 
 public class Settings {
 
-    public static final String ALL = "-all";
-    public static final String CLEAR = "-clear";
-    public static final String NONE = "-none";
     public static final String DEFAULT = "DEFAULT";
     public static final String PRINTING = "PRINTING";
     public static final Map<String,String> PREDEFINED_STARTUP_FILES = Map.of(DEFAULT, "start-default.txt", PRINTING, "start-printing.txt");
