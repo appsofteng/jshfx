@@ -133,9 +133,9 @@ public class ActionController {
 
     public void openFile() {
         List<Path> files = FileDialogUtils.getJavaFiles(rootPane.getScene().getWindow());
-        List<Path> newFiles = rootPane.getNew(files);
+        
         if (!files.isEmpty()) {
-
+            List<Path> newFiles = rootPane.getNew(files);
             var task = new Task<List<ContentPane>>() {
 
                 int i = 0;
