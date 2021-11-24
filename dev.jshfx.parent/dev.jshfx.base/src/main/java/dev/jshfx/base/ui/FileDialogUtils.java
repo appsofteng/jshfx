@@ -56,11 +56,11 @@ public class FileDialogUtils {
     }
 
     public static Optional<Path> saveSourceJavaFile(Window window) {
-        return saveFile(window, null, new ExtensionFilter("Java", "*.java", "*.jsh"));
+        return saveSourceJavaFile(window, null);
     }
 
     public static Optional<Path> saveSourceJavaFile(Window window, Path initialPath) {
-        return saveFile(window, initialPath, new ExtensionFilter("Java", "*.java", "*.jsh"));
+        return saveFile(window, initialPath, new ExtensionFilter("Java", "*.jsh", "*.java"));
     }
     
     public static Optional<Path> saveImageFile(Window window, Path initialPath) {

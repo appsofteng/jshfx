@@ -127,7 +127,7 @@ public class ActionController {
 
         String name = XFiles.getUniqueName(n -> rootPane.exists(n), FXResourceBundle.getBundle().getString​("new"));
 
-        var shellPane = create(Path.of(XFiles.appendFileExtension(name, FileManager.JAVA)));
+        var shellPane = create(Path.of(XFiles.appendFileExtension(name, FileManager.JSH)));
         rootPane.addSelect(shellPane);
     }
 
