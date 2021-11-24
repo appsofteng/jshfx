@@ -42,6 +42,7 @@ public final class DialogUtils {
         if (obj instanceof Charts charts) {
 
             Dialog<Void> dialog = createPlainDialog(window);
+            dialog.initModality(Modality.NONE);
             dialog.setDialogPane(new PlainDialogPane());
             dialog.initOwner(window);
 
