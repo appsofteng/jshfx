@@ -330,13 +330,21 @@
 		</profile>
 		<profile>
 			<id>mac</id>
-			<activation>
-				<os>
-					<name>mac os x</name>
-				</os>
-			</activation>
+			<modules>
+				<module>dev.jshfx.base</module>
+				<module>dev.jshfx.fonts</module>
+				<module>dev.jshfx.util</module>
+				<module>dev.jshfx.automatic</module>
+				<module>dev.jshfx.image</module>
+				<module>dev.jshfx.distribution</module>
+			</modules>
 			<properties>
 				<javafx.platform>mac</javafx.platform>
+				<sourceJdkModules>${env.JAVA_HOME_MACOS}</sourceJdkModules>
+				<scriptExtension>sh</scriptExtension>
+				<pathSeparator>:</pathSeparator>
+				<osHomeDir>~</osHomeDir>
+				<distFormat>tgz</distFormat>				
 			</properties>
 		</profile>
 		<profile>
