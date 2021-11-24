@@ -115,6 +115,7 @@
 				<include>**/*.properties</include>
 			</includes>
 			<filtered>true</filtered>
+			<fileMode>0755</fileMode>
 		</fileSet>
 		<fileSet>
 			<directory>src/main/scripts</directory>
@@ -123,6 +124,7 @@
 				<include>**/options*</include>
 			</includes>
 			<filtered>true</filtered>
+			<fileMode>0755</fileMode>
 		</fileSet>
 		<fileSet>
 			<directory>working/src</directory>
@@ -130,6 +132,7 @@
 			<includes>
 				<include>**/*</include>
 			</includes>
+			<fileMode>0755</fileMode>
 		</fileSet>
 	</fileSets>
 </component>
