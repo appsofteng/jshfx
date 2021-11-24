@@ -24,7 +24,7 @@
 		<mavenResolverVersion>1.7.2</mavenResolverVersion>
 		<slf4jVersion>1.7.32</slf4jVersion>
 		<javafx.platform>win</javafx.platform>
-		<javafx.arch>x64</javafx.arch>
+		<javafx.arch>-x64</javafx.arch>
 		<sysName>jshfx</sysName>
 		<distName>${sysName}-${project.version}</distName>
 		<homeDir>.${sysName}/${project.version}</homeDir>
