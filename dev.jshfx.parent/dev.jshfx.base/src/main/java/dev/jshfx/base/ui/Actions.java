@@ -4,6 +4,7 @@ import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
+import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
@@ -402,7 +403,7 @@ public class Actions {
         evalLineAction.setDisabled(true);
         submitAction.setDisabled(true);
         submitLineAction.setDisabled(true);
-        
+
         copyHandler = e -> pane.getArea().copy();
         cutHandler = e -> pane.getArea().cut();
         pasteHandler = e -> pane.getArea().paste();
@@ -410,9 +411,27 @@ public class Actions {
         clearHandler = e -> pane.getArea().clear();
         undoHandler = e -> pane.getArea().undo();
         redoHandler = e -> pane.getArea().redo();
+
+        allSelected.bind(Bindings.createBooleanBinding(
+                () -> pane.getArea().getSelectedText().length() == pane.getArea().getText().length(),
+                pane.getArea().selectedTextProperty()));
+
+        selectionEmpty.bind(Bindings.createBooleanBinding(
+                () -> pane.getArea().getSelection().getLength() == 0,
+                pane.getArea().selectionProperty()));
+
+        clear.bind(Bindings.createBooleanBinding(
+                () -> pane.getArea().getLength() == 0,
+                pane.getArea().lengthProperty()));
+
+        redoEmpty.bind(
+                Bindings.createBooleanBinding(() -> !pane.getArea().isRedoAvailable(), pane.getArea().redoAvailableProperty()));
+        undoEmpty.bind(
+                Bindings.createBooleanBinding(() -> !pane.getArea().isUndoAvailable(), pane.getArea().undoAvailableProperty()));
     }
 
     public void bind(ShellPane shellPane) {
+        WeakReference<ShellPane> paneRef = new WeakReference<ShellPane>(shellPane);
         var inputArea = shellPane.getConsolePane().getInputArea();
         var outputArea = shellPane.getConsolePane().getOutputArea();
 
@@ -421,25 +440,25 @@ public class Actions {
         submitAction.setDisabled(false);
         submitLineAction.setDisabled(false);
 
-        copyHandler = e -> shellPane.getConsolePane().getFocusedArea().copy();
-        cutHandler = e -> shellPane.getConsolePane().getFocusedArea().cut();
-        pasteHandler = e -> shellPane.getConsolePane().getFocusedArea().paste();
-        selectAllHandler = e -> shellPane.getConsolePane().getFocusedArea().selectAll();
-        clearHandler = e -> shellPane.getConsolePane().getFocusedArea().clear();
-        undoHandler = e -> shellPane.getConsolePane().getFocusedArea().undo();
-        redoHandler = e -> shellPane.getConsolePane().getFocusedArea().redo();
-        submitHandler = e -> shellPane.submit();
-        submitLineHandler = e -> shellPane.submitLine();
-        evalHandler = e -> shellPane.eval();
-        evalLineHandler = e -> shellPane.evalLine();
-        historyUpHandler = e -> shellPane.getConsolePane().historyUp();
-        historyDownHandler = e -> shellPane.getConsolePane().historyDown();
-        historySearchHandler = e -> shellPane.showHistorySearch();
-        insertDirPathHandler = e -> shellPane.insertDirPath();
-        insertFilePathHandler = e -> shellPane.insertFilePaths();
-        insertSaveFilePathHandler = e -> shellPane.insertSaveFilePath();
-        codeCompletionHandler = e -> shellPane.showCodeCompletion();
-        toggleCommentHandler = e -> shellPane.toggleComment();
+        copyHandler = e -> paneRef.get().getConsolePane().getFocusedArea().copy();
+        cutHandler = e -> paneRef.get().getConsolePane().getFocusedArea().cut();
+        pasteHandler = e -> paneRef.get().getConsolePane().getFocusedArea().paste();
+        selectAllHandler = e -> paneRef.get().getConsolePane().getFocusedArea().selectAll();
+        clearHandler = e -> paneRef.get().getConsolePane().getFocusedArea().clear();
+        undoHandler = e -> paneRef.get().getConsolePane().getFocusedArea().undo();
+        redoHandler = e -> paneRef.get().getConsolePane().getFocusedArea().redo();
+        submitHandler = e -> paneRef.get().submit();
+        submitLineHandler = e -> paneRef.get().submitLine();
+        evalHandler = e -> paneRef.get().eval();
+        evalLineHandler = e -> paneRef.get().evalLine();
+        historyUpHandler = e -> paneRef.get().getConsolePane().historyUp();
+        historyDownHandler = e -> paneRef.get().getConsolePane().historyDown();
+        historySearchHandler = e -> paneRef.get().showHistorySearch();
+        insertDirPathHandler = e -> paneRef.get().insertDirPath();
+        insertFilePathHandler = e -> paneRef.get().insertFilePaths();
+        insertSaveFilePathHandler = e -> paneRef.get().insertSaveFilePath();
+        codeCompletionHandler = e -> paneRef.get().showCodeCompletion();
+        toggleCommentHandler = e -> paneRef.get().toggleComment();
 
         allSelected.bind(Bindings.createBooleanBinding(
                 () -> shellPane.getConsolePane().getFocusedArea() == null
