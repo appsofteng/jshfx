@@ -302,6 +302,10 @@ public class Actions {
 
     public void empty() {
         saveAsAction.setDisabled(true);
+        evalAction.setDisabled(true);
+        evalLineAction.setDisabled(true);
+        submitAction.setDisabled(true);
+        submitLineAction.setDisabled(true);
     }
 
     public void dispose() {
@@ -399,18 +403,20 @@ public class Actions {
     }
 
     public void bind(EditorPane pane) {
+        WeakReference<EditorPane> paneRef = new WeakReference<>(pane);
+        
         evalAction.setDisabled(true);
         evalLineAction.setDisabled(true);
         submitAction.setDisabled(true);
         submitLineAction.setDisabled(true);
 
-        copyHandler = e -> pane.getArea().copy();
-        cutHandler = e -> pane.getArea().cut();
-        pasteHandler = e -> pane.getArea().paste();
-        selectAllHandler = e -> pane.getArea().selectAll();
-        clearHandler = e -> pane.getArea().clear();
-        undoHandler = e -> pane.getArea().undo();
-        redoHandler = e -> pane.getArea().redo();
+        copyHandler = e -> paneRef.get().getArea().copy();
+        cutHandler = e -> paneRef.get().getArea().cut();
+        pasteHandler = e -> paneRef.get().getArea().paste();
+        selectAllHandler = e -> paneRef.get().getArea().selectAll();
+        clearHandler = e -> paneRef.get().getArea().clear();
+        undoHandler = e -> paneRef.get().getArea().undo();
+        redoHandler = e -> paneRef.get().getArea().redo();
 
         allSelected.bind(Bindings.createBooleanBinding(
                 () -> pane.getArea().getSelectedText().length() == pane.getArea().getText().length(),
@@ -431,7 +437,7 @@ public class Actions {
     }
 
     public void bind(ShellPane shellPane) {
-        WeakReference<ShellPane> paneRef = new WeakReference<ShellPane>(shellPane);
+        WeakReference<ShellPane> paneRef = new WeakReference<>(shellPane);
         var inputArea = shellPane.getConsolePane().getInputArea();
         var outputArea = shellPane.getConsolePane().getOutputArea();
 
