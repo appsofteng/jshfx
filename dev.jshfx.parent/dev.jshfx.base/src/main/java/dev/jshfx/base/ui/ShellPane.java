@@ -250,7 +250,7 @@ public class ShellPane extends PathPane {
     }
 
     public void insertFilePaths() {
-        var files = FileDialogUtils.getJavaFiles(getScene().getWindow());
+        var files = FileDialogUtils.openJavaFiles(getScene().getWindow());
         var joining = getJoining();
 
         files.forEach(f -> {
