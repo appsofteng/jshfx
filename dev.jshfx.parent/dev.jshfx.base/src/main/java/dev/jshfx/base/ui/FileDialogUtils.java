@@ -35,13 +35,13 @@ public class FileDialogUtils {
     }
 
     public static List<Path> openTextFiles(Window window) {
-        return openFiles(window, new ExtensionFilter("Java", "*.java", "*.jsh"), new ExtensionFilter("CSV", "*.csv"),
-                new ExtensionFilter("JSON", "*.json"), new ExtensionFilter("TXT", "*.txt"),
-                new ExtensionFilter("XML", "*.xml"), new ExtensionFilter("*", "*.*"));
+        return openFiles(window, new ExtensionFilter("Java", "*.java", "*.jsh"),
+                new ExtensionFilter("Data", "*.csv", "*.json", "*.txt", "*.xml"), new ExtensionFilter("*", "*.*"));
     }
 
     public static List<Path> openJavaFiles(Window window) {
-        return openFiles(window, new ExtensionFilter("Java", "*.java", "*.jsh", "*.jar", "*.jmod"));
+        return openFiles(window, new ExtensionFilter("Java", "*.java", "*.jsh", "*.jar", "*.jmod"),
+                new ExtensionFilter("Data", "*.csv", "*.json", "*.txt", "*.xml"), new ExtensionFilter("*", "*.*"));
     }
 
     public static List<Path> openFiles(Window window, ExtensionFilter... filter) {
