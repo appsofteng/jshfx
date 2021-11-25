@@ -113,6 +113,7 @@ public class RootPane extends BorderPane {
 
         if (!tabs.isEmpty()) {
             centerPane.getSelectionModel().select(tabs.get(0));
+            tabs.get(0).getContent().requestFocus();
         }
     }
 

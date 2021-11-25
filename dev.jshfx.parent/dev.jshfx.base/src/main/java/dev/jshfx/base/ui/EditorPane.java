@@ -18,23 +18,28 @@ public class EditorPane extends PathPane {
     public EditorPane(Path p, String input) {
         super(p);
         area.replaceText(input);
-        area.setParagraphGraphicFactory(LineNumberFactory.get(area));
-        area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> edited.set((Boolean) n));
-        area.textProperty().addListener((v, o, n) -> edited.set(true));
-        modified.bind(edited.getReadOnlyProperty());
-        getChildren().add(new VirtualizedScrollPane<>(area));
-        forgetEdit();
         area.moveTo(0);
         area.requestFollowCaret();
-        finder = new FinderImpl(area);
-
+        area.setParagraphGraphicFactory(LineNumberFactory.get(area));
         area.sceneProperty().addListener((v, o, n) -> {
             if (n != null) {
                 area.requestFocus();
             }
         });
+        area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> edited.set((Boolean) n));
+        area.textProperty().addListener((v, o, n) -> edited.set(true));
+        modified.bind(edited.getReadOnlyProperty());
+        getChildren().add(new VirtualizedScrollPane<>(area));
+        forgetEdit();
+        finder = new FinderImpl(area);
     }
 
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        area.requestFocus();
+    }
+    
     public CodeArea getArea() {
         return area;
     }
