@@ -133,7 +133,7 @@ public class ActionController {
 
     public void openFile() {
         List<Path> files = FileDialogUtils.openTextFiles(rootPane.getScene().getWindow());
-        
+
         if (!files.isEmpty()) {
             List<Path> newFiles = rootPane.getNew(files);
             var task = new Task<List<ContentPane>>() {
@@ -144,12 +144,11 @@ public class ActionController {
                 protected List<ContentPane> call() throws Exception {
                     List<ContentPane> panes = new ArrayList<>();
 
-                    newFiles.stream().filter(p -> FileManager.EXTENSIONS.contains(XFiles.getFileExtension(p)))
-                            .forEach(p -> {
-                                var contentPane = create(p);
-                                panes.add(contentPane);
-                                updateProgress(i++, newFiles.size());
-                            });
+                    newFiles.forEach(p -> {
+                        var contentPane = create(p);
+                        panes.add(contentPane);
+                        updateProgress(i++, newFiles.size());
+                    });
 
                     return panes;
                 }
@@ -165,19 +164,26 @@ public class ActionController {
 
     private ContentPane create(Path path) {
         ContentPane pane = null;
+        String input = "";
+
+        try {
+            if (path.isAbsolute()) {
+                input = Files.readString(path);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         if (FileManager.SHELL_EXTENSIONS.contains(XFiles.getFileExtension(path))) {
-            try {
-                String input = "";
-                if (path.isAbsolute()) {
-                    input = Files.readString(path);
-                }
-                var shellPane = new ShellPane(path, input);
-                shellPane.setActions(rootPane.getActions());
-                pane = shellPane;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
+            var shellPane = new ShellPane(path, input);
+            shellPane.setActions(rootPane.getActions());
+            pane = shellPane;
+
+        } else {
+            var editorPane = new EditorPane(path, input);
+            editorPane.setActions(rootPane.getActions());
+            pane = editorPane;
         }
 
         return pane;
@@ -204,9 +210,8 @@ public class ActionController {
         });
     }
 
-    public void save(ContentPane contentPane, Runnable onSucceded, Runnable onFailed) {
-        var pane = (ShellPane) contentPane;
-        String output = pane.getConsolePane().getInputArea().getText();
+    public void save(ContentPane pane, Runnable onSucceded, Runnable onFailed) {
+        String output = pane.getContent();
         Path path = pane.getFXPath().getPath();
 
         if (!path.isAbsolute()) {

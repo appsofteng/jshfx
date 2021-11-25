@@ -371,6 +371,23 @@ public class Actions {
         savedAll.bind(savedAllExpression);
     }
 
+    public void setActions(EditorPane pane) {
+
+        var menu = getContextMenu(pane.getArea());
+        var actions = List.of(areaCopyAction, areaCutAction, areaPasteAction, areaSelectAllAction, areaClearAction,
+                ActionUtils.ACTION_SEPARATOR, areaUndoAction, areaReduAction, ActionUtils.ACTION_SEPARATOR, findAction);
+        ActionUtils.updateContextMenu(menu, actions);
+
+        Nodes.addInputMap(pane.getArea(),
+                sequence(
+                        consume(keyPressed(saveAction.getAccelerator()).onlyIf(e -> !saveAction.isDisabled()),
+                                e -> saveAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+                        consume(keyPressed(saveAsAction.getAccelerator()).onlyIf(e -> !saveAsAction.isDisabled()),
+                                e -> saveAsAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+                        consume(keyPressed(findAction.getAccelerator()).onlyIf(e -> !findAction.isDisabled()),
+                                e -> findAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
+    }
+
     public void setActions(ShellPane shellPane) {
         setEditContextMenu(shellPane.getConsolePane().getInputArea());
         setReadOnlyContextMenu(shellPane.getConsolePane().getOutputArea());
@@ -380,9 +397,29 @@ public class Actions {
         saved.bind(contentPane.modifiedProperty().not());
     }
 
+    public void bind(EditorPane pane) {
+        evalAction.setDisabled(true);
+        evalLineAction.setDisabled(true);
+        submitAction.setDisabled(true);
+        submitLineAction.setDisabled(true);
+        
+        copyHandler = e -> pane.getArea().copy();
+        cutHandler = e -> pane.getArea().cut();
+        pasteHandler = e -> pane.getArea().paste();
+        selectAllHandler = e -> pane.getArea().selectAll();
+        clearHandler = e -> pane.getArea().clear();
+        undoHandler = e -> pane.getArea().undo();
+        redoHandler = e -> pane.getArea().redo();
+    }
+
     public void bind(ShellPane shellPane) {
         var inputArea = shellPane.getConsolePane().getInputArea();
         var outputArea = shellPane.getConsolePane().getOutputArea();
+
+        evalAction.setDisabled(false);
+        evalLineAction.setDisabled(false);
+        submitAction.setDisabled(false);
+        submitLineAction.setDisabled(false);
 
         copyHandler = e -> shellPane.getConsolePane().getFocusedArea().copy();
         cutHandler = e -> shellPane.getConsolePane().getFocusedArea().cut();
