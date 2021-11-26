@@ -34,151 +34,89 @@ public final class Charts {
         this.charts = Arrays.asList(charts);
     }
 
-    public static <X, Y extends Number> BarChart<X, Y> getBarChart(Map<X, Y>... data) {
-        Axis<X> axis = null;
-
-        Object key = data[0].entrySet().iterator().next().getKey();
-
-        if (key instanceof String) {
-            axis = (Axis<X>) new CategoryAxis();
-        } else {
-            axis = (Axis<X>) new NumberAxis();
-        }
-
-        BarChart<X, Y> chart = (BarChart<X, Y>) new BarChart<>(axis, new NumberAxis());
-        
-        Arrays.asList(data).stream().map(Charts::getSeries).forEach(series -> chart.getData().add(series));
-
-        return chart;
-    }    
     
-    public static <X, Y extends Number> StackedBarChart<X, Y> getStackedBarChart(Map<X, Y>... data) {
-        Axis<X> axis = null;
+    public static <X, Y> AreaChart<X, Y> getAreaChart(Series<X, Y>... series) {
+        List<Axis<?>> axes = getAxes(series[0]);
 
-        Object key = data[0].entrySet().iterator().next().getKey();
-
-        if (key instanceof String) {
-            axis = (Axis<X>) new CategoryAxis();
-        } else {
-            axis = (Axis<X>) new NumberAxis();
-        }
-
-        StackedBarChart<X, Y> chart = (StackedBarChart<X, Y>) new StackedBarChart<>(axis, new NumberAxis());
-        
-        Arrays.asList(data).stream().map(Charts::getSeries).forEach(series -> chart.getData().add(series));
-
-        return chart;
-    }  
-    
-    public static <X extends Number, Y extends Number> AreaChart<X, Y> getAreaChart(Stream<X> x, Stream<Y> y) {
-        AreaChart<X, Y> chart = (AreaChart<X, Y>) new AreaChart<Number, Number>(new NumberAxis(), new NumberAxis());
-
-        var series = getSeries(x, y);
-        chart.getData().add(series);
-
-        return chart;
-    }
-
-    public static <X extends Number, Y extends Number> AreaChart<X, Y> getAreaChart(Stream<X> x, Function<X, Y> y) {
-        AreaChart<X, Y> chart = (AreaChart<X, Y>) new AreaChart<Number, Number>(new NumberAxis(), new NumberAxis());
-
-        var series = getSeries(x, y);
-        chart.getData().add(series);
+        AreaChart<X, Y> chart = (AreaChart<X, Y>) new AreaChart<>(axes.get(0), axes.get(1));
+        chart.getData().addAll(series);
 
         return chart;
     }
     
-    public static <X extends Number, Y extends Number> StackedAreaChart<X, Y> getStackedAreaChart(Stream<X> x, Stream<Y> y) {
-        StackedAreaChart<X, Y> chart = (StackedAreaChart<X, Y>) new StackedAreaChart<Number, Number>(new NumberAxis(), new NumberAxis());
+    public static <X, Y> BarChart<X, Y> getBarChart(Series<X, Y>... series) {
+        List<Axis<?>> axes = getAxes(series[0]);
 
-        var series = getSeries(x, y);
-        chart.getData().add(series);
-
-        return chart;
-    }
-
-    public static <X extends Number, Y extends Number> StackedAreaChart<X, Y> getStackedAreaChart(Stream<X> x, Function<X, Y> y) {
-        StackedAreaChart<X, Y> chart = (StackedAreaChart<X, Y>) new StackedAreaChart<Number, Number>(new NumberAxis(), new NumberAxis());
-
-        var series = getSeries(x, y);
-        chart.getData().add(series);
-
-        return chart;
-    } 
-       
-    public static <X extends Number, Y extends Number> LineChart<X, Y> getLineChart(Stream<X> x, Stream<Y> y) {
-        LineChart<X, Y> chart = (LineChart<X, Y>) new LineChart<Number, Number>(new NumberAxis(), new NumberAxis());
-
-        var series = getSeries(x, y);
-        chart.getData().add(series);
-
-        return chart;
-    }
-
-    public static <X extends Number, Y extends Number> LineChart<X, Y> getLineChart(Stream<X> x, Function<X, Y> y) {
-        LineChart<X, Y> chart = (LineChart<X, Y>) new LineChart<Number, Number>(new NumberAxis(), new NumberAxis());
-
-        var series = getSeries(x, y);
-        chart.getData().add(series);
+        BarChart<X, Y> chart = (BarChart<X, Y>) new BarChart<>(axes.get(0), axes.get(1));
+        chart.getData().addAll(series);
 
         return chart;
     }
     
-    public static <X extends Number, Y extends Number> ScatterChart<X, Y> getScatterChart(Stream<X> x, Stream<Y> y) {
-        ScatterChart<X, Y> chart = (ScatterChart<X, Y>) new ScatterChart<Number, Number>(new NumberAxis(), new NumberAxis());
+    public static <X, Y> LineChart<X, Y> getLineChart(Series<X, Y>... series) {
+        List<Axis<?>> axes = getAxes(series[0]);
 
-        var series = getSeries(x, y);
-        chart.getData().add(series);
+        LineChart<X, Y> chart = (LineChart<X, Y>) new LineChart<>(axes.get(0), axes.get(1));
+        chart.getData().addAll(series);
 
         return chart;
     }
     
-    public static <X extends Number, Y extends Number> ScatterChart<X, Y> getScatterChart(Stream<X> x, Function<X, Y> y) {
-        ScatterChart<X, Y> chart = (ScatterChart<X, Y>) new ScatterChart<Number, Number>(new NumberAxis(), new NumberAxis());
-
-        var series = getSeries(x, y);
-        chart.getData().add(series);
-
-        return chart;
-    }
-
-    public static <Y extends Number> PieChart getPieChart(Map<String, Y> data) {
+    public static <Y extends Number> PieChart getPieChart(List<PieChart.Data> data) {
         PieChart chart = new PieChart();
+        chart.getData().addAll(data);
+        
+        return chart;
+    }
+    
+    public static <X, Y> ScatterChart<X, Y> getScatterChart(Series<X, Y>... series) {
+        List<Axis<?>> axes = getAxes(series[0]);
 
-        data.entrySet().stream().map(e -> new PieChart.Data(e.getKey(), e.getValue().doubleValue()))
-                .collect(Collectors.toCollection(() -> chart.getData()));
+        ScatterChart<X, Y> chart = (ScatterChart<X, Y>) new ScatterChart<>(axes.get(0), axes.get(1));
+        chart.getData().addAll(series);
 
         return chart;
     }
+    
+    public static <X, Y> StackedAreaChart<X, Y> getStackedAreaChart(Series<X, Y>... series) {
+        List<Axis<?>> axes = getAxes(series[0]);
 
-    public static <X, Y> Series<X, Y> getSeries(Stream<X> xs, Stream<Y> ys) {
-        Series<X, Y> series = new Series<>();
-        var iterator = ys.iterator();
-        Function<X, Y> yf = x -> iterator.hasNext() ? iterator.next() : null;
+        StackedAreaChart<X, Y> chart = (StackedAreaChart<X, Y>) new StackedAreaChart<>(axes.get(0), axes.get(1));
+        chart.getData().addAll(series);
 
-        xs.map(x -> new Data<>(x, yf.apply(x))).takeWhile(e -> e.getYValue() != null)
-                .collect(Collectors.toCollection(() -> series.getData()));
-
-        return series;
+        return chart;
     }
+    
+    public static <X, Y> StackedBarChart<X, Y> getStackedBarChart(Series<X, Y>... series) {
+        List<Axis<?>> axes = getAxes(series[0]);
 
-    public static <X, Y> Series<X, Y> getSeries(Stream<X> xs, Function<X, Y> yf) {
-        Series<X, Y> series = new Series<>();
+        StackedBarChart<X, Y> chart = (StackedBarChart<X, Y>) new StackedBarChart<>(axes.get(0), axes.get(1));        
+        chart.getData().addAll(series);
 
-        xs.map(x -> new Data<>(x, yf.apply(x))).takeWhile(e -> e.getYValue() != null)
-                .collect(Collectors.toCollection(() -> series.getData()));
-
-        return series;
+        return chart;
     }
-
-    public static <X, Y> Series<X, Y> getSeries(Map<X, Y> data) {
-        Series<X, Y> series = new Series<>();
-
-        data.entrySet().stream().map(e -> new Data<>(e.getKey(), e.getValue()))
-                .collect(Collectors.toCollection(() -> series.getData()));
-
-        return series;
+    
+    private static <X,Y> List<Axis<?>> getAxes(Series<X,Y> series) {
+        X x = series.getData().get(0).getXValue();
+        Y y = series.getData().get(0).getYValue();
+        
+        Axis<X> axisX = getAxis(x);
+        Axis<Y> axisY = getAxis(y);
+        
+        return List.of(axisX, axisY);
     }
+    
+    private static <V> Axis<V> getAxis(V value) {
+        Axis<V> axis = null;
+        
+        if (value instanceof Number) {
+            axis = (Axis<V>) new NumberAxis();
+        } else {
+            axis = (Axis<V>) new CategoryAxis();
+        }
+        
+        return axis;
+    }  
 
     public String getTitle() {
         return title;
