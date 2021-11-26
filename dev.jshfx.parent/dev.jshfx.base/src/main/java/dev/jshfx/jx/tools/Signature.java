@@ -27,8 +27,15 @@ public class Signature {
         if (signature != null && !signature.isEmpty()) {
 
             if (signature.contains(":")) {
-                instance.kind = Kind.FIELD;
-                instance.parseField();
+                var name = signature.substring(0, signature.lastIndexOf(":"));
+                if (name.contains(".")) {
+                    instance.kind = Kind.FIELD;
+                    instance.parseField();
+                } else {
+                    instance.kind = Kind.VAR;
+                    instance.fullName = name;
+                    instance.topTypeFullName = "";
+                }
             } else if (signature.contains("(")) {
                 instance.kind = Kind.METHOD;
                 instance.parseMethod();
@@ -41,7 +48,9 @@ public class Signature {
                 instance.fullName = instance.typeFullName;
             }
 
-            instance.parseTopTypeFullName();
+            if (instance.kind != Kind.VAR) {
+                instance.parseTopTypeFullName();
+            }
         }
 
         return instance;
@@ -245,6 +254,6 @@ public class Signature {
     }
 
     public enum Kind {
-        ENUM_CONSTANT, FIELD, METHOD, TYPE
+        ENUM_CONSTANT, FIELD, METHOD, TYPE, VAR
     }
 }
