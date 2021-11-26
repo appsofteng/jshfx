@@ -24,6 +24,14 @@ public final class XFiles {
         return str;
     }
     
+    public static Path relativize(Path parent, Path path) {       
+        if (parent != null && path.startsWith(parent)) {
+            path = parent.relativize(path);
+        }
+        
+        return path;
+    }
+    
     public static String appendFileExtension(String name, String extension) {
         return name + "." + extension;
     }

@@ -4,6 +4,7 @@ import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.util.List;
@@ -74,6 +75,7 @@ public class Actions {
 
     private Action insertDirPathAction;
     private Action insertFilePathAction;
+    private Action insertSeparatedFilePathAction;
     private Action insertSaveFilePathAction;
 
     private Action codeCompletionAction;
@@ -98,6 +100,7 @@ public class Actions {
     private Consumer<ActionEvent> historySearchHandler;
     private Consumer<ActionEvent> insertDirPathHandler;
     private Consumer<ActionEvent> insertFilePathHandler;
+    private Consumer<ActionEvent> insertSeparatedFilePathHandler;
     private Consumer<ActionEvent> insertSaveFilePathHandler;
     private Consumer<ActionEvent> codeCompletionHandler;
     private Consumer<ActionEvent> toggleCommentHandler;
@@ -274,6 +277,10 @@ public class Actions {
         insertFilePathAction = new Action(e -> insertFilePathHandler.accept(e));
         FXResourceBundle.getBundle().put(insertFilePathAction.textProperty(), "insertFilePaths");
         insertFilePathAction.setAccelerator(KeyCombination.keyCombination("Alt+O"));
+        
+        insertSeparatedFilePathAction = new Action(e -> insertSeparatedFilePathHandler.accept(e));
+        FXResourceBundle.getBundle().put(insertSeparatedFilePathAction.textProperty(), "insertSeparatedFilePaths");
+        insertSeparatedFilePathAction.setAccelerator(KeyCombination.keyCombination("Alt+P"));
 
         insertSaveFilePathAction = new Action(e -> insertSaveFilePathHandler.accept(e));
         FXResourceBundle.getBundle().put(insertSaveFilePathAction.textProperty(), "insertSaveFilePath");
@@ -462,6 +469,7 @@ public class Actions {
         historySearchHandler = e -> paneRef.get().showHistorySearch();
         insertDirPathHandler = e -> paneRef.get().insertDirPath();
         insertFilePathHandler = e -> paneRef.get().insertFilePaths();
+        insertSeparatedFilePathHandler = e -> paneRef.get().insertFilePaths(File.pathSeparator);
         insertSaveFilePathHandler = e -> paneRef.get().insertSaveFilePath();
         codeCompletionHandler = e -> paneRef.get().showCodeCompletion();
         toggleCommentHandler = e -> paneRef.get().toggleComment();
@@ -502,7 +510,7 @@ public class Actions {
         var actions = List.of(areaCopyAction, areaCutAction, areaPasteAction, areaSelectAllAction, areaClearAction,
                 ActionUtils.ACTION_SEPARATOR, areaUndoAction, areaReduAction, ActionUtils.ACTION_SEPARATOR, evalAction,
                 evalLineAction, submitAction, submitLineAction, ActionUtils.ACTION_SEPARATOR, historyUpAction,
-                historyDownAction, ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction,
+                historyDownAction, ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction, insertSeparatedFilePathAction,
                 insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR, codeCompletionAction, historySearchAction,
                 findAction, ActionUtils.ACTION_SEPARATOR, toggleCommentAction);
         ActionUtils.updateContextMenu(menu, actions);
@@ -529,6 +537,9 @@ public class Actions {
                 consume(keyPressed(insertFilePathAction.getAccelerator())
                         .onlyIf(e -> !insertFilePathAction.isDisabled()),
                         e -> insertFilePathAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
+                consume(keyPressed(insertSeparatedFilePathAction.getAccelerator())
+                        .onlyIf(e -> !insertSeparatedFilePathAction.isDisabled()),
+                        e -> insertSeparatedFilePathAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),                
                 consume(keyPressed(insertSaveFilePathAction.getAccelerator())
                         .onlyIf(e -> !insertSaveFilePathAction.isDisabled()),
                         e -> insertSaveFilePathAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),

@@ -1,10 +1,10 @@
 package dev.jshfx.base.ui;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.fxmisc.richtext.LineNumberFactory;
 
@@ -254,48 +254,30 @@ public class ShellPane extends PathPane {
 
     public void insertDirPath() {
         var dir = FileDialogUtils.getDirectory(getScene().getWindow());
-        var joining = getJoining();
 
         dir.ifPresent(d -> {
-            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(),
-                    joining.prefix() + XFiles.toString(d) + joining.delimiter());
+            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), XFiles.toString(d));
         });
     }
 
     public void insertFilePaths() {
+        insertFilePaths(" ");
+    }
+
+    public void insertFilePaths(String separator) {
         var files = FileDialogUtils.openJavaFiles(getScene().getWindow());
-        var joining = getJoining();
 
-        files.forEach(f -> {
-            Path path = f;
-            Path parent = getFXPath().getPath().getParent();
-            if (f.startsWith(parent)) {
-                path = parent.relativize(f);
-            }
+        String path = files.stream().map(f -> XFiles.relativize(getFXPath().getPath().getParent(), f))
+                .map(f -> XFiles.toString(f)).collect(Collectors.joining(separator));
 
-            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(),
-                    joining.prefix() + XFiles.toString(path) + joining.delimiter());
-        });
-    }
-
-    record Joining(String prefix, String delimiter) {
-    }
-
-    private Joining getJoining() {
-        int end = consolePane.getInputArea().getCaretPosition();
-        int start = end > 0 ? end - 1 : 0;
-        String caretChar = consolePane.getInputArea().getText(start, end);
-        String delimiter = caretChar.matches("\\s|^$") ? " " : "";
-        String prefix = delimiter.isEmpty() ? File.pathSeparator : "";
-
-        return new Joining(prefix, delimiter);
+        consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), path);
     }
 
     public void insertSaveFilePath() {
         var file = FileDialogUtils.saveSourceJavaFile(getScene().getWindow());
 
         file.ifPresent(f -> {
-            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), f.toString() + " ");
+            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), XFiles.toString(f) + " ");
         });
     }
 
