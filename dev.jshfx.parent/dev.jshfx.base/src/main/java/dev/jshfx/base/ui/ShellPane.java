@@ -16,6 +16,7 @@ import dev.jshfx.fxmisc.richtext.CodeAreaWrappers;
 import dev.jshfx.fxmisc.richtext.CommentWrapper;
 import dev.jshfx.fxmisc.richtext.CompletionPopup;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
+import dev.jshfx.j.nio.file.XFiles;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.CTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
@@ -106,6 +107,14 @@ public class ShellPane extends PathPane {
 
     private void setBehavior() {
 
+        getFXPath().pathProperty().addListener((v, o, n) -> {
+            if (n != null) {
+                if (o != null && !n.getParent().equals(o.getParent())) {
+                    setPathDir(n);
+                }
+            }
+        });
+
         modified.bind(consolePane.editedProperty());
         consolePane.getOutputHeader().textProperty().bind(session.getTimer().textProperty());
 
@@ -144,6 +153,13 @@ public class ShellPane extends PathPane {
                 }
             }
         });
+    }
+
+    private void setPathDir(Path path) {
+        if (path.isAbsolute()) {
+            session.getSnippetProcessor()
+                    .process(String.format("var PATH_DIR = Path.of(\"%s\")", XFiles.toString(path.getParent())), 0);
+        }
     }
 
     @Override
@@ -242,7 +258,7 @@ public class ShellPane extends PathPane {
 
         dir.ifPresent(d -> {
             consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(),
-                    joining.prefix() + d.toString() + joining.delimiter());
+                    joining.prefix() + XFiles.toString(d) + joining.delimiter());
         });
     }
 
@@ -251,8 +267,14 @@ public class ShellPane extends PathPane {
         var joining = getJoining();
 
         files.forEach(f -> {
+            Path path = f;
+            Path parent = getFXPath().getPath().getParent();
+            if (f.startsWith(parent)) {
+                path = parent.relativize(f);
+            }
+
             consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(),
-                    joining.prefix() + f.toString() + joining.delimiter());
+                    joining.prefix() + XFiles.toString(path) + joining.delimiter());
         });
     }
 
@@ -280,6 +302,7 @@ public class ShellPane extends PathPane {
     @Override
     public void init() {
         session.doImports(consolePane.getInputArea().getText());
+        setPathDir(getFXPath().getPath());
     }
 
     @Override

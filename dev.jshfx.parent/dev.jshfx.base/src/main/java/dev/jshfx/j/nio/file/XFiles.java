@@ -14,6 +14,16 @@ public final class XFiles {
     private XFiles() {
     }
     
+    public static String toString(Path path) {
+        String str = path.toString();
+        
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+            str = str.replace("\\", "/");
+        }
+        
+        return str;
+    }
+    
     public static String appendFileExtension(String name, String extension) {
         return name + "." + extension;
     }
