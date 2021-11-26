@@ -6,6 +6,7 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
+import dev.jshfx.fxmisc.richtext.CodeAreaWrappers;
 import dev.jshfx.fxmisc.richtext.CustomCodeArea;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 
@@ -21,11 +22,7 @@ public class EditorPane extends PathPane {
         area.moveTo(0);
         area.requestFollowCaret();
         area.setParagraphGraphicFactory(LineNumberFactory.get(area));
-        area.sceneProperty().addListener((v, o, n) -> {
-            if (n != null) {
-                area.requestFocus();
-            }
-        });
+        CodeAreaWrappers.get(area, "").style();
         area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> edited.set((Boolean) n));
         area.textProperty().addListener((v, o, n) -> edited.set(true));
         modified.bind(edited.getReadOnlyProperty());
