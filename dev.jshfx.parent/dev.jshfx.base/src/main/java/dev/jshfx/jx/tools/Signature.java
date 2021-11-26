@@ -48,7 +48,7 @@ public class Signature {
                 instance.fullName = instance.typeFullName;
             }
 
-            if (instance.kind != Kind.VAR) {
+            if (instance.topTypeFullName == null) {
                 instance.parseTopTypeFullName();
             }
         }
@@ -102,17 +102,17 @@ public class Signature {
     }
 
     private void parseTopTypeFullName() {
-        int i = 0;
         String enclosingType = typeFullName;
         topTypeFullName = typeFullName;
+        int  i = enclosingType.lastIndexOf(".");
 
-        while (i > -1 && enclosingType != null) {
-            i = enclosingType.lastIndexOf(".");
+        while (i > -1 && enclosingType != null) {            
             enclosingType = enclosingType.substring(0, i);
             enclosingType = resolveFullTypeName.apply(enclosingType);
 
             if (enclosingType != null) {
                 topTypeFullName = enclosingType;
+                i = enclosingType.lastIndexOf(".");
             }
         }
 
@@ -153,12 +153,14 @@ public class Signature {
         int p2 = signature.lastIndexOf(")");
         var typeAndName = signature.substring(0, p1);
         typeAndName = removeBracketContent(typeAndName);
-        typeAndName = typeAndName.substring(typeAndName.lastIndexOf(" ") + 1);
-        int i = typeAndName.lastIndexOf(".");
+        int i = typeAndName.lastIndexOf(" ");
+        typeAndName = typeAndName.substring(i + 1);
+        String returnType = i > -1 ? typeAndName.substring(0, i) : "";
+
+        i = typeAndName.lastIndexOf(".");
         String methodName = typeAndName;
         String type = typeAndName;
 
-        // Constructor will no pass, e.g. URI(String u)
         if (i > -1) {
             methodName = typeAndName.substring(i + 1);
             type = typeAndName.substring(0, i);
@@ -167,11 +169,19 @@ public class Signature {
             if (i > 0) {
                 methodName = methodName.substring(i + 1);
             }
-        } else {
+         // Constructor e.g. URI(String u)
+        } else if (returnType.isEmpty()) {
             methodName = "<init>";
+        // Method in JSH script.
+        } else {
+            type = "";
+            typeFullName = "";
+            topTypeFullName = "";
         }
 
-        parseType(type);
+        if (!type.isEmpty()) {
+            parseType(type);
+        }
 
         fullName = typeFullName + "." + methodName;
 
