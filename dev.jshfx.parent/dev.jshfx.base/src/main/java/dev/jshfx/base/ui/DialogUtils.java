@@ -2,6 +2,7 @@ package dev.jshfx.base.ui;
 
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.controlsfx.dialog.ProgressDialog;
 
@@ -9,6 +10,7 @@ import dev.jshfx.base.MainApp;
 import dev.jshfx.jfx.scene.control.AutoCompleteArea;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.util.chart.Charts;
+import dev.jshfx.util.control.Tables;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
@@ -18,7 +20,10 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.text.Font;
@@ -42,9 +47,6 @@ public final class DialogUtils {
         if (obj instanceof Charts charts) {
 
             Dialog<Void> dialog = createPlainDialog(window);
-            dialog.initModality(Modality.NONE);
-            dialog.setDialogPane(new PlainDialogPane());
-            dialog.initOwner(window);
 
             TilePane tilePane = new TilePane();
             tilePane.setPrefColumns(charts.getColumns());
@@ -77,6 +79,18 @@ public final class DialogUtils {
 
             dialog.show();
         }
+        
+        if (obj instanceof Tables tables) {
+            Dialog<Void> dialog = createPlainDialog(window);
+            
+            TabPane tabPane = new TabPane();
+            tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
+            
+            tables.getTableViews().stream().map(tv -> new Tab(tv.getId(), tv)).collect(Collectors.toCollection(() -> tabPane.getTabs()));           
+            
+            dialog.getDialogPane().setContent(tabPane);
+            dialog.show();
+        }
     }
 
     public static void showHistorySearch(Window window, ObservableList<String> history, Consumer<String> onSelection) {
@@ -98,6 +112,7 @@ public final class DialogUtils {
 
     private static <T> Dialog<T> createPlainDialog(Window window) {
         Dialog<T> dialog = new Dialog<>();
+        dialog.initModality(Modality.NONE);
         dialog.setDialogPane(new PlainDialogPane());
         dialog.initOwner(window);
         Window dialogWindow = dialog.getDialogPane().getScene().getWindow();
