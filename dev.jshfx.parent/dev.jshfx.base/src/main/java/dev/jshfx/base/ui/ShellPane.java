@@ -1,5 +1,6 @@
 package dev.jshfx.base.ui;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.fxmisc.flowless.VirtualizedScrollPane;
+import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 
@@ -41,7 +43,6 @@ public class ShellPane extends AreaPane {
 
     private static final int HISTORY_LIMIT = 100;
 
-    private ConsoleModel consoleModel = new ConsoleModel();
     private ObservableList<String> history = FXCollections.observableArrayList();
     private int historyIndex;
     private BooleanProperty historyStartReached = new SimpleBooleanProperty();
@@ -63,41 +64,53 @@ public class ShellPane extends AreaPane {
         session.setOnExitCommand(
                 () -> Platform.runLater(() -> onCloseRequest.handle(new Event(this, this, Event.ANY))));
         session.setOnResult(this::handleResult);
-        completion = new Completion(getArea(), session);
-
-        CodeAreaWrappers.get(getArea(), "java").style().highlighting(consoleModel.getReadFromPipe()).indentation();
+        completion = new Completion(getArea(), session);        
 
         getChildren().add(new VirtualizedScrollPane<>(getArea()));
 
         setBehavior();
     }
+
     @Override
     public void setActions(Actions actions) {
         super.setActions(actions);
-        
+
         actions.setShellContextMenu(getArea());
-        
+        actions.addShellKeyHandlers(getArea());
+
         handlers.put(actions.getSubmitAction(), () -> submit());
         handlers.put(actions.getSubmitLineAction(), () -> submitLine());
-
-//        evalHandler = e -> paneRef.get().eval();
-//        evalLineHandler = e -> paneRef.get().evalLine();
-//        historyUpHandler = e -> paneRef.get().getConsolePane().historyUp();
-//        historyDownHandler = e -> paneRef.get().getConsolePane().historyDown();
-//        historySearchHandler = e -> paneRef.get().showHistorySearch();
-//        insertDirPathHandler = e -> paneRef.get().insertDirPath();
-//        insertFilePathHandler = e -> paneRef.get().insertFilePaths();
-//        insertSeparatedFilePathHandler = e -> paneRef.get().insertFilePaths(File.pathSeparator);
-//        insertSaveFilePathHandler = e -> paneRef.get().insertSaveFilePath();
-//        codeCompletionHandler = e -> paneRef.get().showCodeCompletion();
-//        toggleCommentHandler = e -> paneRef.get().toggleComment();
+        handlers.put(actions.getEvalAction(), () -> eval());
+        handlers.put(actions.getEvalLineAction(), () -> evalLine());
+        handlers.put(actions.getHistoryUpAction(), () -> historyUp());
+        handlers.put(actions.getHistoryDownAction(), () -> historyDown());
+        handlers.put(actions.getHistorySearchAction(), () -> showHistorySearch());
+        handlers.put(actions.getInsertDirPathAction(), () -> insertDirPath());
+        handlers.put(actions.getInsertFilePathAction(), () -> insertFilePaths());
+        handlers.put(actions.getInsertSeparatedFilePathAction(), () -> insertFilePaths(File.pathSeparator));
+        handlers.put(actions.getInsertSaveFilePathAction(), () -> insertSaveFilePath());
+        handlers.put(actions.getCodeCompletionAction(), () -> showCodeCompletion());
+        handlers.put(actions.getToggleCommentAction(), () -> toggleComment());
     }
 
     @Override
-    public ObservableList<TextStyleSpans> getConsoleOutput() {
-        return consoleModel.getOutput();
+    public void bindActions(Actions actions) {
+        super.bindActions(actions);
+
+        actions.getEvalAction().setDisabled(false);
+        actions.getEvalLineAction().setDisabled(false);
+        actions.getSubmitAction().setDisabled(false);
+        actions.getSubmitLineAction().setDisabled(false);
+
+        actions.getHistoryUpAction().disabledProperty().bind(historyStartReachedProperty());
+        actions.getHistoryDownAction().disabledProperty().bind(historyEndReachedProperty());
     }
 
+    @Override
+    protected void wrap(CodeArea area) {
+        CodeAreaWrappers.get(area, "java").style().highlighting(consoleModel.getReadFromPipe()).indentation();
+    }
+    
     private void handleResult(SnippetEvent event, Object obj) {
 
         if (event.snippet().subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
@@ -355,6 +368,7 @@ public class ShellPane extends AreaPane {
 
     @Override
     public void activate() {
+        super.activate();
         session.setIO();
     }
 

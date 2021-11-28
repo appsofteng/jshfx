@@ -4,7 +4,7 @@ import org.fxmisc.richtext.GenericStyledArea;
 
 import dev.jshfx.jx.tools.Token;
 
-public class BlockEndWrapper<T extends GenericStyledArea<?, ?, ?>> extends GenericStyledAreaWrapper<T> {
+public class BlockEndWrapper<T extends GenericStyledArea<?, ?, ?>> extends AreaWrapper<T> {
 
     public BlockEndWrapper(T area) {
         super(area);

@@ -5,7 +5,7 @@ import org.fxmisc.richtext.GenericStyledArea;
 import dev.jshfx.jx.tools.Lexer;
 import javafx.scene.control.IndexRange;
 
-public class IndentationWrapper<T extends GenericStyledArea<?,?,?>> extends GenericStyledAreaWrapper<T> {
+public class IndentationWrapper<T extends GenericStyledArea<?,?,?>> extends AreaWrapper<T> {
 
     private static final String INDENTATION = "    ";
     private Lexer lexer;

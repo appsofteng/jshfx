@@ -1,5 +1,7 @@
 package dev.jshfx.fxmisc.richtext;
 
+import static org.fxmisc.richtext.model.TwoDimensional.Bias.Forward;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -8,22 +10,63 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.fxmisc.richtext.GenericStyledArea;
-import org.fxmisc.richtext.model.Paragraph;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.scene.control.IndexRange;
 
-import static org.fxmisc.richtext.model.TwoDimensional.Bias.Forward;
-
-public abstract class GenericStyledAreaWrapper<T extends GenericStyledArea<?, ?, ?>> {
+public class AreaWrapper<T extends GenericStyledArea<?, ?, ?>> {
 
     protected T area;
+    
+    private ReadOnlyBooleanWrapper allSelected = new ReadOnlyBooleanWrapper();
+    private ReadOnlyBooleanWrapper clear = new ReadOnlyBooleanWrapper();
+    private ReadOnlyBooleanWrapper selectionEmpty = new ReadOnlyBooleanWrapper();
+    private ReadOnlyBooleanWrapper redoEmpty = new ReadOnlyBooleanWrapper();
+    private ReadOnlyBooleanWrapper undoEmpty = new ReadOnlyBooleanWrapper();
 
-    public GenericStyledAreaWrapper(T area) {
+    public AreaWrapper(T area) {
         this.area = area;
+        
+        allSelected.bind(Bindings.createBooleanBinding(
+                () -> area.getSelectedText().length() == area.getText().length(),
+                area.selectedTextProperty()));
+
+        selectionEmpty.bind(Bindings.createBooleanBinding(() -> area.getSelection().getLength() == 0,
+                area.selectionProperty()));
+
+        clear.bind(Bindings.createBooleanBinding(() -> area.getLength() == 0,
+                area.lengthProperty()));
+
+        redoEmpty.bind(Bindings.createBooleanBinding(() -> !area.isRedoAvailable(),
+                area.redoAvailableProperty()));
+        undoEmpty.bind(Bindings.createBooleanBinding(() -> !area.isUndoAvailable(),
+                area.undoAvailableProperty()));
     }
 
     public T getArea() {
         return area;
+    }
+    
+    public ReadOnlyBooleanProperty allSelectedProperty() {
+        return allSelected.getReadOnlyProperty();
+    }
+    
+    public ReadOnlyBooleanProperty clearProperty() {
+        return clear.getReadOnlyProperty();
+    }
+    
+    public ReadOnlyBooleanProperty selectionEmptyProperty() {
+        return selectionEmpty.getReadOnlyProperty();
+    }
+    
+    public ReadOnlyBooleanProperty redoEmptyProperty() {
+        return redoEmpty.getReadOnlyProperty();
+    }
+    
+    public ReadOnlyBooleanProperty undoEmptyProperty() {
+        return undoEmpty.getReadOnlyProperty();
     }
 
     boolean isCaretPosition(int position, int insertionEnd) {

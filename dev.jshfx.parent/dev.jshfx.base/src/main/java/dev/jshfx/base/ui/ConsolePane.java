@@ -6,6 +6,7 @@ import java.util.List;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 
+import dev.jshfx.fxmisc.richtext.AreaWrapper;
 import dev.jshfx.fxmisc.richtext.CustomCodeArea;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import javafx.application.Platform;
@@ -19,6 +20,7 @@ public class ConsolePane extends EnvPane {
     private static final int OUTPUT_AREA_LIMIT = 1500;
 
     private CodeArea area = new CustomCodeArea();
+    private AreaWrapper<CodeArea> areaWrapper = new AreaWrapper<>(area);
     private Label header = new Label();
     private ContentPane contentPane;
     private ListChangeListener<? super TextStyleSpans> listener = (Change<? extends TextStyleSpans> c) -> {
@@ -74,6 +76,15 @@ public class ConsolePane extends EnvPane {
     }
     
     @Override
+    public void bindActions(Actions actions) {
+        super.bindActions(actions);
+        
+        actions.getSelectAllAction().disabledProperty().bind(areaWrapper.allSelectedProperty());
+        actions.getCopyAction().disabledProperty().bind(areaWrapper.selectionEmptyProperty());
+        actions.getClearAction().disabledProperty().bind(areaWrapper.clearProperty());
+    }
+    
+    @Override
     public String getUserAgentStylesheet() {
         return getClass().getResource("console.css").toExternalForm();
     }
@@ -85,6 +96,8 @@ public class ConsolePane extends EnvPane {
     public void setContentPane(ContentPane contentPane) {
 
         area.clear();
+        header.textProperty().unbind();
+        header.setText("");
         
         if (this.contentPane != null) {
             this.contentPane.getConsoleOutput().removeListener(listener);

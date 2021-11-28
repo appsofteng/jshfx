@@ -4,8 +4,6 @@ import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
-import java.io.File;
-import java.lang.ref.WeakReference;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
@@ -86,19 +84,12 @@ public class Actions {
     private Action saveSnapshotAction;
 
     private BooleanExpression savedAllExpression;
-
+    
     private BooleanProperty savedAll = new SimpleBooleanProperty();
     private BooleanProperty clipboardEmpty = new SimpleBooleanProperty();
-    private BooleanProperty allSelected = new SimpleBooleanProperty();
-    private BooleanProperty clear = new SimpleBooleanProperty();
-    private BooleanProperty selectionEmpty = new SimpleBooleanProperty();
-    private BooleanProperty redoEmpty = new SimpleBooleanProperty();
-    private BooleanProperty undoEmpty = new SimpleBooleanProperty();
-    private BooleanProperty historyStartReached = new SimpleBooleanProperty();
-    private BooleanProperty historyEndReached = new SimpleBooleanProperty();
 
     private Consumer<ActionEvent> saveSnapshotHandler;
-    
+
     public Actions(RootPane rootPane) {
 
         clipboardService = new ScheduledService<>() {
@@ -166,13 +157,11 @@ public class Actions {
         copyAction.setAccelerator(KeyCombination.keyCombination("Shortcut+C"));
         FXResourceBundle.getBundle().put(copyAction.textProperty(), "copy");
         FXResourceBundle.getBundle().put(copyAction.longTextProperty(), "copy");
-        copyAction.disabledProperty().bind(selectionEmpty);
 
         cutAction = new Action(e -> rootPane.getEnvPane().handle(cutAction));
         cutAction.setAccelerator(KeyCombination.keyCombination("Shortcut+X"));
         FXResourceBundle.getBundle().put(cutAction.textProperty(), "cut");
         FXResourceBundle.getBundle().put(cutAction.longTextProperty(), "cut");
-        cutAction.disabledProperty().bind(selectionEmpty);
 
         pasteAction = new Action(e -> rootPane.getEnvPane().handle(pasteAction));
         pasteAction.setAccelerator(KeyCombination.keyCombination("Shortcut+V"));
@@ -184,26 +173,22 @@ public class Actions {
         selectAllAction.setAccelerator(KeyCombination.keyCombination("Shortcut+A"));
         FXResourceBundle.getBundle().put(selectAllAction.textProperty(), "selectAll");
         FXResourceBundle.getBundle().put(selectAllAction.longTextProperty(), "selectAll");
-        selectAllAction.disabledProperty().bind(allSelected);
 
         clearAction = new Action(e -> rootPane.getEnvPane().handle(clearAction));
         FXResourceBundle.getBundle().put(clearAction.textProperty(), "clear");
         FXResourceBundle.getBundle().put(clearAction.longTextProperty(), "clear");
-        clearAction.disabledProperty().bind(clear);
 
         undoAction = new Action(e -> rootPane.getEnvPane().handle(undoAction));
         undoAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Z"));
         FXResourceBundle.getBundle().put(undoAction.textProperty(), "undo");
         FXResourceBundle.getBundle().put(undoAction.longTextProperty(), "undo");
         undoAction.setDisabled(true);
-        undoAction.disabledProperty().bind(undoEmpty);
 
         redoAction = new Action(e -> rootPane.getEnvPane().handle(redoAction));
         redoAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Y"));
         FXResourceBundle.getBundle().put(redoAction.textProperty(), "redo");
         FXResourceBundle.getBundle().put(redoAction.longTextProperty(), "redo");
         redoAction.setDisabled(true);
-        redoAction.disabledProperty().bind(redoEmpty);
 
         evalAction = new Action(e -> rootPane.getEnvPane().handle(evalAction));
         evalAction.setGraphic(new StyleGlyph(Fonts.FONT_AWESOME_5_FREE_SOLID, Fonts.FontAwesome.PLAY));
@@ -237,13 +222,11 @@ public class Actions {
         FXResourceBundle.getBundle().put(historyUpAction.textProperty(), "historyUp");
         FXResourceBundle.getBundle().put(historyUpAction.longTextProperty(), "historyUp");
         historyUpAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Up"));
-        historyUpAction.disabledProperty().bind(historyStartReached);
 
         historyDownAction = new Action(e -> rootPane.getEnvPane().handle(historyDownAction));
         FXResourceBundle.getBundle().put(historyDownAction.textProperty(), "historyDown");
         FXResourceBundle.getBundle().put(historyDownAction.longTextProperty(), "historyDown");
         historyDownAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Down"));
-        historyDownAction.disabledProperty().bind(historyEndReached);
 
         historySearchAction = new Action(e -> rootPane.getEnvPane().handle(historySearchAction));
         FXResourceBundle.getBundle().put(historySearchAction.textProperty(), "historySearch");
@@ -281,15 +264,15 @@ public class Actions {
         findAction.setAccelerator(KeyCombination.keyCombination("Shortcut+F"));
 
     }
-    
+
     public Action getCopyAction() {
         return copyAction;
     }
-    
+
     public Action getCutAction() {
         return cutAction;
     }
-    
+
     public Action getPasteAction() {
         return pasteAction;
     }
@@ -297,31 +280,75 @@ public class Actions {
     public Action getSelectAllAction() {
         return selectAllAction;
     }
-    
+
     public Action getClearAction() {
         return clearAction;
     }
-    
+
     public Action getUndoAction() {
         return undoAction;
     }
-    
+
     public Action getRedoAction() {
         return redoAction;
     }
-    
+
     public Action getSubmitAction() {
         return submitAction;
     }
-    
+
     public Action getSubmitLineAction() {
         return submitLineAction;
     }
-    
+
+    public Action getEvalAction() {
+        return evalAction;
+    }
+
     public Action getSaveAction() {
         return saveAction;
     }
-    
+
+    public Action getEvalLineAction() {
+        return evalLineAction;
+    }
+
+    public Action getHistoryUpAction() {
+        return historyUpAction;
+    }
+
+    public Action getHistoryDownAction() {
+        return historyDownAction;
+    }
+
+    public Action getHistorySearchAction() {
+        return historySearchAction;
+    }
+
+    public Action getInsertDirPathAction() {
+        return insertDirPathAction;
+    }
+
+    public Action getInsertFilePathAction() {
+        return insertFilePathAction;
+    }
+
+    public Action getInsertSeparatedFilePathAction() {
+        return insertSeparatedFilePathAction;
+    }
+
+    public Action getInsertSaveFilePathAction() {
+        return insertSaveFilePathAction;
+    }
+
+    public Action getCodeCompletionAction() {
+        return codeCompletionAction;
+    }
+
+    public Action getToggleCommentAction() {
+        return toggleCommentAction;
+    }
+
     public ActionController getActionController() {
         return actionController;
     }
@@ -345,7 +372,7 @@ public class Actions {
                         e -> saveAllAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
         closeOtherTabsAction.disabledProperty().bind(Bindings.size(rootPane.getTabs()).isEqualTo(1));
     }
-    
+
     public void setActions(ContentPane pane) {
         saveAsAction.setDisabled(false);
         if (savedAllExpression == null) {
@@ -401,31 +428,22 @@ public class Actions {
             }
         });
     }
-    
+
     public void setReadOnlyContextMenu(CodeArea area) {
 
         var menu = getContextMenu(area);
         var actions = List.of(copyAction, selectAllAction, clearAction);
         ActionUtils.updateContextMenu(menu, actions);
     }
-    
-    public void setEditorContextMenu(CodeArea area) {        
+
+    public void setEditorContextMenu(CodeArea area) {
         var menu = getContextMenu(area);
         var actions = List.of(copyAction, cutAction, pasteAction, selectAllAction, clearAction,
                 ActionUtils.ACTION_SEPARATOR, undoAction, redoAction, ActionUtils.ACTION_SEPARATOR, findAction);
         ActionUtils.updateContextMenu(menu, actions);
-
-        Nodes.addInputMap(area,
-                sequence(
-                        consume(keyPressed(saveAction.getAccelerator()).onlyIf(e -> !saveAction.isDisabled()),
-                                e -> saveAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                        consume(keyPressed(saveAsAction.getAccelerator()).onlyIf(e -> !saveAsAction.isDisabled()),
-                                e -> saveAsAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                        consume(keyPressed(findAction.getAccelerator()).onlyIf(e -> !findAction.isDisabled()),
-                                e -> findAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
     }
 
-    public void setShellContextMenu(CodeArea area) {        
+    public void setShellContextMenu(CodeArea area) {
         var menu = getContextMenu(area);
         var actions = List.of(copyAction, cutAction, pasteAction, selectAllAction, clearAction,
                 ActionUtils.ACTION_SEPARATOR, undoAction, redoAction, ActionUtils.ACTION_SEPARATOR, evalAction,
@@ -435,104 +453,26 @@ public class Actions {
                 codeCompletionAction, historySearchAction, findAction, ActionUtils.ACTION_SEPARATOR,
                 toggleCommentAction);
         ActionUtils.updateContextMenu(menu, actions);
-
-        Nodes.addInputMap(area, sequence(
-                consume(keyPressed(saveAction.getAccelerator()).onlyIf(e -> !saveAction.isDisabled()),
-                        e -> saveAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(saveAsAction.getAccelerator()).onlyIf(e -> !saveAsAction.isDisabled()),
-                        e -> saveAsAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(submitAction.getAccelerator()).onlyIf(e -> !submitAction.isDisabled()),
-                        e -> submitAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(submitLineAction.getAccelerator()).onlyIf(e -> !submitLineAction.isDisabled()),
-                        e -> submitLineAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(evalAction.getAccelerator()).onlyIf(e -> !evalAction.isDisabled()),
-                        e -> evalAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(evalLineAction.getAccelerator()).onlyIf(e -> !evalLineAction.isDisabled()),
-                        e -> evalLineAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(historyUpAction.getAccelerator()).onlyIf(e -> !historyUpAction.isDisabled()),
-                        e -> historyUpAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(historyDownAction.getAccelerator()).onlyIf(e -> !historyDownAction.isDisabled()),
-                        e -> historyDownAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(insertDirPathAction.getAccelerator()).onlyIf(e -> !insertDirPathAction.isDisabled()),
-                        e -> insertDirPathAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(insertFilePathAction.getAccelerator())
-                        .onlyIf(e -> !insertFilePathAction.isDisabled()),
-                        e -> insertFilePathAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(insertSeparatedFilePathAction.getAccelerator())
-                        .onlyIf(e -> !insertSeparatedFilePathAction.isDisabled()),
-                        e -> insertSeparatedFilePathAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(insertSaveFilePathAction.getAccelerator())
-                        .onlyIf(e -> !insertSaveFilePathAction.isDisabled()),
-                        e -> insertSaveFilePathAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(codeCompletionAction.getAccelerator())
-                        .onlyIf(e -> !codeCompletionAction.isDisabled()),
-                        e -> codeCompletionAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(toggleCommentAction.getAccelerator()).onlyIf(e -> !toggleCommentAction.isDisabled()),
-                        e -> toggleCommentAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(findAction.getAccelerator()).onlyIf(e -> !findAction.isDisabled()),
-                        e -> findAction.handle(new ActionEvent(e.getSource(), e.getTarget()))),
-                consume(keyPressed(historySearchAction.getAccelerator()).onlyIf(e -> !historySearchAction.isDisabled()),
-                        e -> historySearchAction.handle(new ActionEvent(e.getSource(), e.getTarget())))));
     }
 
-    public void bind(ConsolePane pane) {
-        allSelected.bind(Bindings.createBooleanBinding(
-                () -> pane.getArea().getSelectedText().length() == pane.getArea().getText().length(),
-                pane.getArea().selectedTextProperty()));
-
-        selectionEmpty.bind(Bindings.createBooleanBinding(() -> pane.getArea().getSelection().getLength() == 0,
-                pane.getArea().selectionProperty()));
-
-        clear.bind(
-                Bindings.createBooleanBinding(() -> pane.getArea().getLength() == 0, pane.getArea().lengthProperty()));
-    }
-    
-    public void bind(EditorPane pane) {
-        evalAction.setDisabled(true);
-        evalLineAction.setDisabled(true);
-        submitAction.setDisabled(true);
-        submitLineAction.setDisabled(true);
-
-        allSelected.bind(Bindings.createBooleanBinding(
-                () -> pane.getArea().getSelectedText().length() == pane.getArea().getText().length(),
-                pane.getArea().selectedTextProperty()));
-
-        selectionEmpty.bind(Bindings.createBooleanBinding(() -> pane.getArea().getSelection().getLength() == 0,
-                pane.getArea().selectionProperty()));
-
-        clear.bind(
-                Bindings.createBooleanBinding(() -> pane.getArea().getLength() == 0, pane.getArea().lengthProperty()));
-
-        redoEmpty.bind(Bindings.createBooleanBinding(() -> !pane.getArea().isRedoAvailable(),
-                pane.getArea().redoAvailableProperty()));
-        undoEmpty.bind(Bindings.createBooleanBinding(() -> !pane.getArea().isUndoAvailable(),
-                pane.getArea().undoAvailableProperty()));
+    public void addEditorKeyHandlers(Node node) {
+        addKeyHandlers(node, List.of(findAction, saveAction, saveAsAction));
     }
 
-    public void bind(ShellPane pane) {
+    public void addShellKeyHandlers(Node node) {
+        addKeyHandlers(node,
+                List.of(codeCompletionAction, evalAction, evalLineAction, findAction, historySearchAction, historyUpAction, historyDownAction, insertDirPathAction,
+                        insertFilePathAction, insertSeparatedFilePathAction, insertSaveFilePathAction, saveAction, saveAsAction, submitAction,
+                        submitLineAction, toggleCommentAction));
+    }
 
-        evalAction.setDisabled(false);
-        evalLineAction.setDisabled(false);
-        submitAction.setDisabled(false);
-        submitLineAction.setDisabled(false);
+    private void addKeyHandlers(Node node, List<Action> actions) {
 
-        allSelected.bind(Bindings.createBooleanBinding(
-                () -> pane.getArea().getSelectedText().length() == pane.getArea().getText().length(),
-                pane.getArea().selectedTextProperty()));
-
-        selectionEmpty.bind(Bindings.createBooleanBinding(() -> pane.getArea().getSelection().getLength() == 0,
-                pane.getArea().selectionProperty()));
-
-        clear.bind(Bindings.createBooleanBinding(() -> pane.getArea().getLength() == 0,
-                pane.getArea().lengthProperty()));
-
-        redoEmpty.bind(Bindings.createBooleanBinding(() -> !pane.getArea().isRedoAvailable(),
-                pane.getArea().redoAvailableProperty()));
-        undoEmpty.bind(Bindings.createBooleanBinding(() -> !pane.getArea().isUndoAvailable(),
-                pane.getArea().undoAvailableProperty()));
-
-        historyStartReached.bind(pane.historyStartReachedProperty());
-        historyEndReached.bind(pane.historyEndReachedProperty());
+        actions.stream().filter(a -> a != ActionUtils.ACTION_SEPARATOR).forEach(action -> {
+            Nodes.addInputMap(node,
+                    sequence(consume(keyPressed(action.getAccelerator()).onlyIf(e -> !action.isDisabled()),
+                            e -> action.handle(new ActionEvent(e.getSource(), e.getTarget())))));
+        });
     }
 
     private ContextMenu getContextMenu(GenericStyledArea<?, ?, ?> area) {

@@ -6,17 +6,20 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
+import dev.jshfx.fxmisc.richtext.AreaWrapper;
 import dev.jshfx.fxmisc.richtext.CustomCodeArea;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 
 public class AreaPane extends ContentPane {
 
     private CodeArea area = new CustomCodeArea();
+    private AreaWrapper<CodeArea> areaWrapper = new AreaWrapper<>(area);
     private final ReadOnlyBooleanWrapper edited = new ReadOnlyBooleanWrapper();
     private Finder finder;
 
     public AreaPane(Path p, String input) {
         super(p);
+        wrap(area);
         area.replaceText(input);
         area.moveTo(0);
         area.requestFollowCaret();
@@ -41,6 +44,18 @@ public class AreaPane extends ContentPane {
         handlers.put(actions.getUndoAction(), () -> area.undo());
         handlers.put(actions.getRedoAction(), () -> area.redo());
     }
+    
+    @Override
+    public void bindActions(Actions actions) {
+        super.bindActions(actions);
+        
+        actions.getSelectAllAction().disabledProperty().bind(areaWrapper.allSelectedProperty());
+        actions.getCopyAction().disabledProperty().bind(areaWrapper.selectionEmptyProperty());
+        actions.getCutAction().disabledProperty().bind(areaWrapper.selectionEmptyProperty());
+        actions.getClearAction().disabledProperty().bind(areaWrapper.clearProperty());
+        actions.getUndoAction().disabledProperty().bind(areaWrapper.undoEmptyProperty());
+        actions.getRedoAction().disabledProperty().bind(areaWrapper.redoEmptyProperty());
+    }
 
     @Override
     public void requestFocus() {
@@ -52,6 +67,10 @@ public class AreaPane extends ContentPane {
         return area;
     }
 
+    protected void wrap(CodeArea area) {
+        
+    }
+    
     private void forgetEdit() {
         edited.set(false);
         area.getUndoManager().forgetHistory();
@@ -80,6 +99,7 @@ public class AreaPane extends ContentPane {
 
     @Override
     public void dispose() {
+        super.dispose();
         area.dispose();
     }
 }

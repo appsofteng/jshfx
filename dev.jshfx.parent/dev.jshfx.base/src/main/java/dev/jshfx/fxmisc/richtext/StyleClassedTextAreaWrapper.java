@@ -12,7 +12,7 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
 import javafx.scene.control.IndexRange;
 import javafx.util.Pair;
 
-public class StyleClassedTextAreaWrapper extends GenericStyledAreaWrapper<StyleClassedTextArea> {
+public class StyleClassedTextAreaWrapper extends AreaWrapper<StyleClassedTextArea> {
 
     public StyleClassedTextAreaWrapper(StyleClassedTextArea area) {
         super(area);

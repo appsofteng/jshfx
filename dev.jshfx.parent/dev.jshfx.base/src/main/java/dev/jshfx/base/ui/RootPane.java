@@ -69,8 +69,9 @@ public class RootPane extends BorderPane {
                         nn = nn.getParent();
                     }
 
-                    if (nn instanceof EnvPane ePane) {
+                    if (nn instanceof EnvPane ePane && envPane.get() != ePane) {
                         envPane.set(ePane);
+                        ePane.bindActions(actions);
                     }
                 });
             }
@@ -79,7 +80,7 @@ public class RootPane extends BorderPane {
         centerPane.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
             if (n != null) {
                 contentPane.set((ContentPane) n.getContent());
-                contentPane.get().activate();
+                Platform.runLater(() ->  contentPane.get().activate());
                 consolePane.setContentPane(contentPane.get());
             } else {
                 consolePane.setContentPane(null);
@@ -142,7 +143,6 @@ public class RootPane extends BorderPane {
 
         if (!tabs.isEmpty()) {
             centerPane.getSelectionModel().select(tabs.get(0));
-            tabs.get(0).getContent().requestFocus();
         }
     }
 

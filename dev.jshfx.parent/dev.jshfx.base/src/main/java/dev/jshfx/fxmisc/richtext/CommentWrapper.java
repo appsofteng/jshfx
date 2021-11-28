@@ -2,7 +2,7 @@ package dev.jshfx.fxmisc.richtext;
 
 import org.fxmisc.richtext.GenericStyledArea;
 
-public final class CommentWrapper<T extends GenericStyledArea<?, ?, ?>> extends GenericStyledAreaWrapper<T> {
+public final class CommentWrapper<T extends GenericStyledArea<?, ?, ?>> extends AreaWrapper<T> {
 
     public CommentWrapper(T area) {
         super(area);

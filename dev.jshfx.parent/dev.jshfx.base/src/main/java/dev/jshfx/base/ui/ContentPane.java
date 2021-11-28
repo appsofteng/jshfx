@@ -11,7 +11,6 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -19,12 +18,13 @@ import javafx.scene.Node;
 
 public class ContentPane extends EnvPane {
 
-    private FXPath fxpath;
     protected final ReadOnlyStringWrapper title = new ReadOnlyStringWrapper();
     protected final ReadOnlyStringWrapper longTitle = new ReadOnlyStringWrapper();
     protected final ReadOnlyObjectWrapper<Node> graphic = new ReadOnlyObjectWrapper<>();
     protected final ReadOnlyBooleanWrapper modified = new ReadOnlyBooleanWrapper();
     protected final ReadOnlyStringWrapper consoleHeaderText = new ReadOnlyStringWrapper();
+    protected ConsoleModel consoleModel = new ConsoleModel();
+    private FXPath fxpath;
 
     protected EventHandler<Event> onCloseRequest;
 
@@ -103,10 +103,11 @@ public class ContentPane extends EnvPane {
     }
 
     public ObservableList<TextStyleSpans> getConsoleOutput() {
-        return FXCollections.emptyObservableList();
+        return consoleModel.getOutput();
     }
 
     public void activate() {
+        requestFocus();
     }
 
     public void dispose() {
