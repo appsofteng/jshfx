@@ -2,26 +2,50 @@ package dev.jshfx.base.ui;
 
 import java.nio.file.Path;
 
+import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import dev.jshfx.jfx.file.FXPath;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.layout.StackPane;
 
-public class ContentPane extends StackPane {
+public class ContentPane extends EnvPane {
 
+    private FXPath fxpath;
     protected final ReadOnlyStringWrapper title = new ReadOnlyStringWrapper();
     protected final ReadOnlyStringWrapper longTitle = new ReadOnlyStringWrapper();
     protected final ReadOnlyObjectWrapper<Node> graphic = new ReadOnlyObjectWrapper<>();
     protected final ReadOnlyBooleanWrapper modified = new ReadOnlyBooleanWrapper();
+    protected final ReadOnlyStringWrapper consoleHeaderText = new ReadOnlyStringWrapper();
     
     protected EventHandler<Event> onCloseRequest;
+    
+    public ContentPane(Path p) {
+        this.fxpath = new FXPath(p);
+        
+        title.bind(
+                Bindings.createStringBinding(() -> createTitle(), fxpath.nameProperty(), modifiedProperty()));
+        longTitle.bind(Bindings.createStringBinding(() -> fxpath.getPath().toString(), fxpath.pathProperty()));
+    }
+    
+    @Override
+    public void setActions(Actions actions) {
+        actions.setActions(this);
+    }
+    
+    private String createTitle() {
+        String result = isModified() ? "*" + fxpath.getName() : fxpath.getName();
+
+        return result;
+    }
     
     ReadOnlyStringProperty titleProperty() {
         return title.getReadOnlyProperty();
@@ -33,6 +57,10 @@ public class ContentPane extends StackPane {
     
     ReadOnlyObjectProperty<Node> graphicProperty() {
     	return graphic.getReadOnlyProperty();
+    }
+    
+    ReadOnlyStringProperty consoleHeaderTextProperty() {
+        return consoleHeaderText.getReadOnlyProperty();
     }
     
     public void setOnCloseRequest(EventHandler<Event> value) {
@@ -48,7 +76,7 @@ public class ContentPane extends StackPane {
     }
     
     public FXPath getFXPath() {
-        return new FXPath();
+        return fxpath;
     }
     
     public String getContent() {
@@ -59,15 +87,7 @@ public class ContentPane extends StackPane {
         getFXPath().setPath(path);
     }
     
-    public void setActions(Actions actions) {
-        actions.setActions(this);
-    }
-    
     public void init() {}
-    
-    public void bind(Actions actions) {
-        actions.bind(this);
-    }
     
     public String getSelection() {
         return "";
@@ -75,6 +95,10 @@ public class ContentPane extends StackPane {
     
     public Finder getFinder() {
         return null;
+    }
+    
+    public ObservableList<TextStyleSpans> getConsoleOutput() {
+        return FXCollections.emptyObservableList();
     }
     
     public void activate() {}

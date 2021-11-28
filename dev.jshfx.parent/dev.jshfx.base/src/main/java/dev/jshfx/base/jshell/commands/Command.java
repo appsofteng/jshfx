@@ -1,6 +1,6 @@
 package dev.jshfx.base.jshell.commands;
 
-import dev.jshfx.jfx.scene.control.ConsoleModel;
+import dev.jshfx.base.ui.ConsoleModel;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import jdk.jshell.JShell;

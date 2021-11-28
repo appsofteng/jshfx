@@ -16,15 +16,13 @@ import java.util.stream.Collectors;
 
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.base.sys.PreferenceManager;
+import dev.jshfx.base.ui.ConsoleModel;
 import dev.jshfx.j.nio.file.XFiles;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jdk.jshell.execution.ObjectExecutionControlProvider;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
-import dev.jshfx.jfx.scene.control.ConsoleModel;
-import dev.jshfx.jfx.scene.control.SplitConsolePane;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.jx.tools.JavaSourceResolver;
-import javafx.stage.Window;
 import jdk.jshell.JShell;
 import jdk.jshell.JShell.Subscription;
 import jdk.jshell.Snippet;
@@ -44,7 +42,6 @@ public class Session {
     private Feedback feedback;
     private Timer timer = new Timer();
     private JShell jshell;
-    private SplitConsolePane console;
     private TaskQueuer taskQueuer;
     private ConsoleModel consoleModel;
     private List<String> history = new ArrayList<>();
@@ -59,10 +56,9 @@ public class Session {
     private JavaSourceResolver javaSourceResolver;
     private ObjectExecutionControlProvider objectExecutionControlProvider;
 
-    public Session(SplitConsolePane console, TaskQueuer taskQueuer) {
+    public Session(ConsoleModel consoleModel, TaskQueuer taskQueuer) {
 
-        this.console = console;
-        this.consoleModel = console.getConsoleModel();
+        this.consoleModel = consoleModel;
         this.taskQueuer = taskQueuer;
         objectExecutionControlProvider = new ObjectExecutionControlProvider();
 
@@ -98,10 +94,6 @@ public class Session {
         return jshell;
     }
 
-    SplitConsolePane getConsoleView() {
-        return console;
-    }
-
     public ConsoleModel getConsoleModel() {
         return consoleModel;
     }
@@ -132,10 +124,6 @@ public class Session {
 
     public void setStartSnippetMaxIndex(int startSnippetMaxIndex) {
         this.startSnippetMaxIndex = startSnippetMaxIndex;
-    }
-
-    public Window getWindow() {
-        return console.getScene().getWindow();
     }
 
     public Map<String, Snippet> getSnippetsById() {

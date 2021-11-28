@@ -11,6 +11,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
+import javafx.geometry.Orientation;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabDragPolicy;
@@ -21,17 +23,23 @@ import javafx.scene.layout.BorderPane;
 public class RootPane extends BorderPane {
 
     private static RootPane instance;
-    
-    private TabPane centerPane;
+
+    private TabPane centerPane = new TabPane();
+    private ConsolePane consolPane = new ConsolePane();
     private Actions actions;
     private ObjectProperty<ContentPane> contentPane = new SimpleObjectProperty<>();
+    private ObjectProperty<EnvPane> envPane = new SimpleObjectProperty<>();
 
     public RootPane() {
-        centerPane = new TabPane();
         actions = new Actions(this);
-        
         actions.setActions(this);
-        setCenter(centerPane);
+        actions.setReadOnlyContextMenu(consolPane.getArea());
+
+        SplitPane splitPane = new SplitPane(centerPane, consolPane);
+        splitPane.setOrientation(Orientation.VERTICAL);
+        splitPane.setDividerPositions(0.8f);
+
+        setCenter(splitPane);
         setListeners();
 
         actions.getActionController().newShell();
@@ -42,27 +50,44 @@ public class RootPane extends BorderPane {
     public static RootPane get() {
         return instance;
     }
-    
+
     public Actions getActions() {
         return actions;
     }
-    
+
     public void setToolBar(ToolBar toolbar) {
         setTop(toolbar);
     }
-    
+
     private void setListeners() {
+
+        sceneProperty().addListener((v, o, n) -> {
+            if (n != null) {
+                n.focusOwnerProperty().addListener((vv, oo, nn) -> {
+
+                    while (!(nn instanceof EnvPane) && nn != null) {
+                        nn = nn.getParent();
+                    }
+
+                    if (nn instanceof EnvPane ePane) {
+                        envPane.set(ePane);
+                    }
+                });
+            }
+        });
+
         centerPane.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
             if (n != null) {
                 contentPane.set((ContentPane) n.getContent());
                 contentPane.get().activate();
-                contentPane.get().bind(actions);
+                consolPane.setContentPane(contentPane.get());
             } else {
+                consolPane.setContentPane(null);
                 actions.empty();
                 FileManager.get().restoreOutput();
             }
         });
-        
+
         centerPane.getTabs().addListener((Observable o) -> {
             if (centerPane.getTabs().isEmpty()) {
                 actions.getActionController().closeFindDialog();
@@ -70,14 +95,18 @@ public class RootPane extends BorderPane {
         });
     }
 
-    public ContentPane getContentPane() {
-        return  contentPane.get();
+    public EnvPane getEnvPane() {
+        return envPane.get();
     }
     
+    public ContentPane getContentPane() {
+        return contentPane.get();
+    }
+
     public ReadOnlyObjectProperty<ContentPane> contentPaneProperty() {
         return contentPane;
     }
-    
+
     public ObservableList<Tab> getTabs() {
         return centerPane.getTabs();
     }
@@ -145,5 +174,6 @@ public class RootPane extends BorderPane {
     public void dispose() {
         actions.dispose();
         centerPane.getTabs().forEach(t -> ((ContentPane) t.getContent()).dispose());
+        consolPane.dispose();
     }
 }

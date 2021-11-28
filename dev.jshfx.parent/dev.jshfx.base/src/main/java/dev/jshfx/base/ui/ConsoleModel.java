@@ -1,4 +1,4 @@
-package dev.jshfx.jfx.scene.control;
+package dev.jshfx.base.ui;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -18,6 +18,7 @@ import javafx.collections.ObservableList;
 
 public class ConsoleModel {
 
+    private static final int LIMIT = 1500;
     public static final String NORMAL_STYLE = "jsh-console-normal";
     public static final String COMMENT_STYLE = "jsh-console-comment";
     public static final String HELP_STYLE = "jsh-console-help";
@@ -30,7 +31,7 @@ public class ConsoleModel {
     private InputStream in;
     private PrintStream out = new PrintStream(new ConsoleOutputStream(NORMAL_STYLE), true);
     private PrintStream err = new PrintStream(new ConsoleOutputStream(ERROR_STYLE), true);
-    private AtomicBoolean readFromPipe= new AtomicBoolean();
+    private AtomicBoolean readFromPipe = new AtomicBoolean();
 
     public ConsoleModel() {
 
@@ -54,10 +55,10 @@ public class ConsoleModel {
                     if (isReadFromPipe()) {
                         added.stream().map(TextStyleSpans::getText).forEach(outToInStream::print);
                     } else {
-                        inputToOutput.addAll(added);
+                        add(inputToOutput, added, LIMIT);
                     }
 
-                    output.addAll(added);
+                    add(output, added, LIMIT);
                 }
             }
         });
@@ -71,8 +72,8 @@ public class ConsoleModel {
         return readFromPipe;
     }
 
-    public ObservableList<TextStyleSpans> getInput() {
-        return input;
+    public void addInput(TextStyleSpans span) {
+        add(input, span, LIMIT);
     }
 
     public ObservableList<TextStyleSpans> getInputToOutput() {
@@ -106,11 +107,23 @@ public class ConsoleModel {
         }
 
         if (!output.isEmpty() && !output.get(output.size() - 1).getText().endsWith("\n")) {
-            output.add(new TextStyleSpans("\n"));
+            add(output, new TextStyleSpans("\n"), LIMIT);
         }
 
         if (!textStyleSpans.getText().isBlank()) {
-            output.add(textStyleSpans);
+            add(output, textStyleSpans, LIMIT);
+        }
+    }
+
+    private <T> void add(ObservableList<T> list, T added, int limit) {
+        add(list, List.of(added), limit);
+    }
+    
+    private <T> void add(ObservableList<T> list, List<? extends T> added, int limit) {
+        list.addAll(added);
+
+        if (list.size() > limit) {
+            list.remove(0, list.size() - limit);
         }
     }
 

@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import dev.jshfx.base.ui.ConsoleModel;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
-import dev.jshfx.jfx.scene.control.ConsoleModel;
 
 public class Feedback {
 

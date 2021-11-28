@@ -2,11 +2,15 @@ package dev.jshfx.base.ui;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.fxmisc.richtext.LineNumberFactory;
+import org.fxmisc.flowless.VirtualizedScrollPane;
+import org.fxmisc.richtext.model.StyleSpans;
+import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import dev.jshfx.base.jshell.Completion;
 import dev.jshfx.base.jshell.JShellUtils;
@@ -20,82 +24,78 @@ import dev.jshfx.j.nio.file.XFiles;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.CTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
-import dev.jshfx.jfx.scene.control.SplitConsolePane;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
 import javafx.scene.control.IndexRange;
 import jdk.jshell.Snippet;
 import jdk.jshell.SnippetEvent;
 
-public class ShellPane extends PathPane {
+public class ShellPane extends AreaPane {
 
-    private SplitConsolePane consolePane;
+    private static final int HISTORY_LIMIT = 100;
+
+    private ConsoleModel consoleModel = new ConsoleModel();
+    private ObservableList<String> history = FXCollections.observableArrayList();
+    private int historyIndex;
+    private BooleanProperty historyStartReached = new SimpleBooleanProperty();
+    private BooleanProperty historyEndReached = new SimpleBooleanProperty();
+    private List<String> styleFilter = List.of("block-delimiter-match");
     private Completion completion;
     private Session session;
     private TaskQueuer taskQueuer = new TaskQueuer();
-    private Finder finder;
 
     public ShellPane(String name) {
         this(Path.of(name), "");
     }
 
     public ShellPane(Path path, String input) {
-        super(path);
+        super(path, input);
 
-        List<String> history = JsonUtils.get().fromJson(FileManager.HISTORY_FILE, List.class, List.of());
-        consolePane = new SplitConsolePane(history, List.of("block-delimiter-match"));
-        getProperties().put(getClass(), consolePane.getInputArea());
-        session = new Session(consolePane, taskQueuer);
+        history.addAll(JsonUtils.get().fromJson(FileManager.HISTORY_FILE, List.class, List.of()));
+        session = new Session(consoleModel, taskQueuer);
         session.setOnExitCommand(
                 () -> Platform.runLater(() -> onCloseRequest.handle(new Event(this, this, Event.ANY))));
         session.setOnResult(this::handleResult);
-        completion = new Completion(consolePane.getInputArea(), session);
+        completion = new Completion(getArea(), session);
 
-        getChildren().add(consolePane);
+        CodeAreaWrappers.get(getArea(), "java").style().highlighting(consoleModel.getReadFromPipe()).indentation();
 
-        consolePane.getInputArea().setParagraphGraphicFactory(LineNumberFactory.get(consolePane.getInputArea()));
+        getChildren().add(new VirtualizedScrollPane<>(getArea()));
 
-        CodeAreaWrappers.get(consolePane.getInputArea(), "java").style()
-                .highlighting(consolePane.getConsoleModel().getReadFromPipe()).indentation();
-
-        CodeAreaWrappers.get(consolePane.getOutputArea(), "java").style();
-
-        consolePane.getInputArea().replaceText(input);
-        consolePane.getInputArea().moveTo(0);
-        consolePane.getInputArea().requestFollowCaret();
         setBehavior();
-        consolePane.forgetEdit();
-        finder = new FinderImpl(consolePane.getInputArea());
     }
-
     @Override
     public void setActions(Actions actions) {
         super.setActions(actions);
-        actions.setActions(this);
+        
+        actions.setShellContextMenu(getArea());
+        
+        handlers.put(actions.getSubmitAction(), () -> submit());
+        handlers.put(actions.getSubmitLineAction(), () -> submitLine());
+
+//        evalHandler = e -> paneRef.get().eval();
+//        evalLineHandler = e -> paneRef.get().evalLine();
+//        historyUpHandler = e -> paneRef.get().getConsolePane().historyUp();
+//        historyDownHandler = e -> paneRef.get().getConsolePane().historyDown();
+//        historySearchHandler = e -> paneRef.get().showHistorySearch();
+//        insertDirPathHandler = e -> paneRef.get().insertDirPath();
+//        insertFilePathHandler = e -> paneRef.get().insertFilePaths();
+//        insertSeparatedFilePathHandler = e -> paneRef.get().insertFilePaths(File.pathSeparator);
+//        insertSaveFilePathHandler = e -> paneRef.get().insertSaveFilePath();
+//        codeCompletionHandler = e -> paneRef.get().showCodeCompletion();
+//        toggleCommentHandler = e -> paneRef.get().toggleComment();
     }
 
     @Override
-    public void bind(Actions actions) {
-        super.bind(actions);
-        actions.bind(this);
-    }
-
-    @Override
-    public void saved(Path path) {
-        super.saved(path);
-        consolePane.forgetEdit();
-    }
-
-    @Override
-    public String getSelection() {
-        return consolePane.getInputArea().getSelectedText();
-    }
-
-    @Override
-    public Finder getFinder() {
-        return finder;
+    public ObservableList<TextStyleSpans> getConsoleOutput() {
+        return consoleModel.getOutput();
     }
 
     private void handleResult(SnippetEvent event, Object obj) {
@@ -115,8 +115,7 @@ public class ShellPane extends PathPane {
             }
         });
 
-        modified.bind(consolePane.editedProperty());
-        consolePane.getOutputHeader().textProperty().bind(session.getTimer().textProperty());
+        consoleHeaderText.bind(session.getTimer().textProperty());
 
         sceneProperty().addListener((v, o, n) -> {
             if (n != null) {
@@ -124,13 +123,13 @@ public class ShellPane extends PathPane {
             }
         });
 
-        consolePane.getInputArea().caretPositionProperty().addListener((v, o, n) -> {
+        getArea().caretPositionProperty().addListener((v, o, n) -> {
             if (CompletionPopup.get().isShowing()) {
                 showCodeCompletion();
             }
         });
 
-        consolePane.getConsoleModel().getInputToOutput().addListener((Change<? extends TextStyleSpans> c) -> {
+        consoleModel.getInputToOutput().addListener((Change<? extends TextStyleSpans> c) -> {
 
             while (c.next()) {
 
@@ -143,13 +142,13 @@ public class ShellPane extends PathPane {
             }
         });
 
-        consolePane.getHistory().addListener((Change<? extends String> c) -> {
+        history.addListener((Change<? extends String> c) -> {
 
             while (c.next()) {
 
                 if (c.wasAdded() || c.wasRemoved()) {
-                    List<? extends String> history = new ArrayList<>(consolePane.getHistory());
-                    JsonUtils.get().toJson(history, FileManager.HISTORY_FILE);
+                    List<? extends String> h = new ArrayList<>(history);
+                    JsonUtils.get().toJson(h, FileManager.HISTORY_FILE);
                 }
             }
         });
@@ -162,20 +161,15 @@ public class ShellPane extends PathPane {
         }
     }
 
-    @Override
-    public String getContent() {
-        return getConsolePane().getInputArea().getText();
-    }
-
     public void showCodeCompletion() {
 
-        Optional<Bounds> boundsOption = consolePane.getInputArea().getCaretBounds();
+        Optional<Bounds> boundsOption = getArea().getCaretBounds();
         if (boundsOption.isPresent()) {
             Bounds bounds = boundsOption.get();
             CompletionPopup.get().setDocumentation(completion.getCompletor()::loadDocumentation);
             CompletionPopup.get().setCompletionItem(completion.getCompletor()::getCompletionItem);
             CompletionPopup.get().clear();
-            CompletionPopup.get().show(consolePane.getInputArea(), bounds.getMaxX(), bounds.getMaxY());
+            CompletionPopup.get().show(getArea(), bounds.getMaxX(), bounds.getMaxY());
             CTask<Void> task = CTask
                     .create(() -> completion.getCompletor().getCompletionItems(i -> CompletionPopup.get().add(i)));
             taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
@@ -183,80 +177,113 @@ public class ShellPane extends PathPane {
     }
 
     public void toggleComment() {
-        new CommentWrapper<>(consolePane.getInputArea()).toggleComment();
+        new CommentWrapper<>(getArea()).toggleComment();
     }
 
     public void showHistorySearch() {
-        DialogUtils.showHistorySearch(getScene().getWindow(), consolePane.getHistory(),
-                s -> consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), s));
+        DialogUtils.showHistorySearch(getScene().getWindow(), history,
+                s -> getArea().insertText(getArea().getCaretPosition(), s));
     }
 
     public void eval() {
-        String text = consolePane.getInputArea().getSelectedText();
+        String text = getArea().getSelectedText();
 
         if (text == null || text.isEmpty()) {
-            text = consolePane.getInputArea().getText();
+            text = getArea().getText();
         }
 
         eval(text);
     }
 
     public void evalLine() {
-        String text = JShellUtils.getCurrentLineSpan(consolePane.getInputArea()).originalText();
+        String text = JShellUtils.getCurrentLineSpan(getArea()).originalText();
         eval(text);
     }
 
     private void eval(String text) {
-        if (consolePane.getOutputArea().getLength() > 0 && !consolePane.getOutputArea().getText().endsWith("\n")) {
-            consolePane.getOutputArea().appendText("\n");
-        }
-
         session.process(text);
     }
 
     public void submit() {
-        String text = consolePane.getInputArea().getSelectedText();
-        IndexRange selection = consolePane.getInputArea().getSelection();
+        String text = getArea().getSelectedText();
+        IndexRange selection = getArea().getSelection();
         int from = 0;
 
         if (text == null || text.isEmpty()) {
-            text = consolePane.getInputArea().getText();
+            text = getArea().getText();
         } else {
             from = selection.getStart();
         }
 
-        consolePane.submit(from, text);
+        submit(from, text);
 
-        if (consolePane.getInputArea().getSelectedText().isEmpty()) {
-            consolePane.getInputArea().clear();
+        if (getArea().getSelectedText().isEmpty()) {
+            getArea().clear();
         } else {
-            consolePane.getInputArea().replaceSelection("");
+            getArea().replaceSelection("");
         }
     }
 
     public void submitLine() {
-        var lineSpan = JShellUtils.getCurrentLineSpan(consolePane.getInputArea());
-        int from = consolePane.getInputArea().getAbsolutePosition(lineSpan.firstParagraphIndex(), 0);
+        var lineSpan = JShellUtils.getCurrentLineSpan(getArea());
+        int from = getArea().getAbsolutePosition(lineSpan.firstParagraphIndex(), 0);
 
-        consolePane.submit(from, lineSpan.originalText());
+        submit(from, lineSpan.originalText());
 
-        consolePane.getInputArea().deleteText(lineSpan.firstParagraphIndex(), 0, lineSpan.lastParagraphIndex(),
-                consolePane.getInputArea().getParagraphLength(lineSpan.lastParagraphIndex()));
+        getArea().deleteText(lineSpan.firstParagraphIndex(), 0, lineSpan.lastParagraphIndex(),
+                getArea().getParagraphLength(lineSpan.lastParagraphIndex()));
+    }
+
+    private void submit(int from, String text) {
+
+        // Null char may come from clipboard.
+//        if (text.contains("\0")) {
+//            text.replace("\0", "");
+//        }
+
+        TextStyleSpans span = new TextStyleSpans(text + "\n", filterStyles(from, text.length()));
+
+        history.add(text);
+
+        if (history.size() > HISTORY_LIMIT) {
+            history.remove(0);
+        }
+
+        historyIndex = history.size();
+        historyStartReached.set(historyIndex == 0);
+        historyEndReached.set(historyIndex == history.size());
+
+        consoleModel.addInput(span);
+    }
+
+    private StyleSpans<Collection<String>> filterStyles(int from, int length) {
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+
+        getArea().getStyleSpans(from, from + length).forEach(s -> {
+            if (s.getStyle().contains("block-delimiter-match")) {
+                var n = s.getStyle().stream().filter(c -> !styleFilter.contains(c)).collect(Collectors.toList());
+                spansBuilder.add(n, s.getLength());
+            } else {
+                spansBuilder.add(s);
+            }
+        });
+
+        // For extra new line
+        spansBuilder.add(Collections.emptyList(), 1);
+        var styleSpans = spansBuilder.create();
+
+        return styleSpans;
     }
 
     public Session getSession() {
         return session;
     }
 
-    public SplitConsolePane getConsolePane() {
-        return consolePane;
-    }
-
     public void insertDirPath() {
         var dir = FileDialogUtils.getDirectory(getScene().getWindow());
 
         dir.ifPresent(d -> {
-            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), XFiles.toString(d));
+            getArea().insertText(getArea().getCaretPosition(), XFiles.toString(d));
         });
     }
 
@@ -270,20 +297,59 @@ public class ShellPane extends PathPane {
         String path = files.stream().map(f -> XFiles.relativize(getFXPath().getPath().getParent(), f))
                 .map(f -> XFiles.toString(f)).collect(Collectors.joining(separator));
 
-        consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), path);
+        getArea().insertText(getArea().getCaretPosition(), path);
     }
 
     public void insertSaveFilePath() {
         var file = FileDialogUtils.saveSourceJavaFile(getScene().getWindow());
 
         file.ifPresent(f -> {
-            consolePane.getInputArea().insertText(consolePane.getInputArea().getCaretPosition(), XFiles.toString(f) + " ");
+            getArea().insertText(getArea().getCaretPosition(), XFiles.toString(f) + " ");
         });
+    }
+
+    public void historyUp() {
+
+        if (historyIndex > 0 && historyIndex <= history.size()) {
+            historyIndex--;
+            String text = history.get(historyIndex);
+            // Ensures highlighting when the next text is the same as the previous.
+            getArea().replaceText("");
+            getArea().replaceText(text);
+            historyStartReached.set(historyIndex == 0);
+            historyEndReached.set(historyIndex == history.size());
+        }
+    }
+
+    public void historyDown() {
+
+        if (historyIndex >= 0 && historyIndex < history.size() - 1) {
+            historyIndex++;
+            String text = history.get(historyIndex);
+            // Ensures highlighting when the next text is the same as the previous.
+            getArea().replaceText("");
+            getArea().replaceText(text);
+        } else {
+            getArea().replaceText("");
+            historyIndex = history.size();
+        }
+
+        historyStartReached.set(historyIndex == 0);
+        historyEndReached.set(historyIndex == history.size());
+
+    }
+
+    public ReadOnlyBooleanProperty historyStartReachedProperty() {
+        return historyStartReached;
+    }
+
+    public ReadOnlyBooleanProperty historyEndReachedProperty() {
+        return historyEndReached;
     }
 
     @Override
     public void init() {
-        session.doImports(consolePane.getInputArea().getText());
+        session.doImports(getArea().getText());
         setPathDir(getFXPath().getPath());
     }
 
@@ -296,7 +362,6 @@ public class ShellPane extends PathPane {
     public void dispose() {
         super.dispose();
         session.close();
-        consolePane.dispose();
         taskQueuer.clear();
     }
 }

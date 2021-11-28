@@ -177,12 +177,12 @@ public class ActionController {
         if (FileManager.SHELL_EXTENSIONS.contains(XFiles.getFileExtension(path))) {
 
             var shellPane = new ShellPane(path, input);
-            shellPane.setActions(rootPane.getActions());
+            rootPane.getActions().setActions(shellPane);
             pane = shellPane;
 
         } else {
             var editorPane = new EditorPane(path, input);
-            editorPane.setActions(rootPane.getActions());
+            rootPane.getActions().setActions(editorPane);
             pane = editorPane;
         }
 

@@ -31,7 +31,7 @@ import dev.jshfx.base.jshell.commands.SetCommand;
 import dev.jshfx.base.jshell.commands.StopCommand;
 import dev.jshfx.base.jshell.commands.TypeCommand;
 import dev.jshfx.base.jshell.commands.VarCommand;
-import dev.jshfx.jfx.scene.control.ConsoleModel;
+import dev.jshfx.base.ui.ConsoleModel;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.jx.tools.Lexer;
 import dev.jshfx.jx.tools.Token;
