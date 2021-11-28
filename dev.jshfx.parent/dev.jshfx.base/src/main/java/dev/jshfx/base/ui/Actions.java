@@ -87,7 +87,6 @@ public class Actions {
 
     private BooleanExpression savedAllExpression;
 
-    private BooleanProperty saved = new SimpleBooleanProperty();
     private BooleanProperty savedAll = new SimpleBooleanProperty();
     private BooleanProperty clipboardEmpty = new SimpleBooleanProperty();
     private BooleanProperty allSelected = new SimpleBooleanProperty();
@@ -136,7 +135,6 @@ public class Actions {
         FXResourceBundle.getBundle().put(saveAction.textProperty(), "save");
         FXResourceBundle.getBundle().put(saveAction.longTextProperty(), "saveLong",
                 saveAction.getAccelerator().getDisplayText());
-        saveAction.disabledProperty().bind(saved);
 
         saveAsAction = new Action(e -> actionController.saveAsFile());
         saveAsAction.setGraphic(new ImageView(ResourceManager.get().getImage("save-as.png")));
@@ -320,6 +318,10 @@ public class Actions {
         return submitLineAction;
     }
     
+    public Action getSaveAction() {
+        return saveAction;
+    }
+    
     public ActionController getActionController() {
         return actionController;
     }
@@ -485,10 +487,6 @@ public class Actions {
                 Bindings.createBooleanBinding(() -> pane.getArea().getLength() == 0, pane.getArea().lengthProperty()));
     }
     
-    private void bind(ContentPane pane) {
-        saved.bind(pane.modifiedProperty().not());
-    }
-
     public void bind(EditorPane pane) {
         evalAction.setDisabled(true);
         evalLineAction.setDisabled(true);

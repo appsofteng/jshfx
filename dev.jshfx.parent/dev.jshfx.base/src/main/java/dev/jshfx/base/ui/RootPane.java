@@ -25,7 +25,7 @@ public class RootPane extends BorderPane {
     private static RootPane instance;
 
     private TabPane centerPane = new TabPane();
-    private ConsolePane consolPane = new ConsolePane();
+    private ConsolePane consolePane = new ConsolePane();
     private Actions actions;
     private ObjectProperty<ContentPane> contentPane = new SimpleObjectProperty<>();
     private ObjectProperty<EnvPane> envPane = new SimpleObjectProperty<>();
@@ -33,9 +33,9 @@ public class RootPane extends BorderPane {
     public RootPane() {
         actions = new Actions(this);
         actions.setActions(this);
-        actions.setReadOnlyContextMenu(consolPane.getArea());
+        consolePane.setActions(actions);
 
-        SplitPane splitPane = new SplitPane(centerPane, consolPane);
+        SplitPane splitPane = new SplitPane(centerPane, consolePane);
         splitPane.setOrientation(Orientation.VERTICAL);
         splitPane.setDividerPositions(0.8f);
 
@@ -80,9 +80,9 @@ public class RootPane extends BorderPane {
             if (n != null) {
                 contentPane.set((ContentPane) n.getContent());
                 contentPane.get().activate();
-                consolPane.setContentPane(contentPane.get());
+                consolePane.setContentPane(contentPane.get());
             } else {
-                consolPane.setContentPane(null);
+                consolePane.setContentPane(null);
                 actions.empty();
                 FileManager.get().restoreOutput();
             }
@@ -98,7 +98,7 @@ public class RootPane extends BorderPane {
     public EnvPane getEnvPane() {
         return envPane.get();
     }
-    
+
     public ContentPane getContentPane() {
         return contentPane.get();
     }
@@ -174,6 +174,6 @@ public class RootPane extends BorderPane {
     public void dispose() {
         actions.dispose();
         centerPane.getTabs().forEach(t -> ((ContentPane) t.getContent()).dispose());
-        consolPane.dispose();
+        consolePane.dispose();
     }
 }

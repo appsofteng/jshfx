@@ -62,6 +62,18 @@ public class ConsolePane extends EnvPane {
     }
 
     @Override
+    public void setActions(Actions actions) {
+        super.setActions(actions);
+        
+        actions.setReadOnlyContextMenu(getArea());
+        
+        handlers.put(actions.getCopyAction(), () -> area.copy());
+        handlers.put(actions.getCutAction(), () -> area.cut());
+        handlers.put(actions.getSelectAllAction(), () -> area.selectAll());
+        handlers.put(actions.getClearAction(), () -> area.clear());
+    }
+    
+    @Override
     public String getUserAgentStylesheet() {
         return getClass().getResource("console.css").toExternalForm();
     }

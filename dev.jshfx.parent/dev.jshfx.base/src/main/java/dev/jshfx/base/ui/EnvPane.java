@@ -16,6 +16,10 @@ public class EnvPane extends StackPane {
         
     }
     
+    public void bindActions(Actions actions) {
+        
+    }
+    
     public void handle(Action action) {
         var handler = handlers.get(action);
         
