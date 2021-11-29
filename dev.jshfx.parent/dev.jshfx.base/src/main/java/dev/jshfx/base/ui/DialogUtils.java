@@ -25,6 +25,10 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.TilePane;
 import javafx.scene.text.Font;
 import javafx.stage.Modality;
@@ -47,10 +51,37 @@ public final class DialogUtils {
         if (obj instanceof Charts charts) {
 
             Dialog<Void> dialog = createPlainDialog(window);
+//            dialog.setWidth(MainApp.WINDOW_PREF_WIDTH);
+//            dialog.setHeight(MainApp.WINDOW_PREF_HEIGHT);
 
-            TilePane tilePane = new TilePane();
-            tilePane.setPrefColumns(charts.getColumns());
-            tilePane.getChildren().addAll(charts.getCharts());
+            int columns = charts.getColumns();
+            int rows = charts.getCharts().size() / columns + (int) Math.signum(charts.getCharts().size() % columns);
+
+            GridPane chartPane = new GridPane();
+            
+            for (int i = 0; i < charts.getCharts().size(); i++) {
+                var chart = charts.getCharts().get(i);
+                
+                int column = i % columns;
+                int row = (i + 1) / columns + (int) Math.signum((i + 1) % columns) - 1;
+                
+                GridPane.setRowIndex(chart, row);
+                GridPane.setColumnIndex(chart, column);
+            }
+
+            while (columns-- > 0) {
+                ColumnConstraints column = new ColumnConstraints();
+                column.setHgrow(Priority.ALWAYS);
+                chartPane.getColumnConstraints().add(column);
+            }
+
+            while (rows-- > 0) {
+                RowConstraints row = new RowConstraints();
+                row.setVgrow(Priority.ALWAYS);
+                chartPane.getRowConstraints().add(row);
+            }
+            
+            chartPane.getChildren().addAll(charts.getCharts());
 
             var name = charts.getTitle().isEmpty() ? charts.getCharts().get(0).getTitle() : charts.getTitle();
 
@@ -58,9 +89,9 @@ public final class DialogUtils {
                 name = FXResourceBundle.getBundle().getString​("chart");
             }
 
-            RootPane.get().getActions().setSnapshotContextMenu(tilePane, name);
+            RootPane.get().getActions().setSnapshotContextMenu(chartPane, name);
 
-            BorderPane borderPane = new BorderPane(tilePane);
+            BorderPane borderPane = new BorderPane(chartPane);
             if (!charts.getTitle().isEmpty()) {
                 var label = new Label(charts.getTitle());
                 label.setFont(new Font(label.getFont().getName(), 20));
@@ -68,26 +99,25 @@ public final class DialogUtils {
                 BorderPane.setAlignment(label, Pos.CENTER);
             }
 
-            ScrollPane scrollPane = new ScrollPane(borderPane);
-            scrollPane.prefViewportWidthProperty().bind(Bindings.createDoubleBinding(
-                    () -> Math.min(borderPane.getWidth(), MainApp.WINDOW_PREF_WIDTH), borderPane.widthProperty()));
-            scrollPane.prefViewportHeightProperty().bind(Bindings.createDoubleBinding(
-                    () -> Math.min(borderPane.getHeight(), MainApp.WINDOW_PREF_HEIGHT), borderPane.heightProperty()));
-            scrollPane.setPannable(true);
+//            ScrollPane scrollPane = new ScrollPane(borderPane);
+//            scrollPane.prefViewportWidthProperty().bind(Bindings.createDoubleBinding(
+//                    () -> Math.min(borderPane.getWidth(), MainApp.WINDOW_PREF_WIDTH), borderPane.widthProperty()));
+//            scrollPane.prefViewportHeightProperty().bind(Bindings.createDoubleBinding(
+//                    () -> Math.min(borderPane.getHeight(), MainApp.WINDOW_PREF_HEIGHT), borderPane.heightProperty()));
+            // scrollPane.setPannable(true);
 
-            dialog.getDialogPane().setContent(scrollPane);
+            dialog.getDialogPane().setContent(borderPane);
 
             dialog.show();
-        }
-        
-        if (obj instanceof Tables tables) {
+        } else if (obj instanceof Tables tables) {
             Dialog<Void> dialog = createPlainDialog(window);
-            
+
             TabPane tabPane = new TabPane();
             tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-            
-            tables.getTableViews().stream().map(tv -> new Tab(tv.getId(), tv)).collect(Collectors.toCollection(() -> tabPane.getTabs()));           
-            
+
+            tables.getTableViews().stream().map(tv -> new Tab(tv.getId(), tv))
+                    .collect(Collectors.toCollection(() -> tabPane.getTabs()));
+
             dialog.getDialogPane().setContent(tabPane);
             dialog.show();
         }
@@ -112,6 +142,7 @@ public final class DialogUtils {
 
     private static <T> Dialog<T> createPlainDialog(Window window) {
         Dialog<T> dialog = new Dialog<>();
+        dialog.setResizable(true);
         dialog.initModality(Modality.NONE);
         dialog.setDialogPane(new PlainDialogPane());
         dialog.initOwner(window);
