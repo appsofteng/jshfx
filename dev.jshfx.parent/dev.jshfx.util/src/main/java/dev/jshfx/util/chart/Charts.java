@@ -1,5 +1,6 @@
 package dev.jshfx.util.chart;
 
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +112,8 @@ public final class Charts {
         
         if (value instanceof Number) {
             axis = (Axis<V>) new NumberAxis();
+        } else if (value instanceof ZonedDateTime) {
+            axis = (Axis<V>) new DateTimeAxis();
         } else {
             axis = (Axis<V>) new CategoryAxis();
         }
