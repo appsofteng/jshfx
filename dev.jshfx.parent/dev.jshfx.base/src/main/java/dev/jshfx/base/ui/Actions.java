@@ -190,28 +190,28 @@ public class Actions {
         FXResourceBundle.getBundle().put(redoAction.longTextProperty(), "redo");
         redoAction.setDisabled(true);
 
-        evalAction = new Action(e -> rootPane.getEnvPane().handle(evalAction));
+        evalAction = new Action(e -> rootPane.getContentPane().handle(evalAction));
         evalAction.setGraphic(new StyleGlyph(Fonts.FONT_AWESOME_5_FREE_SOLID, Fonts.FontAwesome.PLAY));
         evalAction.setAccelerator(KeyCombination.keyCombination("Shortcut+E"));
         FXResourceBundle.getBundle().put(evalAction.textProperty(), "evaluate");
         FXResourceBundle.getBundle().put(evalAction.longTextProperty(), "evaluateLong",
                 evalAction.getAccelerator().getDisplayText());
 
-        evalLineAction = new Action(e -> rootPane.getEnvPane().handle(evalLineAction));
+        evalLineAction = new Action(e -> rootPane.getContentPane().handle(evalLineAction));
         evalLineAction.setGraphic(new StyleGlyph(Fonts.FONT_AWESOME_5_FREE_SOLID, Fonts.FontAwesome.ARROW_RIGHT));
         evalLineAction.setAccelerator(KeyCombination.keyCombination("Alt+E"));
         FXResourceBundle.getBundle().put(evalLineAction.textProperty(), "evaluateLine");
         FXResourceBundle.getBundle().put(evalLineAction.longTextProperty(), "evaluateLineLong",
                 evalLineAction.getAccelerator().getDisplayText());
 
-        submitAction = new Action(e -> rootPane.getEnvPane().handle(submitAction));
+        submitAction = new Action(e -> rootPane.getContentPane().handle(submitAction));
         submitAction.setGraphic(new StyleGlyph(Fonts.MATERIAL_ICONS, Fonts.Material.SEND));
         submitAction.setAccelerator(KeyCombination.keyCombination("Shift+Enter"));
         FXResourceBundle.getBundle().put(submitAction.textProperty(), "submit");
         FXResourceBundle.getBundle().put(submitAction.longTextProperty(), "submitLong",
                 submitAction.getAccelerator().getDisplayText());
 
-        submitLineAction = new Action(e -> rootPane.getEnvPane().handle(submitLineAction));
+        submitLineAction = new Action(e -> rootPane.getContentPane().handle(submitLineAction));
         submitLineAction.setGraphic(new StyleGlyph(Fonts.MATERIAL_ICONS, Fonts.Material.INPUT, 14));
         submitLineAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Enter"));
         FXResourceBundle.getBundle().put(submitLineAction.textProperty(), "submitLine");
