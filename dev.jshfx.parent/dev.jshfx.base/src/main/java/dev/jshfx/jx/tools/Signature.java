@@ -220,7 +220,7 @@ public class Signature {
             } else if (c == '>') {
                 genericDelimiters--;
                 typeEndIndex = i;
-            } else if (c == ' ' || c == ']' || c == '.') {
+            } else if (c == ' ' || c == ']' || i > 1 && c == '.' && parameters.charAt(i - 1) == '.' && parameters.charAt(i - 2) == '.') {
                 typeEndIndex = i;
             }
 
@@ -254,7 +254,7 @@ public class Signature {
         if (i == -1) {
             var resolvedType = resolveFullTypeName.apply(noArrayType);
             if (resolvedType != null) {
-                noArrayType = resolvedType;
+                noArrayType = resolvedType.replaceAll("<.*>", "");
             }
         }
 
