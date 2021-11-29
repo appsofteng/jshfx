@@ -151,11 +151,11 @@ public class Signature {
     private void parseMethod() {
         int p1 = signature.indexOf("(");
         int p2 = signature.lastIndexOf(")");
-        var typeAndName = signature.substring(0, p1);
-        typeAndName = removeBracketContent(typeAndName);
-        int i = typeAndName.lastIndexOf(" ");
-        typeAndName = typeAndName.substring(i + 1);
-        String returnType = i > -1 ? typeAndName.substring(0, i) : "";
+        var returnTypeAndName = signature.substring(0, p1);
+        returnTypeAndName = removeBracketContent(returnTypeAndName);
+        int i = returnTypeAndName.lastIndexOf(" ");
+        var typeAndName = returnTypeAndName.substring(i + 1);
+        String returnType = i > -1 ? returnTypeAndName.substring(0, i) : "";
 
         i = typeAndName.lastIndexOf(".");
         String methodName = typeAndName;
