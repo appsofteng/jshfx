@@ -49,6 +49,16 @@ public final class Data {
         return series;
     }
     
+    public static <X, Y> Series<X, Y> getSeries(String name, Map<X, List<Y>> data, int index) {
+        Series<X, Y> series = new Series<>();
+        series.setName(name);
+
+        data.entrySet().stream().map(e -> new XYChart.Data<>(e.getKey(), e.getValue().get(index)))
+                .collect(Collectors.toCollection(() -> series.getData()));
+
+        return series;
+    }
+    
     public static <Y extends Number> List<PieChart.Data> getPieData(Map<String, Y> data) {
         List<PieChart.Data> list = data.entrySet().stream().map(e -> new PieChart.Data(e.getKey(), e.getValue().doubleValue())).toList();
 
