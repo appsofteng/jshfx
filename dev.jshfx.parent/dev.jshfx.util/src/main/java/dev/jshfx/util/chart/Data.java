@@ -36,7 +36,12 @@ public final class Data {
     }
 
     public static <X, Y> Series<X, Y> getSeries(Map<X, Y> data) {
+        return getSeries("", data);
+    }
+    
+    public static <X, Y> Series<X, Y> getSeries(String name, Map<X, Y> data) {
         Series<X, Y> series = new Series<>();
+        series.setName(name);
 
         data.entrySet().stream().map(e -> new XYChart.Data<>(e.getKey(), e.getValue()))
                 .collect(Collectors.toCollection(() -> series.getData()));

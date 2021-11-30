@@ -34,13 +34,17 @@ public final class Charts {
 
     private List<Chart> charts;
 
-    private Charts(String title, int columns, Chart... charts) {
+    private Charts(String title, int columns, List<Chart> charts) {
         this.title = title;
         this.columns = columns;
-        this.charts = Arrays.asList(charts);
+        this.charts = charts;
     }
 
     public static <X, Y> AreaChart<X, Y> getAreaChart(Series<X, Y>... series) {
+        return getAreaChart(Arrays.asList(series));
+    }
+    
+    public static <X, Y> AreaChart<X, Y> getAreaChart(List<Series<X, Y>> series) {
         List<Axis<?>> axes = getAxes(series);
 
         AreaChart<X, Y> chart = (AreaChart<X, Y>) new AreaChart<>(axes.get(0), axes.get(1));
@@ -50,6 +54,10 @@ public final class Charts {
     }
 
     public static <X, Y> BarChart<X, Y> getBarChart(Series<X, Y>... series) {
+        return getBarChart(Arrays.asList(series)); 
+    }
+    
+    public static <X, Y> BarChart<X, Y> getBarChart(List<Series<X, Y>> series) {
         List<Axis<?>> axes = getAxes(series);
 
         BarChart<X, Y> chart = (BarChart<X, Y>) new BarChart<>(axes.get(0), axes.get(1));
@@ -59,6 +67,10 @@ public final class Charts {
     }
 
     public static <X, Y> LineChart<X, Y> getLineChart(Series<X, Y>... series) {
+        return getLineChart(Arrays.asList(series));
+    }
+    
+    public static <X, Y> LineChart<X, Y> getLineChart(List<Series<X, Y>> series) {
         List<Axis<?>> axes = getAxes(series);
 
         LineChart<X, Y> chart = (LineChart<X, Y>) new LineChart<>(axes.get(0), axes.get(1));
@@ -75,6 +87,10 @@ public final class Charts {
     }
 
     public static <X, Y> ScatterChart<X, Y> getScatterChart(Series<X, Y>... series) {
+        return getScatterChart(Arrays.asList(series));
+    }
+    
+    public static <X, Y> ScatterChart<X, Y> getScatterChart(List<Series<X, Y>> series) {
         List<Axis<?>> axes = getAxes(series);
 
         ScatterChart<X, Y> chart = (ScatterChart<X, Y>) new ScatterChart<>(axes.get(0), axes.get(1));
@@ -84,6 +100,10 @@ public final class Charts {
     }
 
     public static <X, Y> StackedAreaChart<X, Y> getStackedAreaChart(Series<X, Y>... series) {
+        return getStackedAreaChart(Arrays.asList(series));
+    }
+    
+    public static <X, Y> StackedAreaChart<X, Y> getStackedAreaChart(List<Series<X, Y>> series) {
         List<Axis<?>> axes = getAxes(series);
 
         StackedAreaChart<X, Y> chart = (StackedAreaChart<X, Y>) new StackedAreaChart<>(axes.get(0), axes.get(1));
@@ -93,6 +113,10 @@ public final class Charts {
     }
 
     public static <X, Y> StackedBarChart<X, Y> getStackedBarChart(Series<X, Y>... series) {
+        return getStackedBarChart(Arrays.asList(series));
+    }
+    
+    public static <X, Y> StackedBarChart<X, Y> getStackedBarChart(List<Series<X, Y>> series) {
         List<Axis<?>> axes = getAxes(series);
 
         StackedBarChart<X, Y> chart = (StackedBarChart<X, Y>) new StackedBarChart<>(axes.get(0), axes.get(1));
@@ -101,15 +125,15 @@ public final class Charts {
         return chart;
     }
 
-    private static <X, Y> List<Axis<?>> getAxes(Series<X, Y>... series) {
+    private static <X, Y> List<Axis<?>> getAxes(List<Series<X, Y>> series) {
 
-        X x = series[0].getData().get(0).getXValue();
-        Y y = series[0].getData().get(0).getYValue();
+        X x = series.get(0).getData().get(0).getXValue();
+        Y y = series.get(0).getData().get(0).getYValue();
 
         Axis<X> axisX = getAxis(x);
         Axis<Y> axisY = getAxis(y);
 
-        if (series.length > 1) {
+        if (series.size() > 1) {
             sortCategories(axisX, axisY, series);
         }
 
@@ -128,7 +152,7 @@ public final class Charts {
         return axis;
     }
 
-    private static <X, Y> void sortCategories(Axis<X> axisX, Axis<Y> axisY, Series<X, Y>... series) {
+    private static <X, Y> void sortCategories(Axis<X> axisX, Axis<Y> axisY, List<Series<X, Y>> series) {
 
         CategoryAxis categoryX = null;
         CategoryAxis categoryY = null;
@@ -180,23 +204,38 @@ public final class Charts {
     public List<Chart> getCharts() {
         return charts;
     }
-
+    
     public static Charts show(Chart... charts) {
-        var columns = charts.length > 1 ? 2 : 1;
-        return show(columns, charts);
+        return show("", charts);
     }
 
     public static Charts show(int columns, Chart... charts) {
-
         return show("", columns, charts);
     }
 
     public static Charts show(String title, Chart... charts) {
-        var columns = charts.length > 1 ? 2 : 1;
-        return show(title, columns, charts);
+        return show(title, Arrays.asList(charts));
     }
 
     public static Charts show(String title, int columns, Chart... charts) {
+        return show(title, columns, Arrays.asList(charts));
+    }
+    
+    public static Charts show(List<Chart> charts) {
+        return show("", charts);
+    }
+    
+    public static Charts show(int columns, List<Chart> charts) {
+
+        return show("", columns, charts);
+    }
+    
+    public static Charts show(String title, List<Chart> charts) {
+        var columns = charts.size() > 1 ? 2 : 1;
+        return show(title, columns, charts);
+    }
+    
+    public static Charts show(String title, int columns, List<Chart> charts) {
 
         Charts result = new Charts(title, columns, charts);
 

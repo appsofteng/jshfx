@@ -60,7 +60,7 @@ public class SnippetProcessor extends Processor {
                         FXResourceBundle.getBundle().getString​("unknown") + "  " + sb.toString().strip() + "\n");
                 sb.delete(0, sb.length());
                 continue;
-            } else if (info.completeness() == Completeness.COMPLETE) {
+            } else if (info.completeness() == Completeness.COMPLETE || info.completeness() == Completeness.COMPLETE_WITH_SEMI) {
                 if (i + 1 < lines.length && lines[i + 1].trim().startsWith(".")) {
                     sb.delete(sb.length() - 1, sb.length());
                     continue;
