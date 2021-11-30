@@ -139,7 +139,7 @@ public final class Charts {
         }
 
         if (axisX instanceof NumberAxis numberAxis) {
-            series.stream().flatMap(s -> s.getData().stream()).mapToDouble(d ->  ((Number)d.getXValue()).doubleValue()).min()
+            series.stream().map(s -> s.getData().get(0)).mapToDouble(d ->  ((Number)d.getXValue()).doubleValue()).min()
                     .ifPresent(m -> numberAxis.setForceZeroInRange(m <= 0));
         }
 
