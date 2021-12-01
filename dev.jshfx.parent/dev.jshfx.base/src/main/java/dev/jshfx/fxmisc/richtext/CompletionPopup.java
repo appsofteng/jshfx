@@ -86,24 +86,28 @@ public class CompletionPopup extends Tooltip {
         itemView.getItems().clear();
     }
 
-    public void add(CompletionItem item) {
+    public boolean add(CompletionItem item) {
 
-        if (item != null) {
-            buffer.add(item);
-        }
+        if (isShowing()) {
+            if (item != null) {
+                buffer.add(item);
+            }
 
-        if (buffer.size() > 4 || item == null) {
-            var copy = new ArrayList<>(buffer);
-            Platform.runLater(() -> {
-                itemView.getItems().addAll(copy);
-                if (itemView.getSelectionModel().isEmpty()) {
-                    getGraphic().requestFocus();
-                    itemView.getSelectionModel().clearSelection();
-                    itemView.getSelectionModel().selectFirst();
-                }
-            });
-            buffer.clear();
-        }
+            if (buffer.size() > 4 || item == null) {
+                var copy = new ArrayList<>(buffer);
+                Platform.runLater(() -> {
+                    itemView.getItems().addAll(copy);
+                    if (itemView.getSelectionModel().isEmpty()) {
+                        getGraphic().requestFocus();
+                        itemView.getSelectionModel().clearSelection();
+                        itemView.getSelectionModel().selectFirst();
+                    }
+                });
+                buffer.clear();
+            }
+        } 
+        
+        return isShowing();
     }
 
     public void setItems(Collection<? extends CompletionItem> items) {
@@ -141,7 +145,7 @@ public class CompletionPopup extends Tooltip {
                 e.consume();
             }
         };
-        
+
         mouseHandler = e -> {
             close();
         };

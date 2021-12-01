@@ -1,6 +1,6 @@
 package dev.jshfx.base.jshell;
 
-import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.fxmisc.richtext.CodeArea;
 
@@ -17,7 +17,7 @@ public abstract class Completor {
         this.session = session;
     }
 
-    public abstract void getCompletionItems(Consumer<CompletionItem> items);
+    public abstract void getCompletionItems(Predicate<CompletionItem> items);
         
     public abstract HtmlDoc loadDocumentation(CompletionItem item);
     

@@ -2,10 +2,8 @@ package dev.jshfx.base.jshell;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -29,15 +27,17 @@ class SourceCodeCompletor extends Completor {
     }
 
     @Override
-    public void getCompletionItems(Consumer<CompletionItem> items) {
+    public void getCompletionItems(Predicate<CompletionItem> items) {
 
         int[] relativeAnchor = new int[1];
         StringBuffer relativeInput = new StringBuffer();
         int relativeCursor = inputArea.getCaretColumn();
+        boolean processing = true;
 
         for (int i = inputArea.getCurrentParagraph(); i >= 0; i--) {
             String text = inputArea.getParagraph(i).getText() + "\n";
             relativeInput.insert(0, text);
+            
             if (i < inputArea.getCurrentParagraph()) {
                 relativeCursor += text.length();
             }
@@ -49,20 +49,13 @@ class SourceCodeCompletor extends Completor {
 
                 int absoluteAnchor = inputArea.getCaretPosition() - (relativeCursor - relativeAnchor[0]);
 
-                suggestions = suggestions.stream().sorted(Comparator.comparing(s -> s.continuation())).toList();
-                Map<String, String> continuations = new HashMap<>();
+                var suggestionWrappers = suggestions.stream().map(SuggestionWrapper::new).sorted().distinct().toList();
 
-                for (Suggestion suggestion : suggestions) {
+                for (SuggestionWrapper suggestion : suggestionWrappers) {
 
-                    if (continuations.containsKey(suggestion.continuation())) {
-                        continue;
-                    }
+                    String docInput = getDocInput(relativeInput.toString(), suggestion.getSuggestion(),
+                            relativeAnchor[0]);
 
-                    continuations.put(suggestion.continuation(), suggestion.continuation());
-
-                    String docInput = getDocInput(relativeInput.toString(), suggestion, relativeAnchor[0]);
-                    // List<Documentation> docs = Session.documentation(docInput, docInput.length(),
-                    // false);
                     List<Documentation> docs = session.getJshell().sourceCodeAnalysis().documentation(docInput,
                             docInput.length(), false);
 
@@ -71,13 +64,26 @@ class SourceCodeCompletor extends Completor {
 
                     if (docs.isEmpty()) {
 
-                        items.accept(new SuggestionCompletionItem(inputArea, suggestion, absoluteAnchor,
-                                Signature.get("", expressionType, this::resolveType)));
+                        processing = items.test(new SuggestionCompletionItem(inputArea, suggestion.getSuggestion(),
+                                absoluteAnchor, Signature.get("", expressionType, this::resolveType)));
 
                     } else {
-                        docs = docs.stream().sorted(Comparator.comparing(d -> d.signature())).toList();
-                        docs.forEach(d -> items.accept(new SuggestionCompletionItem(inputArea, suggestion,
-                                absoluteAnchor, Signature.get(d.signature(), expressionType, this::resolveType))));
+                        var signatures = docs.stream().map(Documentation::signature).sorted(Comparator.comparing(s -> s, String.CASE_INSENSITIVE_ORDER)).distinct().toList();
+
+                        for (var signature : signatures) {
+                            var item = new SuggestionCompletionItem(inputArea, suggestion.getSuggestion(),
+                                    absoluteAnchor, Signature.get(signature, expressionType, this::resolveType));
+
+                            processing = items.test(item);
+
+                            if (!processing) {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!processing) {
+                        break;
                     }
                 }
 
@@ -89,16 +95,21 @@ class SourceCodeCompletor extends Completor {
 
             if (!qualifiedNames.isResolvable()) {
                 if (!qualifiedNames.getNames().isEmpty()) {
-                    qualifiedNames.getNames().forEach(
-                            n -> items.accept(new QualifiedNameCompletionItem(Signature.get(n, null, this::resolveType),
-                                    this::addImport)));
+
+                    for (var name : qualifiedNames.getNames()) {
+                        processing = items.test(new QualifiedNameCompletionItem(Signature.get(name, null, this::resolveType),
+                                this::addImport));
+                        if (!processing) {
+                            break;
+                        }
+                    }
 
                     break;
                 }
             }
         }
 
-        items.accept(null);
+        items.test(null);
     }
 
     private void addImport(String newImport) {
@@ -224,5 +235,44 @@ class SourceCodeCompletor extends Completor {
         }
 
         return result;
+    }
+
+    private static class SuggestionWrapper implements Comparable<SuggestionWrapper> {
+        private Suggestion suggestion;
+
+        public SuggestionWrapper(Suggestion suggestion) {
+            this.suggestion = suggestion;
+        }
+
+        public Suggestion getSuggestion() {
+            return suggestion;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+
+            boolean equal = false;
+
+            if (obj instanceof SuggestionWrapper other) {
+                equal = suggestion.continuation().equals(other.suggestion.continuation());
+            }
+
+            return equal;
+        }
+
+        @Override
+        public int hashCode() {
+            return suggestion.continuation().hashCode();
+        }
+
+        @Override
+        public int compareTo(SuggestionWrapper other) {
+            return suggestion.continuation().compareToIgnoreCase(other.suggestion.continuation());
+        }
+
+        @Override
+        public String toString() {
+            return suggestion.continuation();
+        }
     }
 }

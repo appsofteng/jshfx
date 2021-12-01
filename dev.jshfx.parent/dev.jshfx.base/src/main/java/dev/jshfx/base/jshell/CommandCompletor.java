@@ -2,7 +2,7 @@ package dev.jshfx.base.jshell;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.fxmisc.richtext.CodeArea;
@@ -21,7 +21,7 @@ class CommandCompletor extends Completor {
     }
 
     @Override
-    public void getCompletionItems(Consumer<CompletionItem> items) {
+    public void getCompletionItems(Predicate<CompletionItem> items) {
         var lineSpan = JShellUtils.getCurrentLineSpan(inputArea);
         String input = lineSpan.text();
         int caretPosition = lineSpan.caretPosition();
@@ -80,10 +80,14 @@ class CommandCompletor extends Completor {
             String commandName = args[0];
             String name = arg.substring(0, positionInArg) + candidate;
 
-            items.accept(new CommandCompletionItem(inputArea, absoluteAnchor, candidate.toString(), commandName, name));
+            boolean processing = items.test(new CommandCompletionItem(inputArea, absoluteAnchor, candidate.toString(), commandName, name));
+            
+            if (!processing) {
+                break;
+            }
         }
         
-        items.accept(null);
+        items.test(null);
     }
 
     @Override
