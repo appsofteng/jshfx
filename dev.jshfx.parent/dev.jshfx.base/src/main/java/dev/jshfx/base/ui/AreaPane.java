@@ -24,7 +24,7 @@ public class AreaPane extends ContentPane {
         area.moveTo(0);
         area.requestFollowCaret();
         area.setParagraphGraphicFactory(LineNumberFactory.get(area));
-        area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> edited.set((Boolean) n));
+        area.getUndoManager().atMarkedPositionProperty().addListener((v, o, n) -> edited.set(!n));
         area.textProperty().addListener((v, o, n) -> edited.set(true));
         modified.bind(edited.getReadOnlyProperty());
         getChildren().add(new VirtualizedScrollPane<>(area));
@@ -79,7 +79,8 @@ public class AreaPane extends ContentPane {
     @Override
     public void saved(Path path) {
         super.saved(path);
-        forgetEdit();
+        edited.set(false);
+        area.getUndoManager().mark();
     }
 
     @Override
