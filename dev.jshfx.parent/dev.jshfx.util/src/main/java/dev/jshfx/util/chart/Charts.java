@@ -17,6 +17,7 @@ import javafx.collections.transformation.SortedList;
 import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.Axis;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.BubbleChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.Chart;
 import javafx.scene.chart.LineChart;
@@ -62,6 +63,19 @@ public final class Charts {
         List<Axis<?>> axes = getAxes(series);
 
         BarChart<X, Y> chart = (BarChart<X, Y>) new BarChart<>(axes.get(0), axes.get(1));
+        chart.getData().addAll(series);
+
+        return chart;
+    }
+    
+    public static <X, Y> BubbleChart<X, Y> getBubbleChart(Series<X, Y>... series) {
+        return getBubbleChart(Arrays.asList(series));
+    }
+    
+    public static <X, Y> BubbleChart<X, Y> getBubbleChart(List<Series<X, Y>> series) {
+        List<Axis<?>> axes = getAxes(series);
+
+        BubbleChart<X, Y> chart = (BubbleChart<X, Y>) new BubbleChart<>(axes.get(0), axes.get(1));
         chart.getData().addAll(series);
 
         return chart;
