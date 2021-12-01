@@ -20,6 +20,16 @@
 	-fx-font-weight: bold;
 }
 
+/* Charts *********************************************************************/
+
+.chart-line-symbol {
+    -fx-background-color: CHART_COLOR_1, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 3px;
+    -fx-padding: 3px;
+}
+
+/******************************************************************************/
 
 .glyph-font {
     -fx-text-fill: -fx-text-background-color;
