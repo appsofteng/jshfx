@@ -1,4 +1,4 @@
-![Screen](dev.jfxde.parent/src/site/resources/images/screen.png)
+![Screen](dev.jshfx.parent/src/site/resources/images/screen.png)
 # JShFX
 ## About
 JShFX is JavaFX GUI above JShell.
