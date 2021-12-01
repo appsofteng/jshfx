@@ -28,6 +28,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Screen;
 
@@ -42,7 +43,8 @@ public class CompletionPopup extends Tooltip {
     private ChangeListener<Number> windowListener;
     private List<CompletionItem> buffer = new ArrayList<>();
 
-    private EventHandler<KeyEvent> handler;
+    private EventHandler<KeyEvent> keyHandler;
+    private EventHandler<MouseEvent> mouseHandler;
 
     private CompletionPopup() {
         docPopup = new DocPopup();
@@ -123,7 +125,7 @@ public class CompletionPopup extends Tooltip {
             close();
         };
 
-        handler = e -> {
+        keyHandler = e -> {
 
             if (e.getCode() == KeyCode.ENTER) {
                 e.consume();
@@ -138,6 +140,10 @@ public class CompletionPopup extends Tooltip {
                 selectNext();
                 e.consume();
             }
+        };
+        
+        mouseHandler = e -> {
+            close();
         };
 
         Nodes.addInputMap(itemView,
@@ -216,7 +222,8 @@ public class CompletionPopup extends Tooltip {
     @Override
     public void hide() {
         if (isShowing()) {
-            getOwnerNode().removeEventFilter(KeyEvent.KEY_PRESSED, handler);
+            getOwnerNode().removeEventFilter(KeyEvent.KEY_PRESSED, keyHandler);
+            getOwnerNode().removeEventHandler(MouseEvent.MOUSE_PRESSED, mouseHandler);
             docPopup.hide();
             super.hide();
         }
@@ -233,7 +240,8 @@ public class CompletionPopup extends Tooltip {
             ownerNode.focusedProperty().addListener(focusListener);
             ownerNode.getScene().getWindow().xProperty().addListener(windowListener);
             ownerNode.getScene().getWindow().yProperty().addListener(windowListener);
-            ownerNode.addEventFilter(KeyEvent.KEY_PRESSED, handler);
+            ownerNode.addEventFilter(KeyEvent.KEY_PRESSED, keyHandler);
+            ownerNode.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseHandler);
 
             super.show(ownerNode, anchorX, anchorY);
 
