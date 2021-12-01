@@ -63,10 +63,11 @@ public final class Searcher {
                 matchLine = searchLines.stream().filter(ln -> ln.contains(absMatchStart)).findFirst().orElse(null);
                 SearchResult stringRef = new SearchResult(matchLine, absMatchStart - matchLine.getStart(), matcher.group(group));
                 matchEnd = matcher.end(group);
-                continueMatch = process.test(stringRef);
-                continueSearch = continueMatch;
+                continueMatch = process.test(stringRef);                
             }
-                       
+             
+            continueSearch &= continueMatch;
+            
             if (matchLine != null) {
                 int matchLineNumber = matchLine.getIndex();
                 searchLines.removeIf(ln -> ln.getIndex() < matchLineNumber);
@@ -78,7 +79,6 @@ public final class Searcher {
             }
 
             return continueSearch;
-
         });
     }
 }
