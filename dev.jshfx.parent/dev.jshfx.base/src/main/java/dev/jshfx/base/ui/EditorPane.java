@@ -32,6 +32,6 @@ public class EditorPane extends AreaPane {
     
     @Override
     protected void wrap(CodeArea area) {
-        CodeAreaWrappers.get(area, "").style();
+        CodeAreaWrappers.get(area, "").style().find();
     }
 }

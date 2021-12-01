@@ -108,7 +108,7 @@ public class ShellPane extends AreaPane {
 
     @Override
     protected void wrap(CodeArea area) {
-        CodeAreaWrappers.get(area, "java").style().highlighting(consoleModel.getReadFromPipe()).indentation();
+        CodeAreaWrappers.get(area, "java").style().highlighting(consoleModel.getReadFromPipe()).indentation().find();
     }
     
     private void handleResult(SnippetEvent event, Object obj) {

@@ -1,6 +1,7 @@
 package dev.jshfx.fxmisc.richtext;
 
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -9,6 +10,7 @@ import org.fxmisc.richtext.StyleClassedTextArea;
 
 import dev.jshfx.j.util.search.Searcher;
 import dev.jshfx.j.util.search.SearchResult;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -16,6 +18,7 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.scene.control.IndexRange;
 import javafx.util.Pair;
 
@@ -188,6 +191,8 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
 
         if (pattern != null && this.pattern != null && pattern.pattern().equals(this.pattern.pattern()) && pattern.flags() == this.pattern.flags()
                 && inSelection == this.inSelection) {
+            searchResults.forEach(i -> removeStyle(i.getStart(), i.getEnd(), List.of(FIND_STYLE, FIND_STYLE_SELECTED)));
+            this.pattern = null;
             return;
         }
 
@@ -198,11 +203,20 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
 
         if (pattern != null) {
 
-            Searcher.get().search(area.getText().lines(), getTextStart(inSelection), getTextEnd(inSelection), pattern, r -> {
-                addStyle(r.getStart(), r.getEnd(), List.of(FIND_STYLE));
-                searchResults.add(r);
-                return true;
-            });
+            var task = new Task<Void>() {
+
+                @Override
+                protected Void call() throws Exception {
+                    Searcher.get().search(area.getText().lines(), getTextStart(inSelection), getTextEnd(inSelection), pattern, r -> {
+                        Platform.runLater(() -> addStyle(r.getStart(), r.getEnd(), List.of(FIND_STYLE)));
+                        searchResults.add(r);
+                        return true;
+                    });
+                    return null;
+                }
+            };
+            
+            ForkJoinPool.commonPool().execute(task);
         }
 
         if (searchResults.isEmpty()) {

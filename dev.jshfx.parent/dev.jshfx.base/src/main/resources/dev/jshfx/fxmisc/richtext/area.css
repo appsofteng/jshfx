@@ -7,8 +7,8 @@
 }
 
 .styled-text-area .paragraph-box .jsh-find {
-    -rtfx-background-color: rgba(255, 0, 255, 0.5);
-    -fx-fill: rgba(255, 0, 255, 0.5);
+    -rtfx-background-color: rgba(245, 245, 245, 0.3);
+    -fx-fill: rgba(255, 0, 255);
 }
 
 .styled-text-area .jsh-find-selected {
