@@ -58,7 +58,7 @@ public class ConsolePane extends EnvPane {
         borderPane.setCenter(new VirtualizedScrollPane<>(area));
 
         getChildren().add(borderPane);
-        
+
         // The style must be added explicitly.
         getStylesheets().add(getUserAgentStylesheet());
     }
@@ -66,24 +66,24 @@ public class ConsolePane extends EnvPane {
     @Override
     public void setActions(Actions actions) {
         super.setActions(actions);
-        
+
         actions.setReadOnlyContextMenu(getArea());
-        
+
         handlers.put(actions.getCopyAction(), () -> area.copy());
         handlers.put(actions.getCutAction(), () -> area.cut());
         handlers.put(actions.getSelectAllAction(), () -> area.selectAll());
-        handlers.put(actions.getClearAction(), () -> area.clear());
+        handlers.put(actions.getClearAction(), () -> clear());
     }
-    
+
     @Override
     public void bindActions(Actions actions) {
         super.bindActions(actions);
-        
+
         actions.getSelectAllAction().disabledProperty().bind(areaWrapper.allSelectedProperty());
         actions.getCopyAction().disabledProperty().bind(areaWrapper.selectionEmptyProperty());
         actions.getClearAction().disabledProperty().bind(areaWrapper.clearProperty());
     }
-    
+
     @Override
     public String getUserAgentStylesheet() {
         return getClass().getResource("console.css").toExternalForm();
@@ -98,7 +98,7 @@ public class ConsolePane extends EnvPane {
         area.clear();
         header.textProperty().unbind();
         header.setText("");
-        
+
         if (this.contentPane != null) {
             this.contentPane.getConsoleOutput().removeListener(listener);
         }
@@ -108,13 +108,13 @@ public class ConsolePane extends EnvPane {
         if (contentPane != null) {
             header.textProperty().bind(contentPane.consoleHeaderTextProperty());
             contentPane.getConsoleOutput().addListener(listener);
-            
+
             for (TextStyleSpans span : contentPane.getConsoleOutput()) {
                 area.appendText(span.getText());
                 int from = area.getLength() - span.getStyleSpans().length();
                 area.setStyleSpans(from, span.getStyleSpans());
             }
-            
+
             area.moveTo(area.getLength());
             area.requestFollowCaret();
         }
@@ -122,5 +122,13 @@ public class ConsolePane extends EnvPane {
 
     public void dispose() {
         area.dispose();
+    }
+
+    private void clear() {
+        area.clear();
+
+        if (contentPane != null) {
+            contentPane.getConsoleOutput().clear();
+        }
     }
 }
