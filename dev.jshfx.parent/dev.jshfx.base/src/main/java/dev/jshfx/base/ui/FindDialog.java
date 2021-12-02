@@ -51,6 +51,8 @@ public class FindDialog extends Dialog<Void> {
 
         Set<String> findSuggestions = new TreeSet<>(JsonUtils.get().fromJson(FileManager.FIND_SUGGESTONS_FILE, List.class, List.of()));
         findField = new AutoCompleteField<>(findSuggestions);
+        findField.setOnAction(t -> contentPane.get().getFinder().findNext(getPattern()));
+        
         Set<String> replaceSuggestions = new TreeSet<>(JsonUtils.get().fromJson(FileManager.REPLACE_SUGGESTONS_FILE, List.class, List.of()));
         replaceField = new AutoCompleteField<>(replaceSuggestions);
         
