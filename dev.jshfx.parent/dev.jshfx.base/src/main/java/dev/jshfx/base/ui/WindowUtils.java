@@ -6,12 +6,10 @@ import java.util.stream.Collectors;
 
 import org.controlsfx.dialog.ProgressDialog;
 
-import dev.jshfx.base.MainApp;
 import dev.jshfx.jfx.scene.control.AutoCompleteArea;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.util.chart.Charts;
 import dev.jshfx.util.control.Tables;
-import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.geometry.Pos;
@@ -19,7 +17,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
@@ -29,14 +26,13 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
-import javafx.scene.layout.TilePane;
 import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Window;
 
-public final class DialogUtils {
+public final class WindowUtils {
 
-    private DialogUtils() {
+    private WindowUtils() {
     }
 
     public static void showProgress(Window window, Worker<?> worker) {

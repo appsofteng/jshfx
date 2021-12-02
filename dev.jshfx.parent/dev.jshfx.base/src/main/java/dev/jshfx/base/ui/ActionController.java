@@ -154,7 +154,7 @@ public class ActionController {
                 }
             };
 
-            DialogUtils.showProgress(rootPane.getScene().getWindow(), task);
+            WindowUtils.showProgress(rootPane.getScene().getWindow(), task);
 
             task.setOnSucceeded(e -> rootPane.add(task.getValue()));
 

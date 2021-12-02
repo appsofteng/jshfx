@@ -114,7 +114,7 @@ public class ShellPane extends AreaPane {
     private void handleResult(SnippetEvent event, Object obj) {
 
         if (event.snippet().subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
-            Platform.runLater(() -> DialogUtils.show(getScene().getWindow(), obj));
+            Platform.runLater(() -> WindowUtils.show(getScene().getWindow(), obj));
         }
     }
 
@@ -194,7 +194,7 @@ public class ShellPane extends AreaPane {
     }
 
     public void showHistorySearch() {
-        DialogUtils.showHistorySearch(getScene().getWindow(), history,
+        WindowUtils.showHistorySearch(getScene().getWindow(), history,
                 s -> getArea().insertText(getArea().getCaretPosition(), s));
     }
 
