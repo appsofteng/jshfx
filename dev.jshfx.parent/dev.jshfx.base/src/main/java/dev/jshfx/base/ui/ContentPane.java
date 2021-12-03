@@ -94,14 +94,6 @@ public class ContentPane extends EnvPane {
     public void init() {
     }
 
-    public String getSelection() {
-        return "";
-    }
-
-    public Finder getFinder() {
-        return null;
-    }
-
     public ObservableList<TextStyleSpans> getConsoleOutput() {
         return consoleModel.getOutput();
     }

@@ -23,6 +23,7 @@ public class ConsolePane extends EnvPane {
     private AreaWrapper<CodeArea> areaWrapper = new AreaWrapper<>(area);
     private Label header = new Label();
     private ContentPane contentPane;
+    private Finder finder = new FinderImpl(area);;
     private ListChangeListener<? super TextStyleSpans> listener = (Change<? extends TextStyleSpans> c) -> {
 
         while (c.next()) {
@@ -68,6 +69,7 @@ public class ConsolePane extends EnvPane {
         super.setActions(actions);
 
         actions.setReadOnlyContextMenu(getArea());
+        actions.addConsoleKeyHandlers(getArea());
 
         handlers.put(actions.getCopyAction(), () -> area.copy());
         handlers.put(actions.getCutAction(), () -> area.cut());
@@ -93,6 +95,11 @@ public class ConsolePane extends EnvPane {
         return area;
     }
 
+    @Override
+    public Finder getFinder() {
+        return finder;
+    }
+    
     public void setContentPane(ContentPane contentPane) {
 
         area.clear();

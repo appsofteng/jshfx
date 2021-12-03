@@ -84,11 +84,6 @@ public class AreaPane extends ContentPane {
     }
 
     @Override
-    public String getSelection() {
-        return area.getSelectedText();
-    }
-
-    @Override
     public String getContent() {
         return area.getText();
     }

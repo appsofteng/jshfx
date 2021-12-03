@@ -100,6 +100,10 @@ public class RootPane extends BorderPane {
         return envPane.get();
     }
 
+    public ReadOnlyObjectProperty<EnvPane> envPaneProperty() {
+        return envPane;
+    }
+    
     public ContentPane getContentPane() {
         return contentPane.get();
     }

@@ -29,6 +29,11 @@ class FinderImpl implements Finder {
             }
         });
     }
+    
+    @Override
+    public String getSelection() {
+        return areaWrapper.getArea().getSelectedText();
+    }
 
     @Override
     public void setScope(boolean inSelection) {

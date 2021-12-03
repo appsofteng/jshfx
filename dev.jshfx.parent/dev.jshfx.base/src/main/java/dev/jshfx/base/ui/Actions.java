@@ -432,7 +432,7 @@ public class Actions {
     public void setReadOnlyContextMenu(CodeArea area) {
 
         var menu = getContextMenu(area);
-        var actions = List.of(copyAction, selectAllAction, clearAction);
+        var actions = List.of(copyAction, selectAllAction, clearAction, ActionUtils.ACTION_SEPARATOR, findAction);
         ActionUtils.updateContextMenu(menu, actions);
     }
 
@@ -455,6 +455,10 @@ public class Actions {
         ActionUtils.updateContextMenu(menu, actions);
     }
 
+    public void addConsoleKeyHandlers(Node node) {
+        addKeyHandlers(node, List.of(findAction));
+    }
+    
     public void addEditorKeyHandlers(Node node) {
         addKeyHandlers(node, List.of(findAction, saveAction, saveAsAction));
     }

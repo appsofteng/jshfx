@@ -26,7 +26,7 @@ import javafx.stage.Window;
 
 public class FindDialog extends Dialog<Void> {
 
-    private ReadOnlyObjectProperty<ContentPane> contentPane;
+    private ReadOnlyObjectProperty<EnvPane> contentPane;
 
     private AutoCompleteField<String> findField;
     private AutoCompleteField<String> replaceField;
@@ -43,15 +43,15 @@ public class FindDialog extends Dialog<Void> {
     private Button replaceNextButton;
     private Button replaceAllButton = new Button();
 
-    public FindDialog(Window window, ReadOnlyObjectProperty<ContentPane> contentPane) {
-        this.contentPane = contentPane;
+    public FindDialog(Window window, ReadOnlyObjectProperty<EnvPane> pane) {
+        this.contentPane = pane;
         initOwner(window);
         initModality(Modality.NONE);
         setTitle(FXResourceBundle.getBundle().getString​("find"));
 
         Set<String> findSuggestions = new TreeSet<>(JsonUtils.get().fromJson(FileManager.FIND_SUGGESTONS_FILE, List.class, List.of()));
         findField = new AutoCompleteField<>(findSuggestions);
-        findField.setOnAction(t -> contentPane.get().getFinder().findNext(getPattern()));
+        findField.setOnAction(t -> pane.get().getFinder().findNext(getPattern()));
         
         Set<String> replaceSuggestions = new TreeSet<>(JsonUtils.get().fromJson(FileManager.REPLACE_SUGGESTONS_FILE, List.class, List.of()));
         replaceField = new AutoCompleteField<>(replaceSuggestions);
@@ -64,14 +64,14 @@ public class FindDialog extends Dialog<Void> {
         findPreviousButton.setMaxHeight(Double.MAX_VALUE);
         findPreviousButton.setMinWidth(Region.USE_PREF_SIZE);
         findPreviousButton.disableProperty().bind(findField.textProperty().isEmpty());
-        findPreviousButton.setOnAction(e -> contentPane.get().getFinder().findPrevious(getPattern()));
+        findPreviousButton.setOnAction(e -> pane.get().getFinder().findPrevious(getPattern()));
 
         findNextButton = new Button(Fonts.FontAwesome.CHEVRON_DOWN);
         findNextButton.setFont(Font.font(Fonts.FONT_AWESOME_5_FREE_SOLID));
         findNextButton.setMaxHeight(Double.MAX_VALUE);
         findNextButton.setMinWidth(Region.USE_PREF_SIZE);
         findNextButton.disableProperty().bind(findField.textProperty().isEmpty());
-        findNextButton.setOnAction(e -> contentPane.get().getFinder().findNext(getPattern()));
+        findNextButton.setOnAction(e -> pane.get().getFinder().findNext(getPattern()));
 
         HBox.setHgrow(findField, Priority.ALWAYS);
         HBox fieldBox = new HBox(findField, findPreviousButton, findNextButton);
@@ -92,7 +92,7 @@ public class FindDialog extends Dialog<Void> {
         replacePreviousButton.setMinWidth(Region.USE_PREF_SIZE);
         replacePreviousButton.disableProperty().bind(findField.textProperty().isEmpty());
         replacePreviousButton
-                .setOnAction(e -> contentPane.get().getFinder().replacePrevious(getPattern(), replaceField.getText()));
+                .setOnAction(e -> pane.get().getFinder().replacePrevious(getPattern(), replaceField.getText()));
 
         replaceNextButton = new Button(Fonts.FontAwesome.CHEVRON_DOWN);
         replaceNextButton.setFont(Font.font(Fonts.FONT_AWESOME_5_FREE_SOLID));
@@ -100,7 +100,7 @@ public class FindDialog extends Dialog<Void> {
         replaceNextButton.setMinWidth(Region.USE_PREF_SIZE);
         replaceNextButton.disableProperty().bind(findField.textProperty().isEmpty());
         replaceNextButton
-                .setOnAction(e -> contentPane.get().getFinder().replaceNext(getPattern(), replaceField.getText()));
+                .setOnAction(e -> pane.get().getFinder().replaceNext(getPattern(), replaceField.getText()));
 
         HBox.setHgrow(replaceField, Priority.ALWAYS);
         HBox replaceFieldBox = new HBox(replaceField, replacePreviousButton, replaceNextButton);
@@ -109,7 +109,7 @@ public class FindDialog extends Dialog<Void> {
 
         replaceAllButton.disableProperty().bind(findField.textProperty().isEmpty());
         replaceAllButton
-                .setOnAction(e -> contentPane.get().getFinder().replaceAll(getPattern(), replaceField.getText()));
+                .setOnAction(e -> pane.get().getFinder().replaceAll(getPattern(), replaceField.getText()));
 
         ButtonBar buttonBar = new ButtonBar();
         buttonBar.getButtons().addAll(replaceAllButton);
@@ -121,7 +121,7 @@ public class FindDialog extends Dialog<Void> {
         getDialogPane().setContent(vbox);
         findField.requestFocus();
 
-        inSelectionCheck.setOnAction(e -> contentPane.get().getFinder().setScope(inSelectionCheck.isSelected()));
+        inSelectionCheck.setOnAction(e -> pane.get().getFinder().setScope(inSelectionCheck.isSelected()));
 
         setSelection();
 
@@ -134,7 +134,7 @@ public class FindDialog extends Dialog<Void> {
     }
 
     public void setSelection() {
-        String selection = contentPane.get().getSelection();
+        String selection = contentPane.get().getFinder().getSelection();
         findField.setText(selection);
 
         inSelectionCheck.setSelected(selection.contains("\n"));

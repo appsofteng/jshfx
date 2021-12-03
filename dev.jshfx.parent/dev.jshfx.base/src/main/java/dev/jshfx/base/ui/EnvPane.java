@@ -27,4 +27,8 @@ public class EnvPane extends StackPane {
             handler.run();
         }
     }
+    
+    public Finder getFinder() {
+        return null;
+    }
 }

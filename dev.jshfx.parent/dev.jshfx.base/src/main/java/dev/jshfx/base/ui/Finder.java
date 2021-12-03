@@ -4,6 +4,8 @@ import java.util.regex.Pattern;
 
 public interface Finder {
 
+    String getSelection();
+
     void setScope(boolean inSelection);
 
     void findPrevious(Pattern pattern);

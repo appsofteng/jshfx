@@ -239,7 +239,7 @@ public class ActionController {
 
     public void showFindDialog() {
         if (findDialog == null) {
-            findDialog = new FindDialog(rootPane.getScene().getWindow(), rootPane.contentPaneProperty());
+            findDialog = new FindDialog(rootPane.getScene().getWindow(), rootPane.envPaneProperty());
             findDialog.show();
             findDialog.setOnCloseRequest(e -> {
                 findDialog.store();
