@@ -10,9 +10,9 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 
-public final class Data {
+public final class DataColls {
 
-    private Data() {
+    private DataColls() {
     }
     
     public static <X, Y> Series<X, Y> getSeries(Stream<X> xs, Stream<Y> ys) {
