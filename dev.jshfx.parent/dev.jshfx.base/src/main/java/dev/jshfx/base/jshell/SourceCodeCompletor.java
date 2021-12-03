@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.fxmisc.richtext.CodeArea;
 
@@ -37,7 +38,7 @@ class SourceCodeCompletor extends Completor {
         for (int i = inputArea.getCurrentParagraph(); i >= 0; i--) {
             String text = inputArea.getParagraph(i).getText() + "\n";
             relativeInput.insert(0, text);
-            
+
             if (i < inputArea.getCurrentParagraph()) {
                 relativeCursor += text.length();
             }
@@ -68,7 +69,9 @@ class SourceCodeCompletor extends Completor {
                                 absoluteAnchor, Signature.get("", expressionType, this::resolveType)));
 
                     } else {
-                        var signatures = docs.stream().map(Documentation::signature).sorted(Comparator.comparing(s -> s, String.CASE_INSENSITIVE_ORDER)).distinct().toList();
+                        var signatures = docs.stream().map(Documentation::signature)
+                                .sorted(Comparator.comparing(s -> s, String.CASE_INSENSITIVE_ORDER)).distinct()
+                                .toList();
 
                         for (var signature : signatures) {
                             var item = new SuggestionCompletionItem(inputArea, suggestion.getSuggestion(),
@@ -97,8 +100,8 @@ class SourceCodeCompletor extends Completor {
                 if (!qualifiedNames.getNames().isEmpty()) {
 
                     for (var name : qualifiedNames.getNames()) {
-                        processing = items.test(new QualifiedNameCompletionItem(Signature.get(name, null, this::resolveType),
-                                this::addImport));
+                        processing = items.test(new QualifiedNameCompletionItem(
+                                Signature.get(name, null, this::resolveType), this::addImport));
                         if (!processing) {
                             break;
                         }
@@ -143,8 +146,12 @@ class SourceCodeCompletor extends Completor {
             });
         } else {
             Platform.runLater(() -> {
+                int parIndex = IntStream.range(0, inputArea.getParagraphs().size())
+                        .filter(i -> !CommandProcessor.isCommand(inputArea.getParagraph(i).getText())).findFirst()
+                        .orElse(0);
+
                 int caret = inputArea.getCaretPosition();
-                inputArea.insertText(0, newImport + "\n\n");
+                inputArea.insertText(inputArea.getAbsolutePosition(parIndex, 0), newImport + "\n\n");
                 inputArea.moveTo(caret + newImport.length() + 2);
             });
         }
