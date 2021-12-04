@@ -16,19 +16,19 @@ public class Signature {
     private static final Logger LOGGER = Logger.getLogger(Signature.class.getName());
 
     private final String signature;
-    private String topTypeFullName;
-    private String typeFullName;
-    private String innerTypeFullName;
-    private String fullName;
-    private String name;
+    private String topTypeName;
+    private String typeName;
+    private String typeCanonicalName;
+    private String canonicalName;
+    private String simpleName;
     private List<String> methodParameterTypes = new ArrayList<>();
-    private Function<String, String> resolveFullTypeName;
+    private Function<String, String> resolveTypeName;
     private Kind kind;
     private Integer modifiers;
 
-    private Signature(String signature, Function<String, String> resolveFullTypeName) {
+    private Signature(String signature, Function<String, String> resolveTypeName) {
         this.signature = signature;
-        this.resolveFullTypeName = resolveFullTypeName;
+        this.resolveTypeName = resolveTypeName;
     }
 
     public static Signature get(String signature, String expressionType, Function<String, String> resolveFullTypeName) {
@@ -44,9 +44,9 @@ public class Signature {
                     instance.parseField();
                 } else {
                     instance.kind = Kind.VAR;
-                    instance.fullName = name;
-                    instance.name = name;
-                    instance.topTypeFullName = "";
+                    instance.canonicalName = name;
+                    instance.simpleName = name;
+                    instance.topTypeName = "";
                 }
             } else if (signature.contains("(")) {
                 instance.kind = Kind.METHOD;
@@ -57,29 +57,29 @@ public class Signature {
             } else {
                 instance.kind = Kind.TYPE;
                 instance.parseType(signature);
-                instance.fullName = instance.typeFullName;
-                int i = instance.typeFullName.lastIndexOf('.');
-                instance.name = i > -1 ? instance.typeFullName.substring(i) : instance.typeFullName;
+                instance.canonicalName = instance.typeCanonicalName;
+                int i = instance.typeCanonicalName.lastIndexOf('.');
+                instance.simpleName = i > -1 ? instance.typeCanonicalName.substring(i) : instance.typeCanonicalName;
             }
 
-            if (instance.topTypeFullName == null) {
-                instance.parseTopTypeFullName();
+            if (instance.topTypeName == null) {
+                instance.setTopTypeName();
             }
         }
 
         return instance;
     }
 
-    public String getTopTypeFullName() {
-        return topTypeFullName;
+    public String getTopTypeName() {
+        return topTypeName;
     }
 
-    public String getTypeFullName() {
-        return typeFullName;
+    public String getTypeCanonicalName() {
+        return typeCanonicalName;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getCanonicalName() {
+        return canonicalName;
     }
 
     public List<String> getMethodParameterTypes() {
@@ -97,18 +97,17 @@ public class Signature {
 
             try {
                 if (kind == Kind.TYPE) {
-                    var type = Class.forName(innerTypeFullName);
+                    var type = Class.forName(typeName);
                     modifiers = type.getModifiers();
                 } else if (kind == Kind.FIELD || kind == Kind.ENUM_CONSTANT) {
-                    var type = Class.forName(innerTypeFullName);
-                    var field = type.getField(name);
+                    var type = Class.forName(typeName);
+                    var field = type.getField(simpleName);
                     modifiers = field.getModifiers();
                 } else if (kind == Kind.METHOD) {
-                    var type = Class.forName(innerTypeFullName);
-                    Class<?>[] pramTypes = methodParameterTypes.stream()
-                            .map(t -> LU.of(() ->  ClassUtils.getClass(t)))
+                    var type = Class.forName(typeName);
+                    Class<?>[] pramTypes = methodParameterTypes.stream().map(t -> LU.of(() -> ClassUtils.getClass(t)))
                             .toArray(Class[]::new);
-                    var method = type.getMethod(name, pramTypes);
+                    var method = type.getMethod(simpleName, pramTypes);
                     modifiers = method.getModifiers();
                 }
 
@@ -119,7 +118,7 @@ public class Signature {
 
         return modifiers;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         boolean result = false;
@@ -141,31 +140,31 @@ public class Signature {
 
     public String info() {
         return String.format(
-                "Signature: %s, topTypeFullName: %s, typeFullName: %s, innerTypeFullName: %s, fullName: %s, name: %s, kind: %s, methodParameterTypes: %s",
-                signature, topTypeFullName, typeFullName, innerTypeFullName, fullName, name, kind,
+                "Signature: %s, topTypeName: %s, typeName: %s, typeCanonicalName: %s, canonicalName: %s, simpleName: %s, kind: %s, methodParameterTypes: %s",
+                signature, topTypeName, typeName, typeCanonicalName, canonicalName, simpleName, kind,
                 methodParameterTypes);
     }
 
-    private void parseTopTypeFullName() {
-        String enclosingType = typeFullName;
-        topTypeFullName = typeFullName;
+    private void setTopTypeName() {
+        String enclosingType = typeCanonicalName;
+        topTypeName = typeCanonicalName;
         int i = enclosingType.lastIndexOf(".");
         int lastDot = -1;
 
         while (i > -1 && enclosingType != null) {
             enclosingType = enclosingType.substring(0, i);
-            enclosingType = resolveFullTypeName.apply(enclosingType);
+            enclosingType = resolveTypeName.apply(enclosingType);
 
             if (enclosingType != null) {
-                topTypeFullName = enclosingType;
+                topTypeName = enclosingType;
                 lastDot = i;
                 i = enclosingType.lastIndexOf(".");
             }
         }
 
-        topTypeFullName = topTypeFullName.replaceAll("<.*>", "");
-        innerTypeFullName = lastDot > -1 ? topTypeFullName + typeFullName.substring(lastDot).replace('.', '$')
-                : typeFullName;
+        topTypeName = topTypeName.replaceAll("<.*>", "");
+        typeName = lastDot > -1 ? topTypeName + typeCanonicalName.substring(lastDot).replace('.', '$')
+                : typeCanonicalName;
     }
 
     private void parseType(String type) {
@@ -173,28 +172,28 @@ public class Signature {
         type = type.replaceAll("<.*>", "");
 
         if (i > 0) {
-            typeFullName = type;
+            typeCanonicalName = type;
         } else {
-            typeFullName = resolveFullTypeName.apply(type);
-            typeFullName = typeFullName.replaceAll("<.*>", "");
+            typeCanonicalName = resolveTypeName.apply(type);
+            typeCanonicalName = typeCanonicalName.replaceAll("<.*>", "");
         }
     }
 
     private void parseField() {
         var typeFieldName = signature.substring(0, signature.lastIndexOf(":"));
         int i = typeFieldName.lastIndexOf(".");
-        name = typeFieldName.substring(i + 1);
+        simpleName = typeFieldName.substring(i + 1);
         var type = typeFieldName.substring(0, i);
         parseType(type);
-        fullName = typeFullName + "." + name;
+        canonicalName = typeCanonicalName + "." + simpleName;
     }
 
     private void parseEnumConstant() {
         int i = signature.lastIndexOf(".");
-        name = signature.substring(i + 1);
+        simpleName = signature.substring(i + 1);
         var type = signature.substring(0, i);
         parseType(type);
-        fullName = typeFullName + "." + name;
+        canonicalName = typeCanonicalName + "." + simpleName;
     }
 
     private void parseMethod() {
@@ -207,32 +206,32 @@ public class Signature {
         String returnType = i > -1 ? returnTypeAndName.substring(0, i) : "";
 
         i = typeAndName.lastIndexOf(".");
-        name = typeAndName;
+        simpleName = typeAndName;
         String type = typeAndName;
 
         if (i > -1) {
-            name = typeAndName.substring(i + 1);
+            simpleName = typeAndName.substring(i + 1);
             type = typeAndName.substring(0, i);
-            i = name.lastIndexOf(">");
+            i = simpleName.lastIndexOf(">");
 
             if (i > 0) {
-                name = name.substring(i + 1);
+                simpleName = simpleName.substring(i + 1);
             }
             // Constructor e.g. URI(String u)
         } else if (returnType.isEmpty()) {
-            name = "<init>";
+            simpleName = "<init>";
             // Method in JSH script.
         } else {
             type = "";
-            typeFullName = "";
-            topTypeFullName = "";
+            typeCanonicalName = "";
+            topTypeName = "";
         }
 
         if (!type.isEmpty()) {
             parseType(type);
         }
 
-        fullName = typeFullName + "." + name;
+        canonicalName = typeCanonicalName + "." + simpleName;
 
         var parameters = signature.substring(p1 + 1, p2);
         parseMethodParameterTypes(parameters);
@@ -302,7 +301,7 @@ public class Signature {
         int i = noArrayType.lastIndexOf(".");
 
         if (i == -1) {
-            var resolvedType = resolveFullTypeName.apply(noArrayType);
+            var resolvedType = resolveTypeName.apply(noArrayType);
             if (resolvedType != null) {
                 noArrayType = resolvedType.replaceAll("<.*>", "");
             }

@@ -22,9 +22,9 @@ public class SignatureTest {
         var signature = Signature.get(expectedTypeFullName, null, resolveType);
 
         assertEquals(Signature.Kind.TYPE, signature.getKind());
-        assertEquals(expectedTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getFullName());
+        assertEquals(expectedTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedTypeFullName, signature.getCanonicalName());
     }
 
     @Test
@@ -35,9 +35,9 @@ public class SignatureTest {
         var signature = Signature.get("Double.BYTES:int", "int", resolveType);
 
         assertEquals(Signature.Kind.FIELD, signature.getKind());
-        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
     }
 
     @Test
@@ -50,9 +50,9 @@ public class SignatureTest {
                 resolveType);
 
         assertEquals(Signature.Kind.ENUM_CONSTANT, signature.getKind());
-        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
     }
 
 
@@ -66,9 +66,9 @@ public class SignatureTest {
         var signature = Signature.get("java.util.stream.IntStream String.chars()", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());
-        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
         assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
     }
     
@@ -82,9 +82,9 @@ public class SignatureTest {
         var signature = Signature.get("char String.charAt(int index)", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());
-        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
         assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
     }
     
@@ -98,9 +98,9 @@ public class SignatureTest {
         var signature = Signature.get("int String.codePointCount(int beginIndex, int endIndex)", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());
-        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
         assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
     }
     
@@ -114,9 +114,9 @@ public class SignatureTest {
         var signature = Signature.get("String String.formatted(Object...)", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());
-        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
         assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
     }
     
@@ -130,9 +130,9 @@ public class SignatureTest {
         var signature = Signature.get("void String.getBytes(int srcBegin, int srcEnd, byte[] dst, int dstBegin)", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());
-        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
         assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
     }
     
@@ -146,9 +146,9 @@ public class SignatureTest {
         var signature = Signature.get("R String.<R>transform(java.util.function.Function<? super String,? extends R> f)", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());
-        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
         assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
     }
     
@@ -162,9 +162,9 @@ public class SignatureTest {
         var signature = Signature.get("void Example.method(Map<String, List<Double>> map)", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());
-        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
         assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
     }
     
@@ -178,9 +178,9 @@ public class SignatureTest {
         var signature = Signature.get("void Example.method(List<String> list1, List<List<Double>> list2, Map<String, List<Double>> map)", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());
-        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
         assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
     }
     
@@ -194,9 +194,9 @@ public class SignatureTest {
         var signature = Signature.get("org.pckg.Type<A, B> com.example.Example<X, Y>.method(List<String> list1, List<List<Double>> list2, Map<String, List<Double>> map)", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());
-        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
         assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
     }
     
@@ -210,9 +210,9 @@ public class SignatureTest {
         var signature = Signature.get("void Example.method(int)", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());
-        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
         assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
     }
     
@@ -226,9 +226,9 @@ public class SignatureTest {
         var signature = Signature.get("void Example.method(int, String)", null, resolveType);
 
         assertEquals(Signature.Kind.METHOD, signature.getKind());
-        assertEquals(expectedTopTypeFullName, signature.getTopTypeFullName());
-        assertEquals(expectedTypeFullName, signature.getTypeFullName());
-        assertEquals(expectedFullName, signature.getFullName());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
         assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
     }
     

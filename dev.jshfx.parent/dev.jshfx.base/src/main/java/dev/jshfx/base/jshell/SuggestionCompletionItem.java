@@ -57,9 +57,14 @@ public class SuggestionCompletionItem extends SourceCodeCompletionItem {
 
     @Override
     public void completeStatic() {
-        complete(anchor);
+        var staticAnchor = anchor;
+        
+        while (--staticAnchor >= 0 && !Character.isWhitespace(codeArea.getText().charAt(staticAnchor))) {}
+        staticAnchor++;
+        
+        complete(staticAnchor);
         var stat = getSignature().getKind() == Signature.Kind.TYPE ? "" : " static";
-        input.accept(String.format("import%s %s", stat, getSignature().getFullName()));
+        input.accept(String.format("import%s %s", stat, getSignature().getCanonicalName()));
     }
 
     private void complete(int anchor) {

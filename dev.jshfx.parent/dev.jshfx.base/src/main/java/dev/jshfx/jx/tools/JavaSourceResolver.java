@@ -85,7 +85,7 @@ public class JavaSourceResolver {
 
         try {
             JavaFileObject jfo = fileManager.getJavaFileForInput(StandardLocation.SOURCE_PATH,
-                    signature.getTopTypeFullName(), JavaFileObject.Kind.SOURCE);
+                    signature.getTopTypeName(), JavaFileObject.Kind.SOURCE);
             if (jfo != null) {
                 JavacTask task = (JavacTask) compiler.getTask(null, null, null, null, null, List.of(jfo));
 
@@ -209,7 +209,7 @@ public class JavaSourceResolver {
             TreePath path = null;
 
             if (signature.getKind() == Signature.Kind.TYPE
-                    && signature.getFullName().equals(getNamespace(node.getSimpleName()))) {
+                    && signature.getCanonicalName().equals(getNamespace(node.getSimpleName()))) {
 
                 throw new Result(getCurrentPath());
             } else {
@@ -232,7 +232,7 @@ public class JavaSourceResolver {
         public TreePath visitVariable(VariableTree node, Signature signature) {
 
             if ((signature.getKind() == Signature.Kind.FIELD || signature.getKind() == Signature.Kind.ENUM_CONSTANT)
-                    && signature.getFullName().equals(getNamespace(node.getName()))) {
+                    && signature.getCanonicalName().equals(getNamespace(node.getName()))) {
 
                 throw new Result(getCurrentPath());
             } else {
@@ -242,7 +242,7 @@ public class JavaSourceResolver {
 
         public TreePath visitMethod(MethodTree node, Signature signature) {
             if (signature.getKind() == Signature.Kind.METHOD
-                    && signature.getFullName().equals(getNamespace(node.getName()))
+                    && signature.getCanonicalName().equals(getNamespace(node.getName()))
                     && signature.getMethodParameterTypes().size() == node.getParameters().size()) {
 
                 boolean parameterTypeMatch = true;

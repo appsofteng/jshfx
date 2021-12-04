@@ -75,7 +75,8 @@ class SourceCodeCompletor extends Completor {
 
                         for (var signature : signatures) {
                             var item = new SuggestionCompletionItem(inputArea, suggestion.getSuggestion(),
-                                    absoluteAnchor, Signature.get(signature, expressionType, this::resolveType), this::addImport);
+                                    absoluteAnchor, Signature.get(signature, expressionType, this::resolveType),
+                                    this::addImport);
 
                             processing = items.test(item);
 
@@ -158,7 +159,12 @@ class SourceCodeCompletor extends Completor {
                         .orElse(0);
 
                 int caret = inputArea.getCaretPosition();
-                inputArea.insertText(inputArea.getAbsolutePosition(parIndex, 0), newImport + "\n\n");
+                String newLine = "\n";
+                if (!inputArea.getParagraph(parIndex).getText().isBlank()) {
+                    newLine += "\n";
+                }
+
+                inputArea.insertText(inputArea.getAbsolutePosition(parIndex, 0), newImport + newLine);
                 inputArea.moveTo(caret + newImport.length() + 2);
             });
         }
@@ -204,7 +210,7 @@ class SourceCodeCompletor extends Completor {
         String member = parts.length > 1 ? parts[1] : "";
 
         if (type.isEmpty()) {
-            type = data.signature().getTypeFullName();
+            type = data.signature().getTypeCanonicalName();
         }
 
         int i = type.indexOf('.');
