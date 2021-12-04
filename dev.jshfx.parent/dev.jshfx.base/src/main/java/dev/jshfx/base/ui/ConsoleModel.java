@@ -107,12 +107,16 @@ public class ConsoleModel {
         }
 
         if (!output.isEmpty() && !output.get(output.size() - 1).getText().endsWith("\n")) {
-            add(output, new TextStyleSpans("\n"), LIMIT);
+            addOutput(new TextStyleSpans("\n"));
         }
 
         if (!textStyleSpans.getText().isBlank()) {
-            add(output, textStyleSpans, LIMIT);
+            addOutput(textStyleSpans);
         }
+    }
+    
+    public synchronized void addOutput(TextStyleSpans textStyleSpans) {
+        add(output, textStyleSpans, LIMIT);
     }
 
     private <T> void add(ObservableList<T> list, T added, int limit) {
@@ -148,7 +152,7 @@ public class ConsoleModel {
 
             TextStyleSpans textStyleSpans = new TextStyleSpans(string, style);
 
-            addNewLineOutput(textStyleSpans);
+            addOutput(textStyleSpans);
             reset();
         }
     }
