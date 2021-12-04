@@ -126,24 +126,20 @@ class SourceCodeCompletor extends Completor {
             String imports = matcher.group();
             List<String> lines = imports.lines().collect(Collectors.toCollection(() -> new ArrayList<>()));
 
-            int index = -1;
+            int index = lines.size();
             for (int i = 0; i < lines.size(); i++) {
                 int comp = lines.get(i).compareTo(newImport);
                 if (comp > 0) {
                     index = i;
                     break;
                 } else if (comp == 0) {
+                    index = -1;
                     break;
                 }
             }
 
             if (index > -1) {
-
-                if (index >= 0) {
-                    lines.add(index, newImport);
-                } else {
-                    lines.add(newImport);
-                }
+                lines.add(index, newImport);
 
                 var newImports = lines.stream().collect(Collectors.joining("\n"));
                 Platform.runLater(() -> {

@@ -49,7 +49,7 @@ public class SuggestionCompletionItem extends SourceCodeCompletionItem {
     public boolean isStatic() {
         return Modifier.isStatic(getSignature().getModifiers());
     }
-    
+
     @Override
     public void complete() {
         complete(anchor);
@@ -58,10 +58,12 @@ public class SuggestionCompletionItem extends SourceCodeCompletionItem {
     @Override
     public void completeStatic() {
         var staticAnchor = anchor;
-        
-        while (--staticAnchor >= 0 && !Character.isWhitespace(codeArea.getText().charAt(staticAnchor))) {}
+
+        while (--staticAnchor >= 0 && (Character.isJavaIdentifierPart(codeArea.getText().charAt(staticAnchor))
+                || codeArea.getText().charAt(staticAnchor) == '.')) {
+        }
         staticAnchor++;
-        
+
         complete(staticAnchor);
         var stat = getSignature().getKind() == Signature.Kind.TYPE ? "" : " static";
         input.accept(String.format("import%s %s", stat, getSignature().getCanonicalName()));
@@ -95,7 +97,10 @@ public class SuggestionCompletionItem extends SourceCodeCompletionItem {
 
         return label;
     }
-    
-    static void mymethod(int a) {}
-     void mymethod(int a, int b) {}
+
+    static void mymethod(int a) {
+    }
+
+    void mymethod(int a, int b) {
+    }
 }
