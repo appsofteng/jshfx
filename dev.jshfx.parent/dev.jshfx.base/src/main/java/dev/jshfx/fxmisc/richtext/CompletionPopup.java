@@ -17,6 +17,7 @@ import java.util.function.Function;
 import org.fxmisc.wellbehaved.event.Nodes;
 
 import dev.jshfx.jfx.scene.layout.LayoutUtils;
+import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.jx.tools.JavaSourceResolver.HtmlDoc;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -24,7 +25,9 @@ import javafx.collections.FXCollections;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -153,6 +156,14 @@ public class CompletionPopup extends Tooltip {
         Nodes.addInputMap(itemView,
                 sequence(consume(keyPressed(ENTER), e -> selected()), consume(keyPressed(ESCAPE), e -> close()),
                         consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 2), e -> selected())));
+        
+        MenuItem item = new MenuItem();
+        FXResourceBundle.getBundle().put(item.textProperty(), "importStatic");
+        item.setOnAction(e -> selectedStatic());
+        
+        ContextMenu menu = new ContextMenu(item);
+        menu.setOnShowing(e -> item.setDisable(!itemView.getSelectionModel().getSelectedItem().isStatic()));
+        itemView.setContextMenu(menu);
 
         anchorXProperty().addListener((v, o, n) -> {
             double offset = Screen.getPrimary().getBounds().getWidth() - n.doubleValue() - getPrefWidth() > n
@@ -220,6 +231,14 @@ public class CompletionPopup extends Tooltip {
         CompletionItem selection = itemView.getSelectionModel().getSelectedItem();
         if (selection != null) {
             selection.complete();
+        }
+    }
+    
+    private void selectedStatic() {
+        hide();
+        CompletionItem selection = itemView.getSelectionModel().getSelectedItem();
+        if (selection != null) {
+            selection.completeStatic();
         }
     }
 

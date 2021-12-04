@@ -1,5 +1,8 @@
 package dev.jshfx.base.jshell;
 
+import java.lang.reflect.Modifier;
+import java.util.function.Consumer;
+
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jshfx.jx.tools.Signature;
@@ -11,21 +14,26 @@ public class SuggestionCompletionItem extends SourceCodeCompletionItem {
     private Suggestion suggestion;
     private int anchor;
     private String label = "";
+    private Consumer<String> input;
 
     public SuggestionCompletionItem(Signature signature) {
         super(signature);
     }
-    
-    public SuggestionCompletionItem(CodeArea codeArea, Suggestion suggestion, int anchor, Signature signature) {
+
+    public SuggestionCompletionItem(CodeArea codeArea, Suggestion suggestion, int anchor, Signature signature,
+            Consumer<String> input) {
         super(signature);
         this.codeArea = codeArea;
         this.suggestion = suggestion;
         this.anchor = anchor;
+        this.input = input;
         setLabel();
     }
 
     private void setLabel() {
-        label = isMethod() ? suggestion.continuation().substring(0, suggestion.continuation().lastIndexOf("(")) : suggestion.continuation();
+        label = getSignature().getKind() == Signature.Kind.METHOD
+                ? suggestion.continuation().substring(0, suggestion.continuation().lastIndexOf("("))
+                : suggestion.continuation();
         label = getSignature().toString().isEmpty() ? label : label + " - " + getSignature().toString();
     }
 
@@ -38,10 +46,27 @@ public class SuggestionCompletionItem extends SourceCodeCompletionItem {
     }
 
     @Override
+    public boolean isStatic() {
+        return Modifier.isStatic(getSignature().getModifiers());
+    }
+    
+    @Override
     public void complete() {
+        complete(anchor);
+    }
+
+    @Override
+    public void completeStatic() {
+        complete(anchor);
+        var stat = getSignature().getKind() == Signature.Kind.TYPE ? "" : " static";
+        input.accept(String.format("import%s %s", stat, getSignature().getFullName()));
+    }
+
+    private void complete(int anchor) {
         String completion = suggestion.continuation();
 
-        if (isMethod() && getSignature().toString().endsWith("()") && completion.endsWith("(")) {
+        if (getSignature().getKind() == Signature.Kind.METHOD && getSignature().toString().endsWith("()")
+                && completion.endsWith("(")) {
             completion += ")";
         }
 
@@ -59,14 +84,13 @@ public class SuggestionCompletionItem extends SourceCodeCompletionItem {
     public int hashCode() {
         return (suggestion.continuation() + getSignature()).hashCode();
     }
-    
+
     @Override
     public String toString() {
 
         return label;
     }
-
-    private boolean isMethod() {
-        return suggestion.continuation().contains("(");
-    }
+    
+    static void mymethod(int a) {}
+     void mymethod(int a, int b) {}
 }

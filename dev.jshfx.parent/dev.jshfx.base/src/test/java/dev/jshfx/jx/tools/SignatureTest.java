@@ -1,7 +1,9 @@
 package dev.jshfx.jx.tools;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -10,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 public class SignatureTest {
 
-    private Map<String, String> typeMapping = Map.of("ElementKind", "javax.lang.model.element.ElementKind", "Double", "java.lang.Double", "Object", "java.lang.Object", "String",
+    private Map<String, String> typeMapping = Map.of("java.lang.Thread","java.lang.Thread", "java.util.AbstractMap", "java.util.AbstractMap", "ElementKind", "javax.lang.model.element.ElementKind", "Double", "java.lang.Double", "Object", "java.lang.Object", "String",
             "java.lang.String", "Example", "org.example.Example", "List", "java.util.List", "Map", "java.util.Map");
     private Function<String, String> resolveType = type -> typeMapping.get(type);
 
@@ -228,5 +230,29 @@ public class SignatureTest {
         assertEquals(expectedTypeFullName, signature.getTypeFullName());
         assertEquals(expectedFullName, signature.getFullName());
         assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
+    }
+    
+    @Test
+    public void testInnerTypeModifiers() {
+        var signature = Signature.get("java.util.AbstractMap.SimpleEntry", null, resolveType);
+        assertTrue(Modifier.isStatic(signature.getModifiers()));        
+    }
+    
+    @Test
+    public void testFieldModifiers() {
+        var signature = Signature.get("String.CASE_INSENSITIVE_ORDER:Comparator", null, resolveType);
+        assertTrue(Modifier.isStatic(signature.getModifiers()));        
+    }
+    
+    @Test
+    public void testEnumConstantModifiers() {
+        var signature = Signature.get("java.lang.Thread.State.NEW", "State", resolveType);
+        assertTrue(Modifier.isStatic(signature.getModifiers()));        
+    }
+    
+    @Test
+    public void testMethodModifiers() {
+        var signature = Signature.get("String.valueOf(int i)", null, resolveType);
+        assertTrue(Modifier.isStatic(signature.getModifiers()));        
     }
 }

@@ -31,6 +31,7 @@ module dev.jshfx.base {
     requires info.picocli;
     requires dev.jshfx.automatic;
     requires dev.jshfx.util;
+    requires org.apache.commons.lang3;
 	
     exports dev.jshfx.j.util.prefs;
     

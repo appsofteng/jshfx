@@ -66,7 +66,7 @@ class SourceCodeCompletor extends Completor {
                     if (docs.isEmpty()) {
 
                         processing = items.test(new SuggestionCompletionItem(inputArea, suggestion.getSuggestion(),
-                                absoluteAnchor, Signature.get("", expressionType, this::resolveType)));
+                                absoluteAnchor, Signature.get("", expressionType, this::resolveType), this::addImport));
 
                     } else {
                         var signatures = docs.stream().map(Documentation::signature)
@@ -75,7 +75,7 @@ class SourceCodeCompletor extends Completor {
 
                         for (var signature : signatures) {
                             var item = new SuggestionCompletionItem(inputArea, suggestion.getSuggestion(),
-                                    absoluteAnchor, Signature.get(signature, expressionType, this::resolveType));
+                                    absoluteAnchor, Signature.get(signature, expressionType, this::resolveType), this::addImport);
 
                             processing = items.test(item);
 
@@ -127,23 +127,30 @@ class SourceCodeCompletor extends Completor {
 
             int index = -1;
             for (int i = 0; i < lines.size(); i++) {
-                if (lines.get(i).compareTo(newImport) >= 0) {
+                int comp = lines.get(i).compareTo(newImport);
+                if (comp > 0) {
                     index = i;
+                    break;
+                } else if (comp == 0) {
                     break;
                 }
             }
-            if (index >= 0) {
-                lines.add(index, newImport);
-            } else {
-                lines.add(newImport);
-            }
 
-            var newImports = lines.stream().collect(Collectors.joining("\n"));
-            Platform.runLater(() -> {
-                int caret = inputArea.getCaretPosition();
-                inputArea.replaceText(start, end, newImports);
-                inputArea.moveTo(caret + newImport.length() + 1);
-            });
+            if (index > -1) {
+
+                if (index >= 0) {
+                    lines.add(index, newImport);
+                } else {
+                    lines.add(newImport);
+                }
+
+                var newImports = lines.stream().collect(Collectors.joining("\n"));
+                Platform.runLater(() -> {
+                    int caret = inputArea.getCaretPosition();
+                    inputArea.replaceText(start, end, newImports);
+                    inputArea.moveTo(caret + newImport.length() + 1);
+                });
+            }
         } else {
             Platform.runLater(() -> {
                 int parIndex = IntStream.range(0, inputArea.getParagraphs().size())
