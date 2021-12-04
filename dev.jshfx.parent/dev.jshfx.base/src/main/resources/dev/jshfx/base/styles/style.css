@@ -23,8 +23,7 @@
 /* Charts *********************************************************************/
 
 .chart-line-symbol {
-    -fx-background-color: CHART_COLOR_1, white;
-    -fx-background-insets: 0, 1;
+    -fx-background-insets: 0, 3;
     -fx-background-radius: 3px;
     -fx-padding: 3px;
 }
