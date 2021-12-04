@@ -15,7 +15,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "/resolve")
 public class ResolveCommand extends BaseCommand {
 
-    @Parameters(paramLabel = "<artifacts>", descriptionKey = "/resolve.artifacts")
+    @Parameters(paramLabel = "<artifacts>", descriptionKey = "/resolve.artifacts", completionCandidates = RepoCoordinates.class)
     private List<String> coords;
 
     public ResolveCommand(CommandProcessor commandProcessor) {

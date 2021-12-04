@@ -13,44 +13,50 @@ import javafx.concurrent.Task;
 
 public final class TaskManager extends Manager {
 
-	private static final TaskManager INSTANCE = new TaskManager();
-	private final ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
-	private final ExecutorService executorService = Executors.newWorkStealingPool();
-	private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+    private static final TaskManager INSTANCE = new TaskManager();
+    private final ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executorService = Executors.newWorkStealingPool();
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-	private TaskManager() {
-	}
-	
-	@Override
-	public void init() throws Exception {
-		System.setProperty("java.util.concurrent.ForkJoinPool.common.threadFactory", PrivilegedForkJoinWorkerThreadFactory.class.getName());
-	}
+    private TaskManager() {
+    }
 
-	public static TaskManager get() {
-		return INSTANCE;
-	}
-	
-	public void execute(Task<?> task) {
+    @Override
+    public void init() throws Exception {
+        System.setProperty("java.util.concurrent.ForkJoinPool.common.threadFactory",
+                PrivilegedForkJoinWorkerThreadFactory.class.getName());
+    }
 
-		executorService.execute(() -> task.run());
-	}
+    public static TaskManager get() {
+        return INSTANCE;
+    }
 
-	public void executeSequentially(Runnable task) {
+    public void execute(Runnable task) {
 
-		singleThreadExecutor.execute(task);
-	}
+        executorService.execute(() -> task.run());
+    }
 
-	public ScheduledFuture<?> scheduleAtFixedRate​(Runnable task, long initialDelay, long period, TimeUnit unit) {
-		ScheduledFuture<?> future = scheduledExecutorService.scheduleAtFixedRate(task, initialDelay, period, unit);
-		return future;
-	}
+    public void execute(Task<?> task) {
 
-	@Override
-	public void stop() {
-	    ExecutorServiceUtils.shutdown(singleThreadExecutor);
-	    ExecutorServiceUtils.shutdown(executorService);
-	    ExecutorServiceUtils.shutdown(scheduledExecutorService);
+        executorService.execute(() -> task.run());
+    }
 
-		ForkJoinPool.commonPool().awaitQuiescence(60, TimeUnit.SECONDS);
-	}
+    public void executeSequentially(Runnable task) {
+
+        singleThreadExecutor.execute(task);
+    }
+
+    public ScheduledFuture<?> scheduleAtFixedRate​(Runnable task, long initialDelay, long period, TimeUnit unit) {
+        ScheduledFuture<?> future = scheduledExecutorService.scheduleAtFixedRate(task, initialDelay, period, unit);
+        return future;
+    }
+
+    @Override
+    public void stop() {
+        ExecutorServiceUtils.shutdown(singleThreadExecutor);
+        ExecutorServiceUtils.shutdown(executorService);
+        ExecutorServiceUtils.shutdown(scheduledExecutorService);
+
+        ForkJoinPool.commonPool().awaitQuiescence(60, TimeUnit.SECONDS);
+    }
 }

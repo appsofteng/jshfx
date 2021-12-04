@@ -1,5 +1,6 @@
 package dev.jshfx.base.sys;
 
+import java.nio.file.Path;
 import java.util.Set;
 
 import dev.jshfx.automatic.RepositoryUtils;
@@ -23,6 +24,14 @@ public final class RepositoryManager extends Manager {
         repositoryUtils.init();
     }
 
+    public Path getLocalRepoDir() {
+        return repositoryUtils.getLocalRepoDir();
+    }
+    
+    public Comparable<?> toRepoCoordinates(Path repoDir, Path path) {
+        return repositoryUtils.toRepoCoordinates(repoDir, path);
+    }
+    
     public void resolve(String coords, Set<String> classPaths, Set<String> sourcePaths) throws Exception {
 
        repositoryUtils.resolve(coords, classPaths, sourcePaths);

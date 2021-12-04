@@ -1,11 +1,13 @@
 package dev.jshfx.automatic;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
@@ -51,12 +53,24 @@ public final class RepositoryUtils {
         repositories = newRepositories(system, session);
     }
 
+    public Path getLocalRepoDir() {
+        return session.getLocalRepository().getBasedir().toPath();
+    }
+
+    public Comparable<?> toRepoCoordinates(Path repoDir, Path path) {
+        ComparableVersion version = new ComparableVersion(path.getFileName().toString());
+        Path parent = path.getParent();
+        String artifact = parent.getFileName().toString();
+        String group = repoDir.relativize(parent.getParent()).toString().replace(File.separatorChar, '.');
+
+        return new Coordinates(group, artifact, version);
+    }
+
     public void resolve(String coords, Set<String> classPaths, Set<String> sourcePaths) throws Exception {
 
         Artifact artifact = new DefaultArtifact(coords);
 
         resolve(artifact, classPaths, sourcePaths);
-
     }
 
     public void resolvePom(String pom, Set<String> classPaths, Set<String> sourcePaths) throws Exception {
@@ -74,7 +88,6 @@ public final class RepositoryUtils {
                     dependency.getType(), dependency.getVersion());
             resolve(artifact, classPaths, sourcePaths);
         }
-
     }
 
     private void resolve(Artifact artifact, Set<String> classePaths, Set<String> sourcePaths)
@@ -164,5 +177,27 @@ public final class RepositoryUtils {
                         .setSnapshotPolicy(new RepositoryPolicy(true, null, null)).build();
 
         return List.of(central, sonatype);
+    }
+    
+    private record Coordinates(String group, String artifact, ComparableVersion version) implements Comparable<Coordinates> {
+
+        @Override
+        public int compareTo(Coordinates o) {
+            int result = group.compareTo(o.group);
+            
+            if (result == 0) {
+                result = artifact.compareTo(o.artifact);
+                
+                if (result == 0) {
+                    result = version.compareTo(o.version);
+                }
+            }
+            
+            return result;
+        }
+        
+        public String toString() {
+            return String.format("%s:%s:%s", group, artifact, version);
+        }
     }
 }
