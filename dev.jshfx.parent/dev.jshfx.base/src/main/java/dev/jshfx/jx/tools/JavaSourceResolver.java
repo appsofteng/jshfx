@@ -216,11 +216,8 @@ public class JavaSourceResolver {
                 try {
                     namespace = getNamespace(node.getSimpleName());
                     path = scan(node.getMembers(), signature);
-                } catch (Result result) {
-                    path = result.getTreePath();
                 } finally {
                     int i = namespace.lastIndexOf(".");
-
                     namespace = namespace.substring(0, i);
                 }
             }
