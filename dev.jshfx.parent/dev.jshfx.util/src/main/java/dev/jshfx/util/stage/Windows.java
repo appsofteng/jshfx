@@ -42,7 +42,7 @@ public final class Windows {
 
     public static WindowContent show(String title, int columns, List<Node> nodes) {
 
-        TileWindowContent content = new TileWindowContent(title, columns, nodes);
+        WindowContent content = new WindowContent(title, columns, nodes);
 
         return content;
     }
@@ -59,7 +59,7 @@ public final class Windows {
             }
         }
 
-        WindowContent content = new WindowContent(nodes);
+        WindowContent content = new WindowContent("", 0, nodes);
 
         return content;
     }
