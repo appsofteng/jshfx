@@ -1,5 +1,6 @@
 package dev.jshfx.base.sys;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -129,9 +130,13 @@ public final class PreferenceManager extends Manager {
     }
 
     public Path getLatestDir() {
-        String dir = Preferences.userRoot().node("/sys").node("dir").get("latest", System.getProperty("user.home"));
+        Path dir = Path.of(Preferences.userRoot().node("/sys").node("dir").get("latest", System.getProperty("user.home")));
 
-        return Path.of(dir);
+        if (Files.notExists(dir)) {
+            dir = getInitialDirectory();
+        }
+        
+        return dir;
     }
 
     public void setLatestDir(Path dir) {
