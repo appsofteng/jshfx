@@ -21,7 +21,7 @@ class CommandCompletor extends Completor {
     }
 
     @Override
-    public void getCompletionItems(Predicate<CompletionItem> items) {
+    public void getCompletionItems(boolean contains, Predicate<CompletionItem> items) {
         var lineSpan = JShellUtils.getCurrentLineSpan(inputArea);
         String input = lineSpan.text();
         int caretPosition = lineSpan.caretPosition();
@@ -29,6 +29,18 @@ class CommandCompletor extends Completor {
                 .map(Token::getValue).collect(Collectors.toList());
         Token tokenOnCaret = session.getCommandProcessor().getLexer().getTokenOnCaretPosition();
 
+        String parText = "";
+        
+        if (contains) {
+            parText = input;
+            while (--caretPosition >= 0 && !Character.isWhitespace(parText.charAt(caretPosition))) {
+            }
+            caretPosition++;
+            parText = parText.substring(caretPosition, lineSpan.caretPosition());
+        }
+
+        String filter = parText;
+        
         int argIndex = arguments.size() - 1;
 
         int positionInArg = 0;
@@ -36,7 +48,7 @@ class CommandCompletor extends Completor {
         if (tokenOnCaret != null) {
             argIndex = tokenOnCaret.getIndex();
             positionInArg = caretPosition - tokenOnCaret.getStart();
-        } else if (argIndex >= 0) {
+        } else {
             arguments.add("");
             argIndex++;
         }
@@ -69,18 +81,18 @@ class CommandCompletor extends Completor {
 
         String arg = args[argIndex];
 
-        int absoluteAnchor = inputArea.getCaretPosition() - (caretPosition - anchor);
+        int absoluteAnchor = inputArea.getCaretPosition() - (caretPosition + filter.length() - anchor);
 
         for (CharSequence candidate : candidates) {
 
-            if (candidate.length() == 0) {
+            if (candidate.length() == 0 || !filter.isEmpty() && !candidate.toString().toLowerCase().contains(filter.toLowerCase())) {
                 continue;
             }
 
             String commandName = args[0];
             String name = arg.substring(0, positionInArg) + candidate;
 
-            boolean processing = items.test(new CommandCompletionItem(inputArea, absoluteAnchor, candidate.toString(), commandName, name));
+            boolean processing = items.test(new CommandCompletionItem(inputArea, absoluteAnchor, candidate.toString(), commandName, name, contains));
             
             if (!processing) {
                 break;

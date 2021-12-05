@@ -11,30 +11,37 @@ public class CommandCompletionItem extends CompletionItem {
     private String continuation;
     private String commandName;
     private String name;
+    private boolean replace;
 
-    public CommandCompletionItem(CodeArea codeArea, int anchor, String continuation, String commandName, String name) {
+    public CommandCompletionItem(CodeArea codeArea, int anchor, String continuation, String commandName, String name,
+            boolean replace) {
         this.codeArea = codeArea;
         this.anchor = anchor;
         this.continuation = continuation;
         this.commandName = commandName;
         this.name = name;
+        this.replace = replace;
     }
-    
+
     public String getCommandName() {
         return commandName;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public String getDocKey() {
         return commandName + "." + name;
     }
 
     @Override
     public void complete() {
-        codeArea.insertText(anchor, continuation);
+        if (replace) {
+            codeArea.replaceText(anchor, codeArea.getCaretPosition(), continuation);
+        } else {
+            codeArea.insertText(anchor, continuation);
+        }
     }
 
     @Override

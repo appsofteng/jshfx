@@ -51,6 +51,7 @@ public class ShellPane extends AreaPane {
     private Completion completion;
     private Session session;
     private TaskQueuer taskQueuer = new TaskQueuer();
+    private boolean completionContains;
 
     public ShellPane(String name) {
         this(Path.of(name), "");
@@ -89,7 +90,8 @@ public class ShellPane extends AreaPane {
         handlers.put(actions.getInsertFilePathAction(), () -> insertFilePaths());
         handlers.put(actions.getInsertSeparatedFilePathAction(), () -> insertFilePaths(File.pathSeparator));
         handlers.put(actions.getInsertSaveFilePathAction(), () -> insertSaveFilePath());
-        handlers.put(actions.getCodeCompletionAction(), () -> showCodeCompletion());
+        handlers.put(actions.getCodeCompletionAction(), () -> showCodeCompletion(false));
+        handlers.put(actions.getCodeCompletionContainsAction(), () -> showCodeCompletion(true));
         handlers.put(actions.getToggleCommentAction(), () -> toggleComment());
     }
 
@@ -138,7 +140,7 @@ public class ShellPane extends AreaPane {
 
         getArea().caretPositionProperty().addListener((v, o, n) -> {
             if (CompletionPopup.get().isShowing()) {
-                showCodeCompletion();
+                showCodeCompletion(completionContains);
             }
         });
 
@@ -174,8 +176,9 @@ public class ShellPane extends AreaPane {
         }
     }
 
-    public void showCodeCompletion() {
-
+    public void showCodeCompletion(boolean contains) {
+        completionContains = contains;
+        
         Optional<Bounds> boundsOption = getArea().getCaretBounds();
         if (boundsOption.isPresent()) {
             Bounds bounds = boundsOption.get();
@@ -184,7 +187,7 @@ public class ShellPane extends AreaPane {
             CompletionPopup.get().clear();
             CompletionPopup.get().show(getArea(), bounds.getMaxX(), bounds.getMaxY());
             CTask<Void> task = CTask
-                    .create(() -> completion.getCompletor().getCompletionItems(i -> CompletionPopup.get().add(i)));
+                    .create(() -> completion.getCompletor().getCompletionItems(contains, i -> CompletionPopup.get().add(i)));
             taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
         }
     }

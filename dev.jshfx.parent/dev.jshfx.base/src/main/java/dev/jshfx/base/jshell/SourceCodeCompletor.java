@@ -28,13 +28,25 @@ class SourceCodeCompletor extends Completor {
     }
 
     @Override
-    public void getCompletionItems(Predicate<CompletionItem> items) {
+    public void getCompletionItems(boolean contains, Predicate<CompletionItem> items) {
 
         int[] relativeAnchor = new int[1];
         StringBuffer relativeInput = new StringBuffer();
         int relativeCursor = inputArea.getCaretColumn();
         boolean processing = true;
 
+        String parText = "";
+        
+        if (contains) {
+            parText = inputArea.getParagraph(inputArea.getCurrentParagraph()).getText();
+            while (--relativeCursor >= 0 && Character.isJavaIdentifierPart(parText.charAt(relativeCursor))) {
+            }
+            relativeCursor++;
+            parText = parText.substring(relativeCursor, inputArea.getCaretColumn());
+        }
+
+        String filter = parText;
+        
         for (int i = inputArea.getCurrentParagraph(); i >= 0; i--) {
             String text = inputArea.getParagraph(i).getText() + "\n";
             relativeInput.insert(0, text);
@@ -48,9 +60,11 @@ class SourceCodeCompletor extends Completor {
 
             if (!suggestions.isEmpty()) {
 
-                int absoluteAnchor = inputArea.getCaretPosition() - (relativeCursor - relativeAnchor[0]);
+                int absoluteAnchor = inputArea.getCaretPosition() - (relativeCursor + filter.length() - relativeAnchor[0]);
 
-                var suggestionWrappers = suggestions.stream().map(SuggestionWrapper::new).sorted().distinct().toList();
+                var suggestionWrappers = suggestions.stream().map(SuggestionWrapper::new).sorted().distinct()
+                        .filter(s -> filter.isEmpty() || s.getSuggestion().continuation().toLowerCase().contains(filter.toLowerCase()))
+                        .toList();
 
                 for (SuggestionWrapper suggestion : suggestionWrappers) {
 

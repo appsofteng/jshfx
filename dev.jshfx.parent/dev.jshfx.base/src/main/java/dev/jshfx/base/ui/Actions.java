@@ -78,6 +78,7 @@ public class Actions {
     private Action insertSaveFilePathAction;
 
     private Action codeCompletionAction;
+    private Action codeCompletionContainsAction;
     private Action toggleCommentAction;
     private Action findAction;
 
@@ -251,6 +252,10 @@ public class Actions {
         codeCompletionAction = new Action(e -> rootPane.getEnvPane().handle(codeCompletionAction));
         FXResourceBundle.getBundle().put(codeCompletionAction.textProperty(), "codeCompletion");
         codeCompletionAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Space"));
+        
+        codeCompletionContainsAction = new Action(e -> rootPane.getEnvPane().handle(codeCompletionContainsAction));
+        FXResourceBundle.getBundle().put(codeCompletionContainsAction.textProperty(), "codeCompletionContains");
+        codeCompletionContainsAction.setAccelerator(KeyCombination.keyCombination("Shift+Shortcut+Space"));
 
         toggleCommentAction = new Action(e -> rootPane.getEnvPane().handle(toggleCommentAction));
         FXResourceBundle.getBundle().put(toggleCommentAction.textProperty(), "toggleComment");
@@ -345,6 +350,10 @@ public class Actions {
         return codeCompletionAction;
     }
 
+    public Action getCodeCompletionContainsAction() {
+        return codeCompletionContainsAction;
+    }
+    
     public Action getToggleCommentAction() {
         return toggleCommentAction;
     }
@@ -450,7 +459,7 @@ public class Actions {
                 evalLineAction, submitAction, submitLineAction, ActionUtils.ACTION_SEPARATOR, historyUpAction,
                 historyDownAction, ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction,
                 insertSeparatedFilePathAction, insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR,
-                codeCompletionAction, historySearchAction, findAction, ActionUtils.ACTION_SEPARATOR,
+                codeCompletionAction, codeCompletionContainsAction, historySearchAction, findAction, ActionUtils.ACTION_SEPARATOR,
                 toggleCommentAction);
         ActionUtils.updateContextMenu(menu, actions);
     }
@@ -465,7 +474,7 @@ public class Actions {
 
     public void addShellKeyHandlers(Node node) {
         addKeyHandlers(node,
-                List.of(codeCompletionAction, evalAction, evalLineAction, findAction, historySearchAction, historyUpAction, historyDownAction, insertDirPathAction,
+                List.of(codeCompletionAction, codeCompletionContainsAction, evalAction, evalLineAction, findAction, historySearchAction, historyUpAction, historyDownAction, insertDirPathAction,
                         insertFilePathAction, insertSeparatedFilePathAction, insertSaveFilePathAction, saveAction, saveAsAction, submitAction,
                         submitLineAction, toggleCommentAction));
     }
