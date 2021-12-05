@@ -26,6 +26,7 @@ import dev.jshfx.j.nio.file.XFiles;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.CTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
+import dev.jshfx.util.stage.WindowContent;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -115,8 +116,8 @@ public class ShellPane extends AreaPane {
     
     private void handleResult(SnippetEvent event, Object obj) {
 
-        if (event.snippet().subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
-            Platform.runLater(() -> WindowUtils.show(getScene().getWindow(), obj));
+        if (event.snippet().subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND && obj instanceof WindowContent windowContent) {
+            Platform.runLater(() -> WindowUtils.show(getScene().getWindow(), windowContent));
         }
     }
 

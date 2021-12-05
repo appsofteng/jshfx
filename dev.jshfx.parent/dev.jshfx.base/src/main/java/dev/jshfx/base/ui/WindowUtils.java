@@ -42,44 +42,41 @@ public final class WindowUtils {
         progressDialog.show();
     }
 
-    public static void show(Window window, Object obj) {
+    public static void show(Window window, WindowContent windowContent) {
 
-        if (obj instanceof WindowContent windowContent) {
+        Node content = windowContent.getNodes().get(0);
 
-            Node content = windowContent.getNodes().get(0);
-
-            if (windowContent.getNodes().size() > 1) {
-                if (windowContent.getColumns() > 0) {
-                    content = getGridPane(windowContent);
-                } else {
-                    content = getTabPane(windowContent);
-                }
+        if (windowContent.getNodes().size() > 1) {
+            if (windowContent.getColumns() > 0) {
+                content = getGridPane(windowContent);
+            } else {
+                content = getTabPane(windowContent);
             }
-
-            var name = windowContent.getTitle();
-
-            if (name == null || name.isEmpty()) {
-                name = FXResourceBundle.getBundle().getString​("untitled");
-            }
-
-            RootPane.get().getActions().setSnapshotContextMenu(content, name);
-
-            BorderPane borderPane = new BorderPane(content);
-
-            if (!windowContent.getTitle().isEmpty() && windowContent.getNodes().size() > 1) {
-                var label = new Label(windowContent.getTitle());
-                label.setFont(new Font(label.getFont().getName(), 20));
-                borderPane.setTop(label);
-                BorderPane.setAlignment(label, Pos.CENTER);
-            }
-
-            Stage stage = new Stage();
-            stage.setTitle(windowContent.getTitle());
-            stage.getIcons().add(ResourceManager.get().getIconImage());
-            stage.initOwner(window);
-            stage.setScene(new Scene(borderPane));
-            stage.show();
         }
+
+        var name = windowContent.getTitle();
+
+        if (name == null || name.isEmpty()) {
+            name = FXResourceBundle.getBundle().getString​("untitled");
+        }
+
+        RootPane.get().getActions().setSnapshotContextMenu(content, name);
+
+        BorderPane borderPane = new BorderPane(content);
+
+        if (!windowContent.getTitle().isEmpty() && windowContent.getNodes().size() > 1) {
+            var label = new Label(windowContent.getTitle());
+            label.setFont(new Font(label.getFont().getName(), 20));
+            borderPane.setTop(label);
+            BorderPane.setAlignment(label, Pos.CENTER);
+        }
+
+        Stage stage = new Stage();
+        stage.setTitle(windowContent.getTitle());
+        stage.getIcons().add(ResourceManager.get().getIconImage());
+        stage.initOwner(window);
+        stage.setScene(new Scene(borderPane));
+        stage.show();
     }
 
     private static Node getTabPane(WindowContent windowContent) {
