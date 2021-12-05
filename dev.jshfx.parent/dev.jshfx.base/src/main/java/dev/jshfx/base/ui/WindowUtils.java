@@ -75,7 +75,9 @@ public final class WindowUtils {
         stage.setTitle(windowContent.getTitle());
         stage.getIcons().add(ResourceManager.get().getIconImage());
         stage.initOwner(window);
-        stage.setScene(new Scene(borderPane));
+        Scene scene = new Scene(borderPane);
+        scene.getStylesheets().add(ResourceManager.get().getStyle());
+        stage.setScene(scene);
         stage.show();
     }
 
