@@ -8,8 +8,8 @@ import org.controlsfx.dialog.ProgressDialog;
 
 import dev.jshfx.jfx.scene.control.AutoCompleteArea;
 import dev.jshfx.jfx.util.FXResourceBundle;
-import dev.jshfx.util.chart.Charts;
-import dev.jshfx.util.control.Tables;
+import dev.jshfx.util.stage.TileWindowContent;
+import dev.jshfx.util.stage.WindowContent;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.geometry.Pos;
@@ -44,23 +44,22 @@ public final class WindowUtils {
 
     public static void show(Window window, Object obj) {
 
-        if (obj instanceof Charts charts) {
+        if (obj instanceof TileWindowContent windowContent) {
 
             Dialog<Void> dialog = createPlainDialog(window);
-//            dialog.setWidth(MainApp.WINDOW_PREF_WIDTH);
-//            dialog.setHeight(MainApp.WINDOW_PREF_HEIGHT);
 
-            int columns = charts.getColumns();
-            int rows = charts.getCharts().size() / columns + (int) Math.signum(charts.getCharts().size() % columns);
+            int columns = windowContent.getColumns();
+            int rows = windowContent.getNodes().size() / columns
+                    + (int) Math.signum(windowContent.getNodes().size() % columns);
 
             GridPane chartPane = new GridPane();
-            
-            for (int i = 0; i < charts.getCharts().size(); i++) {
-                var chart = charts.getCharts().get(i);
-                
+
+            for (int i = 0; i < windowContent.getNodes().size(); i++) {
+                var chart = windowContent.getNodes().get(i);
+
                 int column = i % columns;
                 int row = (i + 1) / columns + (int) Math.signum((i + 1) % columns) - 1;
-                
+
                 GridPane.setRowIndex(chart, row);
                 GridPane.setColumnIndex(chart, column);
             }
@@ -76,20 +75,20 @@ public final class WindowUtils {
                 row.setVgrow(Priority.ALWAYS);
                 chartPane.getRowConstraints().add(row);
             }
-            
-            chartPane.getChildren().addAll(charts.getCharts());
 
-            var name = charts.getTitle().isEmpty() ? charts.getCharts().get(0).getTitle() : charts.getTitle();
+            chartPane.getChildren().addAll(windowContent.getNodes());
+
+            var name = windowContent.getTitle();
 
             if (name == null || name.isEmpty()) {
-                name = FXResourceBundle.getBundle().getString​("chart");
+                name = FXResourceBundle.getBundle().getString​("untitled");
             }
 
             RootPane.get().getActions().setSnapshotContextMenu(chartPane, name);
 
             BorderPane borderPane = new BorderPane(chartPane);
-            if (!charts.getTitle().isEmpty()) {
-                var label = new Label(charts.getTitle());
+            if (!windowContent.getTitle().isEmpty()) {
+                var label = new Label(windowContent.getTitle());
                 label.setFont(new Font(label.getFont().getName(), 20));
                 borderPane.setTop(label);
                 BorderPane.setAlignment(label, Pos.CENTER);
@@ -105,16 +104,22 @@ public final class WindowUtils {
             dialog.getDialogPane().setContent(borderPane);
 
             dialog.show();
-        } else if (obj instanceof Tables tables) {
+        } else if (obj instanceof WindowContent windowContent) {
             Dialog<Void> dialog = createPlainDialog(window);
 
-            TabPane tabPane = new TabPane();
-            tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
+            Node content = windowContent.getNodes().get(0);
+            
+            if (windowContent.getNodes().size() > 1) {
+                TabPane tabPane = new TabPane();
+                tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 
-            tables.getTableViews().stream().map(tv -> new Tab(tv.getId(), tv))
-                    .collect(Collectors.toCollection(() -> tabPane.getTabs()));
-
-            dialog.getDialogPane().setContent(tabPane);
+                windowContent.getNodes().stream().map(tv -> new Tab(tv.getId(), tv))
+                        .collect(Collectors.toCollection(() -> tabPane.getTabs()));
+                
+                content = tabPane;
+            }
+            
+            dialog.getDialogPane().setContent(content);
             dialog.show();
         }
     }

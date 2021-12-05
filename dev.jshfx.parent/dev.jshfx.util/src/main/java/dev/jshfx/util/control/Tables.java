@@ -1,7 +1,6 @@
 package dev.jshfx.util.control;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -12,14 +11,7 @@ import javafx.scene.control.cell.MapValueFactory;
 
 public final class Tables {
 
-    private List<TableView<?>> tableViews;
-
-    private Tables(TableView<?>... tables) {
-        this.tableViews = Arrays.asList(tables);
-    }
-
-    public List<TableView<?>> getTableViews() {
-        return tableViews;
+    private Tables() {
     }
 
     @SuppressWarnings("rawtypes")
@@ -55,18 +47,5 @@ public final class Tables {
         tableView.getItems().addAll(maps);
 
         return tableView;
-    }
-
-    public static Tables show(TableView<?>... tableViews) {
-
-        for (int i = 0; i < tableViews.length; i++) {
-            if (tableViews[i].getId() == null) {
-                tableViews[i].setId("T" + i);
-            }
-        }
-
-        Tables tables = new Tables(tableViews);
-
-        return tables;
     }
 }

@@ -31,17 +31,9 @@ import javafx.scene.chart.XYChart.Series;
 
 public final class Charts {
 
-    private String title;
-    private int columns;
-
-    private List<Chart> charts;
-
-    private Charts(String title, int columns, List<Chart> charts) {
-        this.title = title;
-        this.columns = columns;
-        this.charts = charts;
+    private Charts() {
     }
-
+    
     public static <X, Y> AreaChart<X, Y> getAreaChart(Series<X, Y>... series) {
         return getAreaChart(Arrays.asList(series));
     }
@@ -211,54 +203,5 @@ public final class Charts {
             categoryY.setCategories(FXCollections.observableArrayList(setY));
             categoryY.setAutoRanging(true);
         }
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public int getColumns() {
-        return columns;
-    }
-
-    public List<Chart> getCharts() {
-        return charts;
-    }
-
-    public static Charts show(Chart... charts) {
-        return show("", charts);
-    }
-
-    public static Charts show(int columns, Chart... charts) {
-        return show("", columns, charts);
-    }
-
-    public static Charts show(String title, Chart... charts) {
-        return show(title, Arrays.asList(charts));
-    }
-
-    public static Charts show(String title, int columns, Chart... charts) {
-        return show(title, columns, Arrays.asList(charts));
-    }
-
-    public static Charts show(List<Chart> charts) {
-        return show("", charts);
-    }
-
-    public static Charts show(int columns, List<Chart> charts) {
-
-        return show("", columns, charts);
-    }
-
-    public static Charts show(String title, List<Chart> charts) {
-        var columns = charts.size() > 1 ? 2 : 1;
-        return show(title, columns, charts);
-    }
-
-    public static Charts show(String title, int columns, List<Chart> charts) {
-
-        Charts result = new Charts(title, columns, charts);
-
-        return result;
     }
 }
