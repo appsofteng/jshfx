@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.controlsfx.dialog.ProgressDialog;
 
+import dev.jshfx.base.sys.ResourceManager;
 import dev.jshfx.jfx.scene.control.AutoCompleteArea;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.util.stage.WindowContent;
@@ -13,8 +14,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -26,7 +26,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.Font;
-import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.stage.Window;
 
 public final class WindowUtils {
@@ -44,7 +44,6 @@ public final class WindowUtils {
     public static void show(Window window, Object obj) {
 
         if (obj instanceof WindowContent windowContent) {
-            Dialog<Void> dialog = createPlainDialog(window);
 
             Node content = windowContent.getNodes().get(0);
 
@@ -64,19 +63,20 @@ public final class WindowUtils {
 
             RootPane.get().getActions().setSnapshotContextMenu(content, name);
 
-            if (!windowContent.getTitle().isEmpty()) {
-                BorderPane borderPane = new BorderPane(content);
-
+            BorderPane borderPane = new BorderPane(content);
+            
+            if (!windowContent.getTitle().isEmpty()) {                
                 var label = new Label(windowContent.getTitle());
                 label.setFont(new Font(label.getFont().getName(), 20));
                 borderPane.setTop(label);
                 BorderPane.setAlignment(label, Pos.CENTER);
-                
-                content = borderPane;
             }
-
-            dialog.getDialogPane().setContent(content);
-            dialog.show();
+            
+            Stage stage = new Stage();
+            stage.getIcons().add(ResourceManager.get().getIconImage());
+            stage.initOwner(window);
+            stage.setScene(new Scene(borderPane));
+            stage.show();
         }
     }
 
@@ -139,26 +139,5 @@ public final class WindowUtils {
 
         popup.setGraphic(autoCompleteField);
         popup.show(window);
-    }
-
-    private static <T> Dialog<T> createPlainDialog(Window window) {
-        Dialog<T> dialog = new Dialog<>();
-        dialog.setResizable(true);
-        dialog.initModality(Modality.NONE);
-        dialog.setDialogPane(new PlainDialogPane());
-        dialog.initOwner(window);
-        Window dialogWindow = dialog.getDialogPane().getScene().getWindow();
-        dialogWindow.setOnCloseRequest(event -> dialogWindow.hide());
-
-        return dialog;
-    }
-
-    private static class PlainDialogPane extends DialogPane {
-
-        @Override
-        protected Node createButtonBar() {
-            return null;
-        }
-
     }
 }
