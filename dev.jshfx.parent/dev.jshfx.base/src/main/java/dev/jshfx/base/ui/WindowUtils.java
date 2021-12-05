@@ -3,6 +3,7 @@ package dev.jshfx.base.ui;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.controlsfx.dialog.ProgressDialog;
 
@@ -64,15 +65,16 @@ public final class WindowUtils {
             RootPane.get().getActions().setSnapshotContextMenu(content, name);
 
             BorderPane borderPane = new BorderPane(content);
-            
-            if (!windowContent.getTitle().isEmpty()) {                
+
+            if (!windowContent.getTitle().isEmpty() && windowContent.getNodes().size() > 1) {
                 var label = new Label(windowContent.getTitle());
                 label.setFont(new Font(label.getFont().getName(), 20));
                 borderPane.setTop(label);
                 BorderPane.setAlignment(label, Pos.CENTER);
             }
-            
+
             Stage stage = new Stage();
+            stage.setTitle(windowContent.getTitle());
             stage.getIcons().add(ResourceManager.get().getIconImage());
             stage.initOwner(window);
             stage.setScene(new Scene(borderPane));
@@ -81,10 +83,13 @@ public final class WindowUtils {
     }
 
     private static Node getTabPane(WindowContent windowContent) {
+
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 
-        windowContent.getNodes().stream().map(tv -> new Tab(tv.getId(), tv))
+        IntStream.range(0, windowContent.getNodes().size())
+                .mapToObj(i -> new Tab(windowContent.getNodes().get(i).getId() == null ? "T" + i
+                        : windowContent.getNodes().get(i).getId(), windowContent.getNodes().get(i)))
                 .collect(Collectors.toCollection(() -> tabPane.getTabs()));
 
         return tabPane;

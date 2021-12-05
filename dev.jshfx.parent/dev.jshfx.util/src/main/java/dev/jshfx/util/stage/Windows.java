@@ -11,55 +11,11 @@ public final class Windows {
     }
 
     public static WindowContent show(Node... nodes) {
-        return show("", nodes);
-    }
-
-    public static WindowContent show(int columns, Node... nodes) {
-        return show("", columns, nodes);
-    }
-
-    public static WindowContent show(String title, Node... nodes) {
-        return show(title, Arrays.asList(nodes));
-    }
-
-    public static WindowContent show(String title, int columns, Node... nodes) {
-        return show(title, columns, Arrays.asList(nodes));
+        return show(Arrays.asList(nodes));
     }
 
     public static WindowContent show(List<Node> nodes) {
-        return show("", nodes);
-    }
-
-    public static WindowContent show(int columns, List<Node> nodes) {
-
-        return show("", columns, nodes);
-    }
-
-    public static WindowContent show(String title, List<Node> nodes) {
-        var columns = nodes.size() > 1 ? 2 : 1;
-        return show(title, columns, nodes);
-    }
-
-    public static WindowContent show(String title, int columns, List<Node> nodes) {
-
-        WindowContent content = new WindowContent(title, columns, nodes);
-
-        return content;
-    }
-    
-    public static WindowContent showTabs(Node... nodes) {
-        return showTabs(Arrays.asList(nodes));
-    }
-    
-    public static WindowContent showTabs(List<Node> nodes) {
-
-        for (int i = 0; i < nodes.size(); i++) {
-            if (nodes.get(i).getId() == null) {
-                nodes.get(i).setId("T" + i);
-            }
-        }
-
-        WindowContent content = new WindowContent("", 0, nodes);
+        WindowContent content = new WindowContent(nodes);
 
         return content;
     }

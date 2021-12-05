@@ -6,25 +6,35 @@ import javafx.scene.Node;
 
 public class WindowContent {
 
-    private String title;
+    private String title = "";
     private int columns;
     private List<Node> nodes;
-        
-    WindowContent(String title, int columns, List<Node> nodes) {
+
+    WindowContent(List<Node> nodes) {
         this.nodes = nodes;
-        this.title = title;
-        this.columns = columns;
     }
 
     public String getTitle() {
         return title;
     }
 
+    public WindowContent setTitle(String title) {
+        this.title = title;
+
+        return this;
+    }
+
     public int getColumns() {
         return columns;
     }
-    
+
+    public WindowContent setColumns(int columns) {
+        this.columns = columns;
+
+        return this;
+    }
+
     public List<Node> getNodes() {
         return nodes;
-    }    
+    }
 }
