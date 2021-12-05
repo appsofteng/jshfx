@@ -34,6 +34,7 @@
 				<include>org.controlsfx:*</include>
 				<include>org.fxmisc.richtext:richtextfx</include>
 				<include>info.picocli:picocli</include>
+				<include>org.apache.commons:commons-lang3</include>
 			</includes>
 			<excludes>
 				<exclude>org.openjfx:*</exclude>
