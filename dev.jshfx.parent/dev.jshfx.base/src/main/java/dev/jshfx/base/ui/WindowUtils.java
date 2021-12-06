@@ -7,16 +7,23 @@ import java.util.stream.IntStream;
 
 import org.controlsfx.dialog.ProgressDialog;
 
+import dev.jshfx.base.MainApp;
 import dev.jshfx.base.sys.ResourceManager;
 import dev.jshfx.jfx.scene.control.AutoCompleteArea;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.util.stage.WindowContent;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
+import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
@@ -27,6 +34,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.Font;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
@@ -71,11 +79,22 @@ public final class WindowUtils {
             BorderPane.setAlignment(label, Pos.CENTER);
         }
 
+        ScrollPane scrollPane = new ScrollPane(borderPane);
+        scrollPane.setPrefSize(MainApp.WINDOW_PREF_WIDTH, MainApp.WINDOW_PREF_HEIGHT);
+
+        scrollPane.viewportBoundsProperty().addListener((v, o, n) -> {
+            borderPane.setMinSize(Math.max(borderPane.getPrefWidth(), n.getWidth()),
+                    Math.max(borderPane.getPrefHeight(), n.getHeight()));
+            scrollPane.setPannable(
+                    (borderPane.getMinWidth() > n.getWidth()) || (borderPane.getMinHeight() > n.getHeight()));
+
+        });
+
         Stage stage = new Stage();
         stage.setTitle(windowContent.getTitle());
         stage.getIcons().add(ResourceManager.get().getIconImage());
         stage.initOwner(window);
-        Scene scene = new Scene(borderPane);
+        Scene scene = new Scene(scrollPane);
         scene.getStylesheets().add(ResourceManager.get().getStyle());
         stage.setScene(scene);
         stage.show();
