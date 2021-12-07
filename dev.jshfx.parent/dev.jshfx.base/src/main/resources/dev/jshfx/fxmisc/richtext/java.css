@@ -24,7 +24,7 @@
     -fx-fill: #d47500;
 }
 
-.styled-text-area .string {
+.styled-text-area .string, .styled-text-area .textblock {
     -fx-fill: #d47500;
 }
 

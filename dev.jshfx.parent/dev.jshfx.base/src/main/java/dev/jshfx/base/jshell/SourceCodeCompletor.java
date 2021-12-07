@@ -3,17 +3,21 @@ package dev.jshfx.base.jshell;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.model.TwoDimensional.Bias;
 
 import dev.jshfx.fxmisc.richtext.CompletionItem;
+import dev.jshfx.jx.tools.GroupNames;
 import dev.jshfx.jx.tools.JavaSourceResolver.HtmlDoc;
+import dev.jshfx.jx.tools.Lexer;
 import dev.jshfx.jx.tools.Signature;
+import dev.jshfx.jx.tools.Token;
 import javafx.application.Platform;
 import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.QualifiedNames;
@@ -21,10 +25,11 @@ import jdk.jshell.SourceCodeAnalysis.Suggestion;
 
 class SourceCodeCompletor extends Completor {
 
-    private Pattern importPattern = Pattern.compile("((?:import .*)(?:\n(?:import .*\n|\\s*\n)*(?:import .*))?)");
+    private Lexer lexer;
 
-    SourceCodeCompletor(CodeArea inputArea, Session session) {
+    SourceCodeCompletor(CodeArea inputArea, Session session, Lexer lexer) {
         super(inputArea, session);
+        this.lexer = lexer;
     }
 
     @Override
@@ -36,7 +41,7 @@ class SourceCodeCompletor extends Completor {
         boolean processing = true;
 
         String parText = "";
-        
+
         if (contains) {
             parText = inputArea.getParagraph(inputArea.getCurrentParagraph()).getText();
             while (--relativeCursor >= 0 && Character.isJavaIdentifierPart(parText.charAt(relativeCursor))) {
@@ -46,7 +51,7 @@ class SourceCodeCompletor extends Completor {
         }
 
         String filter = parText;
-        
+
         for (int i = inputArea.getCurrentParagraph(); i >= 0; i--) {
             String text = inputArea.getParagraph(i).getText() + "\n";
             relativeInput.insert(0, text);
@@ -60,10 +65,12 @@ class SourceCodeCompletor extends Completor {
 
             if (!suggestions.isEmpty()) {
 
-                int absoluteAnchor = inputArea.getCaretPosition() - (relativeCursor + filter.length() - relativeAnchor[0]);
+                int absoluteAnchor = inputArea.getCaretPosition()
+                        - (relativeCursor + filter.length() - relativeAnchor[0]);
 
                 var suggestionWrappers = suggestions.stream().map(SuggestionWrapper::new).sorted().distinct()
-                        .filter(s -> filter.isEmpty() || s.getSuggestion().continuation().toLowerCase().contains(filter.toLowerCase()))
+                        .filter(s -> filter.isEmpty()
+                                || s.getSuggestion().continuation().toLowerCase().contains(filter.toLowerCase()))
                         .toList();
 
                 for (SuggestionWrapper suggestion : suggestionWrappers) {
@@ -132,50 +139,47 @@ class SourceCodeCompletor extends Completor {
 
     private void addImport(String newImport) {
 
-        Matcher matcher = importPattern.matcher(inputArea.getText());
+        if (session.getJshell().imports().anyMatch(i -> i.source().startsWith(newImport))) {
+            return;
+        }
+        
+        var importPars = inputArea.getParagraphs().stream()
+                .dropWhile(p -> !p.getText().startsWith("import"))
+                .takeWhile(p -> p.getText().startsWith("import") || p.getText().isBlank())
+                .toList();
 
-        if (matcher.find()) {
-            int start = matcher.start();
-            int end = matcher.end();
-            String imports = matcher.group();
-            List<String> lines = imports.lines().collect(Collectors.toCollection(() -> new ArrayList<>()));
+        if (!importPars.isEmpty()) {
+            var startPar = inputArea.getParagraphs().indexOf(importPars.get(0));
+            var endPar =  inputArea.getParagraphs().indexOf(importPars.get(importPars.size() - 1));
+            
+            int start = inputArea.getAbsolutePosition(startPar, 0);
+            int end = inputArea.getAbsolutePosition(endPar, inputArea.getParagraphLength(endPar));
 
-            int index = lines.size();
-            for (int i = 0; i < lines.size(); i++) {
-                int comp = lines.get(i).compareTo(newImport);
-                if (comp > 0) {
-                    index = i;
-                    break;
-                } else if (comp == 0) {
-                    index = -1;
-                    break;
-                }
-            }
+            Set<String> importLines = importPars.stream()
+                    .map(p -> p.getText())
+                    .collect(Collectors.toCollection(() -> new TreeSet<>()));
 
-            if (index > -1) {
-                lines.add(index, newImport);
-
-                var newImports = lines.stream().collect(Collectors.joining("\n"));
+            if (importLines.add(newImport)) {
+                var newImports = importLines.stream().collect(Collectors.joining("\n"));
                 Platform.runLater(() -> {
                     int caret = inputArea.getCaretPosition();
                     inputArea.replaceText(start, end, newImports);
                     inputArea.moveTo(caret + newImport.length() + 1);
                 });
             }
+
         } else {
+
+            var tokens = lexer.getTokens().stream()
+                    .takeWhile(t -> t.getType().equals(GroupNames.COMMENT) || t.getType().equals(GroupNames.JSHELLCOMMAND))
+                    .map(Token::getEnd).toList();
+
+            var startPosition = tokens.isEmpty() ? 0 : tokens.get(tokens.size() - 1) + 1;
+
             Platform.runLater(() -> {
-                int parIndex = IntStream.range(0, inputArea.getParagraphs().size())
-                        .filter(i -> !CommandProcessor.isCommand(inputArea.getParagraph(i).getText())).findFirst()
-                        .orElse(0);
-
                 int caret = inputArea.getCaretPosition();
-                String newLine = "\n";
-                if (!inputArea.getParagraph(parIndex).getText().isBlank()) {
-                    newLine += "\n";
-                }
-
-                inputArea.insertText(inputArea.getAbsolutePosition(parIndex, 0), newImport + newLine);
-                inputArea.moveTo(caret + newImport.length() + 2);
+                inputArea.insertText(startPosition, newImport + "\n");
+                inputArea.moveTo(caret + newImport.length() + 1);
             });
         }
 

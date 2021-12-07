@@ -65,7 +65,7 @@ public final class CodeAreaWrappers {
         return new CodeAreaWrappers(area, fileName, XFiles.getFileExtension(fileName));
     }
 
-    private Lexer getLexer() {
+    public Lexer getLexer() {
 
         if (lexer == null) {
             lexer = Lexer.get(fileName, language);

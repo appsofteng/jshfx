@@ -2,16 +2,18 @@ package dev.jshfx.base.jshell;
 
 import org.fxmisc.richtext.CodeArea;
 
+import dev.jshfx.jx.tools.Lexer;
+
 public class Completion {
     
     private CodeArea inputArea;
     private CommandCompletor commandCompletion;
     private SourceCodeCompletor sourceCodeCompletion;
 
-    public Completion(CodeArea inputArea, Session session) {
+    public Completion(CodeArea inputArea, Session session, Lexer lexer) {
         this.inputArea = inputArea;
         commandCompletion = new CommandCompletor(inputArea, session);
-        sourceCodeCompletion = new SourceCodeCompletor(inputArea, session);
+        sourceCodeCompletion = new SourceCodeCompletor(inputArea, session, lexer);
     }
 
     public Completor getCompletor() {

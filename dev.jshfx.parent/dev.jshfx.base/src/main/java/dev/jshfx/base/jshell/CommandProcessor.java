@@ -43,6 +43,7 @@ public class CommandProcessor extends Processor {
 
     public static final String OPTION_SEPARATOR = " ";
 	private static final List<String> PRIVILEGED_COMMANDS = List.of(ExitCommand.EXIT_COMMAND, StopCommand.STOP_COMMAND);
+    public static final String MULTILINE_COMMAND_SEPARATOR = "\\\\\\v/";
 	static final String COMMAND_PATTERN = "^/[^\"'/\\*]*( .*)*$";
     private static final String COMMANDS_FILE = "commands";
 	private CommandLine commandLine;

@@ -22,7 +22,10 @@ import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jdk.jshell.execution.ObjectExecutionControlProvider;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
 import dev.jshfx.jfx.util.FXResourceBundle;
+import dev.jshfx.jx.tools.GroupNames;
 import dev.jshfx.jx.tools.JavaSourceResolver;
+import dev.jshfx.jx.tools.Lexer;
+import dev.jshfx.jx.tools.Token;
 import jdk.jshell.JShell;
 import jdk.jshell.JShell.Subscription;
 import jdk.jshell.Snippet;
@@ -407,15 +410,8 @@ public class Session {
         }
     }
 
-    public void doImports(String input) {
-
-        String imports = input.lines().map(line -> line.trim()).dropWhile(String::isEmpty)
-                .dropWhile(line -> line.startsWith("//") || line.startsWith("/*") || line.startsWith("*"))
-                .takeWhile(line -> line.startsWith("import") || line.startsWith("/") || line.isEmpty())
-                .collect(Collectors.joining("\n"));
-        process(imports);
-    }
-
+    private Lexer lexer = Lexer.get("jsh");
+    
     public void process(String input) {
         timer.start();
         if (input.isBlank()) {
@@ -423,42 +419,24 @@ public class Session {
         }
 
         history.add(input.strip());
-
-        String[] lines = input.split("\n");
-        StringBuilder command = new StringBuilder();
+        
+        var tokens = lexer.tokenize(input);
         StringBuilder snippets = new StringBuilder();
-        int lineNumber = 0;
-
-        for (String line : lines) {
-            lineNumber++;
-            if (CommandProcessor.isCommand(line)) {
+        
+        for (Token token : tokens) {
+            if (token.getType().equals(GroupNames.JSHELLCOMMAND)) {
                 if (snippets.length() > 0) {
-                    snippetProcessor.process(snippets.toString(), lineNumber);
+                    snippetProcessor.process(snippets.toString(), 0);
                     snippets.delete(0, snippets.length());
                 }
-
-                if (line.trim().endsWith("\\")) {
-                    if (command.isEmpty()) {
-                        command.append(line.substring(0, line.lastIndexOf("\\")));
-                    } else {
-                        command.append(line.substring(1, line.lastIndexOf("\\")));
-                    }
-                } else {
-                    if (command.isEmpty()) {
-                        commandProcessor.process(line, lineNumber);
-                    } else {
-                        command.append(line.substring(1));
-                        commandProcessor.process(command.toString(), lineNumber);
-                        command.delete(0, command.length());
-                    }
-                }
+                commandProcessor.process(token.getValue().replaceAll(CommandProcessor.MULTILINE_COMMAND_SEPARATOR, ""), 0);
             } else {
-                snippets.append(line).append("\n");
+                snippets.append(token.getValue()).append("\n");
             }
         }
-
+        
         if (snippets.length() > 0) {
-            snippetProcessor.process(snippets.toString(), lineNumber);
+            snippetProcessor.process(snippets.toString(), 0);
         }
     }
 }

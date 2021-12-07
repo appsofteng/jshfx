@@ -90,6 +90,6 @@ public class Token {
     
     @Override
     public String toString() {
-        return getValue();
+        return String.format("%s: %s", type, value);
     }
 }

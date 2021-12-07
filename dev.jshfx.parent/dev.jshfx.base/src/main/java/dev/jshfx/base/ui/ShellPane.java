@@ -15,8 +15,8 @@ import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import dev.jshfx.base.jshell.Completion;
-import dev.jshfx.base.jshell.JShellUtils;
 import dev.jshfx.base.jshell.Session;
+import dev.jshfx.base.jshell.commands.ResolveCommand;
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.fxmisc.richtext.CodeAreaWrappers;
 import dev.jshfx.fxmisc.richtext.CommentWrapper;
@@ -26,6 +26,9 @@ import dev.jshfx.j.nio.file.XFiles;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.CTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
+import dev.jshfx.jx.tools.GroupNames;
+import dev.jshfx.jx.tools.Lexer;
+import dev.jshfx.jx.tools.Token;
 import dev.jshfx.util.stage.WindowContent;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -53,6 +56,7 @@ public class ShellPane extends AreaPane {
     private Session session;
     private TaskQueuer taskQueuer = new TaskQueuer();
     private boolean completionContains;
+    private Lexer lexer;
 
     public ShellPane(String name) {
         this(Path.of(name), "");
@@ -66,7 +70,7 @@ public class ShellPane extends AreaPane {
         session.setOnExitCommand(
                 () -> Platform.runLater(() -> onCloseRequest.handle(new Event(this, this, Event.ANY))));
         session.setOnResult(this::handleResult);
-        completion = new Completion(getArea(), session);        
+        completion = new Completion(getArea(), session, lexer);        
 
         getChildren().add(new VirtualizedScrollPane<>(getArea()));
 
@@ -111,7 +115,7 @@ public class ShellPane extends AreaPane {
 
     @Override
     protected void wrap(CodeArea area) {
-        CodeAreaWrappers.get(area, "java").style().highlighting(consoleModel.getReadFromPipe()).indentation().find();
+        lexer = CodeAreaWrappers.get(area, "java").style().highlighting(consoleModel.getReadFromPipe()).indentation().find().getLexer();
     }
     
     private void handleResult(SnippetEvent event, Object obj) {
@@ -213,7 +217,7 @@ public class ShellPane extends AreaPane {
     }
 
     public void evalLine() {
-        String text = JShellUtils.getCurrentLineSpan(getArea()).originalText();
+        String text = getArea().getParagraph(getArea().getCurrentParagraph()).getText();
         eval(text);
     }
 
@@ -242,13 +246,13 @@ public class ShellPane extends AreaPane {
     }
 
     public void submitLine() {
-        var lineSpan = JShellUtils.getCurrentLineSpan(getArea());
-        int from = getArea().getAbsolutePosition(lineSpan.firstParagraphIndex(), 0);
+        String text = getArea().getParagraph(getArea().getCurrentParagraph()).getText();
+        int from = getArea().getAbsolutePosition(getArea().getCurrentParagraph(), 0);
 
-        submit(from, lineSpan.originalText());
+        submit(from, text);
 
-        getArea().deleteText(lineSpan.firstParagraphIndex(), 0, lineSpan.lastParagraphIndex(),
-                getArea().getParagraphLength(lineSpan.lastParagraphIndex()));
+        getArea().deleteText(getArea().getCurrentParagraph(), 0, getArea().getCurrentParagraph(),
+                getArea().getParagraphLength(getArea().getCurrentParagraph()));
     }
 
     private void submit(int from, String text) {
@@ -366,7 +370,19 @@ public class ShellPane extends AreaPane {
 
     @Override
     public void init() {
-        session.doImports(getArea().getText());
+        var resolveCommands = lexer.getTokens().stream()
+                .filter(t -> t.getType().equals(GroupNames.JSHELLCOMMAND) && t.getValue().startsWith(ResolveCommand.NAME))
+                .map(Token::getValue)
+                .collect(Collectors.joining("\n"));
+        
+        session.process(resolveCommands);
+        
+        String imports = getArea().getText().lines().map(line -> line.trim())
+                .filter(line -> line.startsWith("import"))
+                .collect(Collectors.joining("\n"));
+        
+        session.process(imports);
+        
         setPathDir(getFXPath().getPath());
     }
 

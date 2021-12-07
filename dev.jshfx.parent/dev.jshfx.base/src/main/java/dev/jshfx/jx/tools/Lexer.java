@@ -48,6 +48,10 @@ public class Lexer {
         }
     }
 
+    public List<Token> getTokens() {
+        return tokens;
+    }
+    
     public Token getTokenOnCaretPosition() {
         return tokenOnCaretPosition;
     }
