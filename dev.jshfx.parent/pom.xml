@@ -12,6 +12,7 @@
 		<module>dev.jshfx.fonts</module>
 		<module>dev.jshfx.util</module>
 		<module>dev.jshfx.automatic</module>
+		<module>dev.jshfx.demos</module>
 	</modules>
 
 	<properties>
