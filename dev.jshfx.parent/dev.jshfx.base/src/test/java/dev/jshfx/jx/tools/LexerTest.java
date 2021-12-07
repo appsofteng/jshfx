@@ -16,22 +16,32 @@ public class LexerTest {
         var tokens = lexer.tokenize(input);
         System.out.println(tokens);
     }
-    
+
     @Test
     public void tokenizeCommand() throws Exception {
         Lexer lexer = Lexer.get("java");
         var input = "/l \\\n/a";
         var tokens = lexer.tokenize(input);
-    //    assertEquals(GroupNames.JSHELLCOMMAND, tokens.get(0).getType());
+        // assertEquals(GroupNames.JSHELLCOMMAND, tokens.get(0).getType());
         System.out.println(tokens);
     }
-    
+
     @Test
     public void tokenizeCommandArgs() throws Exception {
         Lexer lexer = Lexer.get("commands");
         var input = "/l a \\\n/b";
         var tokens = lexer.tokenize(input);
-    //    assertEquals(GroupNames.JSHELLCOMMAND, tokens.get(0).getType());
+        // assertEquals(GroupNames.JSHELLCOMMAND, tokens.get(0).getType());
         System.out.println(tokens);
+    }
+    
+    @Test
+    public void tokenizeComment() throws Exception {
+        Lexer lexer = Lexer.get("java");
+        var input = "/* \n/comm */";
+        var tokens = lexer.tokenize(input);
+        // assertEquals(GroupNames.JSHELLCOMMAND, tokens.get(0).getType());
+        System.out.println(tokens);
+        //  // [^\n]*|/\*(.|\R)*?\*/|/\*[^\v]*|^\h*\*([^\v]*|/)
     }
 }

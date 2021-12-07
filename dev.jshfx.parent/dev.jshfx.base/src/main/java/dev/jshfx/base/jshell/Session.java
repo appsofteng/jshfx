@@ -410,7 +410,7 @@ public class Session {
             }
         }
     }
-    
+
     public void process(String input) {
         timer.start();
         if (input.isBlank()) {
@@ -418,10 +418,10 @@ public class Session {
         }
 
         history.add(input.strip());
-        
+
         var tokens = lexer.tokenize(input);
         StringBuilder snippets = new StringBuilder();
-        
+
         for (Token token : tokens) {
             if (token.getType().equals(GroupNames.JSHELLCOMMAND)) {
                 if (snippets.length() > 0) {
@@ -430,10 +430,12 @@ public class Session {
                 }
                 commandProcessor.process(token.getValue());
             } else {
-                snippets.append(token.getValue());
+                if (!token.getType().equals(GroupNames.COMMENT) && !token.getType().equals(GroupNames.NEWLINE)) {
+                    snippets.append(token.getValue());
+                }
             }
         }
-        
+
         if (snippets.length() > 0) {
             snippetProcessor.process(snippets.toString());
         }

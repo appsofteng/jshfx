@@ -6,6 +6,7 @@ public final class GroupNames {
     public static final String COMMENT = "COMMENT";
     public static final String JSHELLCOMMAND = "JSHELLCOMMAND";
     public static final String KEYWORD = "KEYWORD";
+    public static final String NEWLINE = "NEWLINE";
     
     public GroupNames() {
     }
