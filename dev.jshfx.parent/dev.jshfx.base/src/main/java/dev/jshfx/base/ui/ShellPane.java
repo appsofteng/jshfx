@@ -177,7 +177,7 @@ public class ShellPane extends AreaPane {
     private void setPathDir(Path path) {
         if (path.isAbsolute()) {
             session.getSnippetProcessor()
-                    .process(String.format("var WORK_DIR = Path.of(\"%s\")", XFiles.toString(path.getParent())), 0);
+                    .process(String.format("var WORK_DIR = Path.of(\"%s\")", XFiles.toString(path.getParent())));
         }
     }
 

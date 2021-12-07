@@ -1,4 +1,5 @@
-JSHELLCOMMAND,STRING
+COMMANDARG,STRING,COMMANDBREAK
 [{(\[<]
-(?<JSHELLCOMMAND>[^\s"'\*]+)
+(?<COMMANDARG>[^\s"'\*\\]+)
 |(?<STRING>"(?:[^"\\]|\\.)*+")
+|(?<COMMANDBREAK>\\\n/)

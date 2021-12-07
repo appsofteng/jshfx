@@ -1,6 +1,7 @@
-JSHELLCOMMAND,TEXTBLOCK,STRING,OTHER
+JSHELLCOMMAND,TEXTBLOCK,STRING,OTHER,NEWLINE
 [{(\[<]
-(?m)(?<JSHELLCOMMAND>(?:^/[^/].+[^\\]$)|(?:^/[^/].+\\\v+)+(?:^/[^/].+[^\\]$))
+(?m)(?<JSHELLCOMMAND>^/(?:[^/](?:.*[^\\])?)?$|(?:^/(?:[^/].* )?\\\n)+(?:^/(?:[^/](?:.*[^\\])?)?$)?)
 |(?<TEXTBLOCK>"""\v(?:.|\v)*?""")
 |(?<STRING>"([^"\\]|\\.)*")
 |(?<OTHER>[^"\v]+)
+|(?<NEWLINE>\n)

@@ -1,16 +1,13 @@
 package dev.jshfx.base.jshell;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.fxmisc.richtext.CodeArea;
-import org.fxmisc.richtext.model.TwoDimensional.Bias;
 
 import dev.jshfx.fxmisc.richtext.CompletionItem;
 import dev.jshfx.jx.tools.GroupNames;
@@ -25,11 +22,8 @@ import jdk.jshell.SourceCodeAnalysis.Suggestion;
 
 class SourceCodeCompletor extends Completor {
 
-    private Lexer lexer;
-
     SourceCodeCompletor(CodeArea inputArea, Session session, Lexer lexer) {
-        super(inputArea, session);
-        this.lexer = lexer;
+        super(inputArea, session, lexer);
     }
 
     @Override
@@ -183,7 +177,7 @@ class SourceCodeCompletor extends Completor {
             });
         }
 
-        session.getSnippetProcessor().process(newImport, 0);
+        session.getSnippetProcessor().process(newImport);
     }
 
     private String getDocInput(String input, Suggestion suggestion, int anchor) {

@@ -58,6 +58,7 @@ public class Session {
     private Subscription subscription;
     private JavaSourceResolver javaSourceResolver;
     private ObjectExecutionControlProvider objectExecutionControlProvider;
+    private Lexer lexer = Lexer.get("jsh");
 
     public Session(ConsoleModel consoleModel, TaskQueuer taskQueuer) {
 
@@ -409,8 +410,6 @@ public class Session {
             }
         }
     }
-
-    private Lexer lexer = Lexer.get("jsh");
     
     public void process(String input) {
         timer.start();
@@ -426,17 +425,17 @@ public class Session {
         for (Token token : tokens) {
             if (token.getType().equals(GroupNames.JSHELLCOMMAND)) {
                 if (snippets.length() > 0) {
-                    snippetProcessor.process(snippets.toString(), 0);
+                    snippetProcessor.process(snippets.toString());
                     snippets.delete(0, snippets.length());
                 }
-                commandProcessor.process(token.getValue().replaceAll(CommandProcessor.MULTILINE_COMMAND_SEPARATOR, ""), 0);
+                commandProcessor.process(token.getValue());
             } else {
-                snippets.append(token.getValue()).append("\n");
+                snippets.append(token.getValue());
             }
         }
         
         if (snippets.length() > 0) {
-            snippetProcessor.process(snippets.toString(), 0);
+            snippetProcessor.process(snippets.toString());
         }
     }
 }

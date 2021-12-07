@@ -26,18 +26,17 @@ public class SnippetProcessor extends Processor {
     }
 
     @Override
-    public void process(String input, int lineOffset) {
-        Task<Void> task = getSession().getTaskQueuer().add(() -> analyseAndEvaluate(input, lineOffset));
+    public void process(String input) {
+        Task<Void> task = getSession().getTaskQueuer().add(() -> analyseAndEvaluate(input));
         task.setOnSucceeded(e -> getSession().getTimer().stop());
         task.setOnFailed(e -> getSession().getTimer().stop());
     }
 
-    public void analyseAndEvaluate(String input, int lineOffset) {
+    private void analyseAndEvaluate(String input) {
 
         SourceCodeAnalysis sourceAnalysis = session.getJshell().sourceCodeAnalysis();
 
         String[] lines = input.split("\n");
-        int lnOffset = lineOffset - lines.length;
         StringBuffer sb = new StringBuffer();
 
         for (int i = 0; i < lines.length; i++) {
@@ -70,8 +69,7 @@ public class SnippetProcessor extends Processor {
             String source = info.source();
             sb.delete(0, sb.length()).append(info.remaining());
             List<SnippetEvent> snippetEvents = session.getJshell().eval(source);
-            var ln = lnOffset + i;
-            snippetEvents.forEach(e -> setFeedback(e, false, ln));
+            snippetEvents.forEach(e -> setFeedback(e, false));
         }
 
         session.getFeedback().flush();
@@ -83,7 +81,7 @@ public class SnippetProcessor extends Processor {
             session.getFeedback().commandResult(snippet.source().strip() + "\n");
         }
         List<SnippetEvent> snippetEvents = session.getJshell().eval(snippet.source());
-        snippetEvents.forEach(e -> setFeedback(e, quiet, -1));
+        snippetEvents.forEach(e -> setFeedback(e, quiet));
 
         session.getFeedback().flush();
 
@@ -98,7 +96,7 @@ public class SnippetProcessor extends Processor {
             session.getFeedback().commandResult(snippet.source().strip() + "\n");
             List<SnippetEvent> snippetEvents = session.getJshell().eval(snippet.source());
             allSnippetEvents.addAll(snippetEvents);
-            snippetEvents.forEach(e -> setFeedback(e, false, -1));
+            snippetEvents.forEach(e -> setFeedback(e, false));
         }
 
         session.getFeedback().flush();
@@ -106,16 +104,13 @@ public class SnippetProcessor extends Processor {
         return allSnippetEvents;
     }
 
-    private void setFeedback(SnippetEvent event, boolean quiet, int line) {
+    private void setFeedback(SnippetEvent event, boolean quiet) {
 
         String message = "";
 
         if (event.exception() != null) {
             message = getExceptionMessage(event);
             message = message.strip() + "\n";
-            if (line >= 0) {
-                message = (line + 1) + ": " + message;
-            }
             session.getFeedback().snippetError(message);
         } else if (event.status() == Status.REJECTED) {
             message = getRejectedMessage(event);

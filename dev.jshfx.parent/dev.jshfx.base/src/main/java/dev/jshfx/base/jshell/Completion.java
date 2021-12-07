@@ -2,26 +2,29 @@ package dev.jshfx.base.jshell;
 
 import org.fxmisc.richtext.CodeArea;
 
+import dev.jshfx.jx.tools.GroupNames;
 import dev.jshfx.jx.tools.Lexer;
+import dev.jshfx.jx.tools.Token;
 
 public class Completion {
     
     private CodeArea inputArea;
+    private Lexer lexer;
     private CommandCompletor commandCompletion;
     private SourceCodeCompletor sourceCodeCompletion;
 
     public Completion(CodeArea inputArea, Session session, Lexer lexer) {
         this.inputArea = inputArea;
-        commandCompletion = new CommandCompletor(inputArea, session);
+        this.lexer = lexer;
+        commandCompletion = new CommandCompletor(inputArea, session, lexer);
         sourceCodeCompletion = new SourceCodeCompletor(inputArea, session, lexer);
     }
 
     public Completor getCompletor() {
         Completor completion = null;
-        
-        String currentParagraph = inputArea.getParagraph(inputArea.getCurrentParagraph()).getText();
-        
-        if (inputArea.getText().isBlank() || CommandProcessor.isCommand(currentParagraph)) {
+        Token token = lexer.getTokenOnCaretPosition();
+                
+        if (inputArea.getText().isBlank() || token != null && token.getType().equals(GroupNames.JSHELLCOMMAND)) {
             completion = commandCompletion;
         } else {
             completion = sourceCodeCompletion;

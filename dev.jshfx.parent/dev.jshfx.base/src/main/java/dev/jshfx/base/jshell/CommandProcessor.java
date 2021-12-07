@@ -33,6 +33,7 @@ import dev.jshfx.base.jshell.commands.TypeCommand;
 import dev.jshfx.base.jshell.commands.VarCommand;
 import dev.jshfx.base.ui.ConsoleModel;
 import dev.jshfx.jfx.util.FXResourceBundle;
+import dev.jshfx.jx.tools.GroupNames;
 import dev.jshfx.jx.tools.Lexer;
 import dev.jshfx.jx.tools.Token;
 import javafx.concurrent.Task;
@@ -42,9 +43,7 @@ import picocli.CommandLine;
 public class CommandProcessor extends Processor {
 
     public static final String OPTION_SEPARATOR = " ";
-	private static final List<String> PRIVILEGED_COMMANDS = List.of(ExitCommand.EXIT_COMMAND, StopCommand.STOP_COMMAND);
-    public static final String MULTILINE_COMMAND_SEPARATOR = "\\\\\\v/";
-	static final String COMMAND_PATTERN = "^/[^\"'/\\*]*( .*)*$";
+	private static final List<String> PRIVILEGED_COMMANDS = List.of(ExitCommand.NAME, StopCommand.NAME);
     private static final String COMMANDS_FILE = "commands";
 	private CommandLine commandLine;
 	private PrintWriter out;
@@ -157,9 +156,12 @@ public class CommandProcessor extends Processor {
 	}
 
 	@Override
-	void process(String input, int lineOffset) {
+	void process(String input) {
 
-	    List<String> args = lexer.tokenize(input).stream().map(Token::getValue).collect(Collectors.toCollection(() -> new ArrayList<>()));
+	    List<String> args = lexer.tokenize(input).stream()
+	            .filter(t -> !t.getType().equals(GroupNames.COMMANDBREAK))
+	            .map(Token::getValue)
+	            .collect(Collectors.toCollection(() -> new ArrayList<>()));
 	    
 		if (args.size() > 0) {
 
@@ -178,10 +180,6 @@ public class CommandProcessor extends Processor {
 		
 		task.setOnSucceeded(e -> getSession().getTimer().stop());
 		task.setOnFailed(e -> getSession().getTimer().stop());
-	}
-
-	static boolean isCommand(String input) {
-		return input.matches(COMMAND_PATTERN);
 	}
 
 	private static class CachingCommandLine extends CommandLine {

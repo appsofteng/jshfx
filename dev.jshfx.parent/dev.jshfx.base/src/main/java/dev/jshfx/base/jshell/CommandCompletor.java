@@ -10,44 +10,58 @@ import org.fxmisc.richtext.CodeArea;
 import dev.jshfx.fxmisc.richtext.CompletionItem;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.jx.tools.JavaSourceResolver.HtmlDoc;
+import dev.jshfx.jx.tools.GroupNames;
+import dev.jshfx.jx.tools.Lexer;
 import dev.jshfx.jx.tools.Token;
 import picocli.AutoComplete;
 import picocli.CommandLine;
 
 class CommandCompletor extends Completor {
 
-    CommandCompletor(CodeArea inputArea, Session session) {
-        super(inputArea, session);
+    CommandCompletor(CodeArea inputArea, Session session, Lexer lexer) {
+        super(inputArea, session, lexer);
     }
 
     @Override
     public void getCompletionItems(boolean contains, Predicate<CompletionItem> items) {
-        var lineSpan = JShellUtils.getCurrentLineSpan(inputArea);
-        String input = lineSpan.text();
-        int caretPosition = lineSpan.caretPosition();
-        List<String> arguments = session.getCommandProcessor().getLexer().tokenize(input, caretPosition).stream()
-                .map(Token::getValue).collect(Collectors.toList());
-        Token tokenOnCaret = session.getCommandProcessor().getLexer().getTokenOnCaretPosition();
-
+        var commandToken = lexer.getTokenOnCaretPosition();
         String parText = "";
-        
-        if (contains) {
-            parText = input;
-            while (--caretPosition >= 0 && !Character.isWhitespace(parText.charAt(caretPosition))) {
+        Token tokenOnCaret = null;
+        List<String> arguments = new ArrayList<>();
+        int relativeCaretPosition = 0;
+
+        if (commandToken != null) {
+            String input = commandToken.getValue();
+            int originalRelativeCaretPosition = inputArea.getCaretPosition() - commandToken.getStart();
+            relativeCaretPosition = originalRelativeCaretPosition;
+            arguments = session.getCommandProcessor().getLexer().tokenize(input, relativeCaretPosition)
+                    .stream()
+                    .filter(t -> !t.getType().equals(GroupNames.COMMANDBREAK))
+                    .map(Token::getValue).collect(Collectors.toCollection(() -> new ArrayList<>()));
+            tokenOnCaret = session.getCommandProcessor().getLexer().getTokenOnCaretPosition();
+
+            if (tokenOnCaret.getType().equals(GroupNames.COMMANDBREAK)) {
+                tokenOnCaret = null;
             }
-            caretPosition++;
-            parText = parText.substring(caretPosition, lineSpan.caretPosition());
+            
+            if (contains) {
+                parText = input;
+                while (--relativeCaretPosition >= 0 && !Character.isWhitespace(parText.charAt(relativeCaretPosition))) {
+                }
+                relativeCaretPosition++;
+                parText = parText.substring(relativeCaretPosition, originalRelativeCaretPosition);
+            }
         }
 
         String filter = parText;
-        
+
         int argIndex = arguments.size() - 1;
 
         int positionInArg = 0;
 
         if (tokenOnCaret != null) {
             argIndex = tokenOnCaret.getIndex();
-            positionInArg = caretPosition - tokenOnCaret.getStart();
+            positionInArg = relativeCaretPosition - tokenOnCaret.getStart();
         } else {
             arguments.add("");
             argIndex++;
@@ -57,7 +71,7 @@ class CommandCompletor extends Completor {
         String[] args = arguments.toArray(new String[0]);
 
         int anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args,
-                argIndex, positionInArg, caretPosition, candidates);
+                argIndex, positionInArg, relativeCaretPosition, candidates);
 
         if (candidates.size() == 1 && candidates.get(0).length() == 0 && arguments.size() > 0) {
 
@@ -67,8 +81,9 @@ class CommandCompletor extends Completor {
             positionInArg = 0;
             args = arguments.toArray(new String[0]);
             anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args,
-                    argIndex, positionInArg, caretPosition, candidates);
-            candidates = candidates.stream().map(c -> " " + c).collect(Collectors.toCollection(() -> new ArrayList<>()));
+                    argIndex, positionInArg, relativeCaretPosition, candidates);
+            candidates = candidates.stream().map(c -> " " + c)
+                    .collect(Collectors.toCollection(() -> new ArrayList<>()));
         }
 
         if (candidates.isEmpty() && args.length > 0) {
@@ -76,29 +91,31 @@ class CommandCompletor extends Completor {
             argIndex = 1;
             positionInArg = 0;
             anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args,
-                    argIndex, positionInArg, caretPosition, candidates);
+                    argIndex, positionInArg, relativeCaretPosition, candidates);
         }
 
         String arg = args[argIndex];
 
-        int absoluteAnchor = inputArea.getCaretPosition() - (caretPosition + filter.length() - anchor);
+        int absoluteAnchor = inputArea.getCaretPosition() - (relativeCaretPosition + filter.length() - anchor);
 
         for (CharSequence candidate : candidates) {
 
-            if (candidate.length() == 0 || !filter.isEmpty() && !candidate.toString().toLowerCase().contains(filter.toLowerCase())) {
+            if (candidate.length() == 0
+                    || !filter.isEmpty() && !candidate.toString().toLowerCase().contains(filter.toLowerCase())) {
                 continue;
             }
 
             String commandName = args[0];
             String name = arg.substring(0, positionInArg) + candidate;
 
-            boolean processing = items.test(new CommandCompletionItem(inputArea, absoluteAnchor, candidate.toString(), commandName, name, contains));
-            
+            boolean processing = items.test(new CommandCompletionItem(inputArea, absoluteAnchor, candidate.toString(),
+                    commandName, name, contains));
+
             if (!processing) {
                 break;
             }
         }
-        
+
         items.test(null);
     }
 
@@ -116,14 +133,14 @@ class CommandCompletor extends Completor {
             help = FXResourceBundle.getBundle().getStringOrDefault(commandItem.getDocKey(),
                     FXResourceBundle.getBundle().getStringOrDefault(commandItem.getName(), ""));
         }
-        
+
         if (!help.isEmpty()) {
-            doc = new HtmlDoc(null, help, null, help);            
+            doc = new HtmlDoc(null, help, null, help);
         }
 
         return doc;
     }
-    
+
     @Override
     public CompletionItem getCompletionItem(String reference, HtmlDoc data) {
         return null;

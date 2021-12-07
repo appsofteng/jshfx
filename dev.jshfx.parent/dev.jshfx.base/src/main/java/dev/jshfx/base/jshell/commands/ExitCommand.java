@@ -3,10 +3,10 @@ package dev.jshfx.base.jshell.commands;
 import dev.jshfx.base.jshell.CommandProcessor;
 import picocli.CommandLine.Command;
 
-@Command(name = ExitCommand.EXIT_COMMAND)
+@Command(name = ExitCommand.NAME)
 public class ExitCommand extends BaseCommand {
 
-    public static final String EXIT_COMMAND = "/exit";
+    public static final String NAME = "/exit";
 
     public ExitCommand(CommandProcessor commandProcessor) {
         super(commandProcessor);
