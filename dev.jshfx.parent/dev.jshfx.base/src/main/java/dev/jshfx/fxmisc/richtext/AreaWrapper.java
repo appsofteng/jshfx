@@ -95,7 +95,7 @@ public class AreaWrapper<T extends GenericStyledArea<?, ?, ?>> {
         return getCurrentParagraphText().substring(0, getArea().getCaretColumn()).trim().isEmpty();
     }
 
-    int getParagraphForAbsolutePosition(int position) {
+    public int getParagraphForAbsolutePosition(int position) {
         return getArea().offsetToPosition(position, Forward).getMajor();
     }
 
@@ -103,12 +103,12 @@ public class AreaWrapper<T extends GenericStyledArea<?, ?, ?>> {
         return getArea().offsetToPosition(position, Forward).getMinor();
     }
 
-    public List<Integer> getSelectedParagraphs(IndexRange selectionRange) {
+    public List<Integer> getParagraphs(IndexRange range) {
         List<Integer> paragraphs = List.of();
 
-        if (selectionRange.getLength() > 0) {
-            int startParagraph = getParagraphForAbsolutePosition(selectionRange.getStart());
-            int endParagraph = getParagraphForAbsolutePosition(selectionRange.getEnd());
+        if (range.getLength() > 0) {
+            int startParagraph = getParagraphForAbsolutePosition(range.getStart());
+            int endParagraph = getParagraphForAbsolutePosition(range.getEnd());
             paragraphs = new ArrayList<>();
             for (int i = startParagraph; i <= endParagraph; i++) {
                 paragraphs.add(i);
@@ -118,8 +118,8 @@ public class AreaWrapper<T extends GenericStyledArea<?, ?, ?>> {
         return paragraphs;
     }
     
-    public String getSelectedParagraphText(IndexRange selectionRange) {
-        return getSelectedParagraphs(selectionRange).stream().map(i -> area.getParagraph(i).getText()).collect(Collectors.joining("\n"));
+    public String getParagraphText(IndexRange range) {
+        return getParagraphs(range).stream().map(i -> area.getParagraph(i).getText()).collect(Collectors.joining("\n"));
     }
 
     void changeParagraphs(Function<Integer, String> change) {
