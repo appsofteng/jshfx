@@ -9,7 +9,7 @@ import static java.util.stream.Collectors.groupingBy
 import static java.util.stream.Collectors.toCollection
 import static javafx.collections.FXCollections.observableArrayList
 
-var lines = Files.lines(WORK_DIR.resolve("../../resources/ourworldindata/demography/life-expectancy.csv"))
+var lines = Files.lines(CURDIR.resolve("../../resources/ourworldindata/demography/life-expectancy.csv"))
 
 var countries = lines
     .skip(1)
