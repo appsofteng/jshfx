@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FilenameUtils;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.model.StyleSpans;
@@ -22,7 +23,7 @@ import dev.jshfx.fxmisc.richtext.CodeAreaWrappers;
 import dev.jshfx.fxmisc.richtext.CommentWrapper;
 import dev.jshfx.fxmisc.richtext.CompletionPopup;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
-import dev.jshfx.j.nio.file.XFiles;
+import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.CTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
@@ -177,7 +178,7 @@ public class ShellPane extends AreaPane {
     private void setCurDir(Path path) {
         if (path.isAbsolute()) {
             session.getSnippetProcessor()
-                    .process(String.format("var CURDIR = Path.of(\"%s\")", XFiles.toString(path.getParent())));
+                    .process(String.format("var CURDIR = Path.of(\"%s\")", FilenameUtils.separatorsToUnix(path.getParent().toString())));
         }
     }
 
@@ -304,7 +305,7 @@ public class ShellPane extends AreaPane {
         var dir = FileDialogUtils.getDirectory(getScene().getWindow());
 
         dir.ifPresent(d -> {
-            getArea().insertText(getArea().getCaretPosition(), XFiles.toString(d));
+            getArea().insertText(getArea().getCaretPosition(), FilenameUtils.separatorsToUnix(d.toString()));
         });
     }
 
@@ -315,8 +316,8 @@ public class ShellPane extends AreaPane {
     public void insertFilePaths(String separator) {
         var files = FileDialogUtils.openJavaFiles(getScene().getWindow());
 
-        String path = files.stream().map(f -> XFiles.relativize(getFXPath().getPath().getParent(), f))
-                .map(f -> XFiles.toString(f)).collect(Collectors.joining(separator));
+        String path = files.stream().map(f -> PathUtils.relativize(getFXPath().getPath().getParent(), f))
+                .map(f -> FilenameUtils.separatorsToUnix(f.toString())).collect(Collectors.joining(separator));
 
         getArea().insertText(getArea().getCaretPosition(), path);
     }
@@ -325,7 +326,7 @@ public class ShellPane extends AreaPane {
         var file = FileDialogUtils.saveSourceJavaFile(getScene().getWindow());
 
         file.ifPresent(f -> {
-            getArea().insertText(getArea().getCaretPosition(), XFiles.toString(f) + " ");
+            getArea().insertText(getArea().getCaretPosition(), FilenameUtils.separatorsToUnix(f.toString()) + " ");
         });
     }
 

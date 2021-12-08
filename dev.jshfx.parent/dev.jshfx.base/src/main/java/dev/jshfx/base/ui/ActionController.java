@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FilenameUtils;
+
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.base.sys.TaskManager;
-import dev.jshfx.j.nio.file.XFiles;
+import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.jfx.concurrent.CTask;
 import dev.jshfx.jfx.scene.control.AlertBuilder;
 import dev.jshfx.jfx.scene.control.ButtonTypes;
@@ -125,9 +127,9 @@ public class ActionController {
 
     public void newShell() {
 
-        String name = XFiles.getUniqueName(n -> rootPane.exists(n), FXResourceBundle.getBundle().getString​("new"));
+        String name = PathUtils.getUniqueName(FXResourceBundle.getBundle().getString​("new"), n -> rootPane.exists(n));
 
-        var shellPane = create(Path.of(XFiles.appendFileExtension(name, FileManager.JSH)));
+        var shellPane = create(Path.of(name.concat(FilenameUtils.EXTENSION_SEPARATOR_STR).concat(FileManager.JSH)));
         rootPane.addSelect(shellPane);
     }
 
@@ -174,7 +176,7 @@ public class ActionController {
             e.printStackTrace();
         }
 
-        if (FileManager.SHELL_EXTENSIONS.contains(XFiles.getFileExtension(path))) {
+        if (FileManager.SHELL_EXTENSIONS.contains(FilenameUtils.getExtension(path.toString()))) {
 
             var shellPane = new ShellPane(path, input);
             shellPane.setActions(rootPane.getActions());

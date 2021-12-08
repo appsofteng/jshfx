@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 
 import javax.tools.Diagnostic;
 
+import org.apache.commons.io.FilenameUtils;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.richtext.model.StyleSpan;
@@ -28,7 +29,7 @@ import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.wellbehaved.event.Nodes;
 
-import dev.jshfx.j.nio.file.XFiles;
+import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.jx.tools.Lexer;
 import javafx.application.Platform;
 
@@ -62,7 +63,7 @@ public final class CodeAreaWrappers {
 
     public static CodeAreaWrappers get(CodeArea area, Path path) {
         String fileName = path.getFileName().toString().toLowerCase();
-        return new CodeAreaWrappers(area, fileName, XFiles.getFileExtension(fileName));
+        return new CodeAreaWrappers(area, fileName, FilenameUtils.getExtension(fileName));
     }
 
     public Lexer getLexer() {

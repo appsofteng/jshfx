@@ -32,6 +32,7 @@ module dev.jshfx.base {
     requires dev.jshfx.automatic;
     requires dev.jshfx.util;
     requires org.apache.commons.lang3;
+    requires org.apache.commons.io;
 	
     exports dev.jshfx.j.util.prefs;
     
