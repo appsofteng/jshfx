@@ -130,7 +130,7 @@ public class ShellPane extends AreaPane {
         getFXPath().pathProperty().addListener((v, o, n) -> {
             if (n != null) {
                 if (o != null && !n.getParent().equals(o.getParent())) {
-                    setPathDir(n);
+                    setCurDir(n);
                 }
             }
         });
@@ -174,10 +174,10 @@ public class ShellPane extends AreaPane {
         });
     }
 
-    private void setPathDir(Path path) {
+    private void setCurDir(Path path) {
         if (path.isAbsolute()) {
             session.getSnippetProcessor()
-                    .process(String.format("var WORK_DIR = Path.of(\"%s\")", XFiles.toString(path.getParent())));
+                    .process(String.format("var CURDIR = Path.of(\"%s\")", XFiles.toString(path.getParent())));
         }
     }
 
@@ -383,7 +383,7 @@ public class ShellPane extends AreaPane {
         
         session.process(imports);
         
-        setPathDir(getFXPath().getPath());
+        setCurDir(getFXPath().getPath());
     }
 
     @Override
