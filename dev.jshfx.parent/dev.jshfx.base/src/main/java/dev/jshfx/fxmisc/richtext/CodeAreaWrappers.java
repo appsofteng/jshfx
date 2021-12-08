@@ -29,7 +29,6 @@ import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.wellbehaved.event.Nodes;
 
-import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.jx.tools.Lexer;
 import javafx.application.Platform;
 
