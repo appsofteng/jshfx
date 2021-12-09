@@ -1,4 +1,4 @@
-BSD 4-Clause License with Patent and Trademark Limitations
+BSD 6-Clause License
 
 Copyright (c) 2021 - present, https://github.com/appsofteng
 All rights reserved.
@@ -21,12 +21,12 @@ modification, are permitted provided that the following conditions are met:
    contributors may be used to endorse or promote products derived from
    this software without specific prior written permission.
    
-THIS LICENSE DOES NOT GRANT PERMISSION TO USE THE TRADE NAMES, TRADEMARKS, 
-SERVICE MARKS, OR PRODUCT NAMES OF THE COPYRIGHT HOLDER, EXCEPT AS REQUIRED 
-FOR REASONABLE AND CUSTOMARY USE IN DESCRIBING THE ORIGIN OF THE WORK.
+5. This license does not grant permission to use the trade names, trademarks, 
+   service marks, or product names of the copyright holder, except as required 
+   for reasonable and customary use in describing the origin of the work.
 
-NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
-THIS LICENSE.
+6. No express or implied licenses to any party's patent rights are granted by
+   this license.
 
 THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDER "AS IS" AND ANY EXPRESS OR
 IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
