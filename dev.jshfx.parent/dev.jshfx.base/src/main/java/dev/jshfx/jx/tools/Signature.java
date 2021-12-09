@@ -290,9 +290,10 @@ public class Signature {
         var noArrayType = paramType.replaceAll("<.*>", "");
         var array = "";
 
-        if (noArrayType.endsWith("[]")) {
-            noArrayType = noArrayType.substring(0, noArrayType.indexOf("["));
-            array = "[]";
+        if (noArrayType.endsWith("]")) {
+            int i = noArrayType.indexOf("[");
+            array = noArrayType.substring(i);
+            noArrayType = noArrayType.substring(0, i);
         } else if (noArrayType.endsWith("...")) {
             noArrayType = noArrayType.substring(0, noArrayType.indexOf("..."));
             array = "[]";

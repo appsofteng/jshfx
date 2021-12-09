@@ -217,6 +217,38 @@ public class SignatureTest {
     }
     
     @Test
+    public void testMethodArrayType() {
+        String expectedTopTypeFullName = "org.example.Example";
+        String expectedTypeFullName = "org.example.Example";
+        String expectedFullName = "org.example.Example.method";
+        List<String> expectedMethodParamTypes = List.of("int[]");
+
+        var signature = Signature.get("void Example.method(int[])", null, resolveType);
+
+        assertEquals(Signature.Kind.METHOD, signature.getKind());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
+        assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
+    }
+    
+    @Test
+    public void testMethod2DArrayType() {
+        String expectedTopTypeFullName = "org.example.Example";
+        String expectedTypeFullName = "org.example.Example";
+        String expectedFullName = "org.example.Example.method";
+        List<String> expectedMethodParamTypes = List.of("int[][]");
+
+        var signature = Signature.get("void Example.method(int[][])", null, resolveType);
+
+        assertEquals(Signature.Kind.METHOD, signature.getKind());
+        assertEquals(expectedTopTypeFullName, signature.getTopTypeName());
+        assertEquals(expectedTypeFullName, signature.getTypeCanonicalName());
+        assertEquals(expectedFullName, signature.getCanonicalName());
+        assertEquals(expectedMethodParamTypes, signature.getMethodParameterTypes());
+    }
+    
+    @Test
     public void testMethodTypes() {
         String expectedTopTypeFullName = "org.example.Example";
         String expectedTypeFullName = "org.example.Example";
