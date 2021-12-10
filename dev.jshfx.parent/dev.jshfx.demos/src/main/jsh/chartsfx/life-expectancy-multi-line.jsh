@@ -1,5 +1,4 @@
 import dev.jshfx.util.chart.Charts
-import dev.jshfx.util.stage.Windows
 import javafx.scene.chart.XYChart.Data
 import javafx.scene.chart.XYChart.Series
 import static java.lang.Double.parseDouble
@@ -26,4 +25,4 @@ var lineChart = Charts.getLineChart(series)
 lineChart.setTitle("Life Expectancy")
 lineChart.getXAxis().setLabel("Year")
 lineChart.getYAxis().setLabel("Age")
-Windows.show(lineChart)
+JSH.show(lineChart)

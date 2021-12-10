@@ -30,7 +30,7 @@ import dev.jshfx.jfx.concurrent.TaskQueuer;
 import dev.jshfx.jx.tools.GroupNames;
 import dev.jshfx.jx.tools.Lexer;
 import dev.jshfx.jx.tools.Token;
-import dev.jshfx.util.stage.WindowContent;
+import dev.jshfx.util.sys.WindowContent;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;

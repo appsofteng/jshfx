@@ -1,5 +1,4 @@
 import dev.jshfx.util.chart.Charts
-import dev.jshfx.util.stage.Windows
 import javafx.scene.chart.XYChart.Data
 import javafx.scene.chart.XYChart.Series
 import javafx.scene.control.Label
@@ -31,4 +30,4 @@ chart.getXAxis().setLabel("Age")
 chart.getYAxis().setLabel("Country")
 chart.getYAxis().setTickLabelFont(new Font(14))
 chart.setPrefHeight(series.getData().size() * chart.getYAxis().getTickLabelFont().getSize() * 3)
-Windows.show(chart)
+JSH.show(chart)

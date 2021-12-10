@@ -1,20 +1,25 @@
-package dev.jshfx.util.stage;
+package dev.jshfx.util.sys;
 
 import java.util.Arrays;
 import java.util.List;
 
 import javafx.scene.Node;
 
-public final class Windows {
+public sealed class JSH permits $ {
 
-    private Windows() {
+    JSH() {
     }
-
+    
     public static WindowContent show(Node... nodes) {
         return show(Arrays.asList(nodes));
     }
 
     public static WindowContent show(List<Node> nodes) {
+        
+        if (nodes == null || nodes.isEmpty() || nodes.contains(null)) {
+            return null;
+        }
+        
         WindowContent content = new WindowContent(nodes);
 
         return content;
