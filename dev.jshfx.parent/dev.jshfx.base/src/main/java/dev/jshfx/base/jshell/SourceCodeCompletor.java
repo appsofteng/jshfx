@@ -54,6 +54,22 @@ class SourceCodeCompletor extends Completor {
                 relativeCursor += text.length();
             }
 
+            QualifiedNames qualifiedNames = session.getJshell().sourceCodeAnalysis()
+                    .listQualifiedNames(relativeInput.toString(), relativeCursor);
+
+            if (!qualifiedNames.isResolvable()) {
+                if (!qualifiedNames.getNames().isEmpty()) {
+
+                    for (var name : qualifiedNames.getNames()) {
+                        processing = items.test(new QualifiedNameCompletionItem(
+                                Signature.get(name, null, this::resolveType), this::addImport));
+                        if (!processing) {
+                            break;
+                        }
+                    }
+                }
+            }
+            
             List<Suggestion> suggestions = session.getJshell().sourceCodeAnalysis()
                     .completionSuggestions(relativeInput.toString(), relativeCursor, relativeAnchor);
 
@@ -105,26 +121,8 @@ class SourceCodeCompletor extends Completor {
                         break;
                     }
                 }
-
+                
                 break;
-            }
-
-            QualifiedNames qualifiedNames = session.getJshell().sourceCodeAnalysis()
-                    .listQualifiedNames(relativeInput.toString(), relativeCursor);
-
-            if (!qualifiedNames.isResolvable()) {
-                if (!qualifiedNames.getNames().isEmpty()) {
-
-                    for (var name : qualifiedNames.getNames()) {
-                        processing = items.test(new QualifiedNameCompletionItem(
-                                Signature.get(name, null, this::resolveType), this::addImport));
-                        if (!processing) {
-                            break;
-                        }
-                    }
-
-                    break;
-                }
             }
         }
 

@@ -31,6 +31,6 @@ public class QualifiedNameCompletionItem extends SourceCodeCompletionItem {
     
     @Override
     public String toString() {
-        return getSignature().toString();
+        return getSignature().getSimpleName() + " - " + getSignature().getCanonicalName();
     }
 }

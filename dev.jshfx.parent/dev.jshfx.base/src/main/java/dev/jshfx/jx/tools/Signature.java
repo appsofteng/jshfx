@@ -59,7 +59,7 @@ public class Signature {
                 instance.parseType(signature);
                 instance.canonicalName = instance.typeCanonicalName;
                 int i = instance.typeCanonicalName.lastIndexOf('.');
-                instance.simpleName = i > -1 ? instance.typeCanonicalName.substring(i) : instance.typeCanonicalName;
+                instance.simpleName = i > -1 ? instance.typeCanonicalName.substring(i + 1) : instance.typeCanonicalName;
             }
 
             if (instance.topTypeName == null) {
@@ -80,6 +80,10 @@ public class Signature {
 
     public String getCanonicalName() {
         return canonicalName;
+    }
+    
+    public String getSimpleName() {
+        return simpleName;
     }
 
     public List<String> getMethodParameterTypes() {
