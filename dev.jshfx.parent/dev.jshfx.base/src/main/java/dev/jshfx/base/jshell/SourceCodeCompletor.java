@@ -32,7 +32,7 @@ class SourceCodeCompletor extends Completor {
         int[] relativeAnchor = new int[1];
         StringBuffer relativeInput = new StringBuffer();
         int relativeCursor = inputArea.getCaretColumn();
-        boolean processing = true;
+        boolean docLook = true;
 
         String parText = "";
 
@@ -46,7 +46,9 @@ class SourceCodeCompletor extends Completor {
 
         String filter = parText;
 
-        for (int i = inputArea.getCurrentParagraph(); i >= 0; i--) {
+        resolveType(inputArea.getParagraph(inputArea.getCurrentParagraph()).getText(), relativeCursor, items);
+
+        main: for (int i = inputArea.getCurrentParagraph(); i >= 0 && docLook; i--) {
             String text = inputArea.getParagraph(i).getText() + "\n";
             relativeInput.insert(0, text);
 
@@ -54,26 +56,11 @@ class SourceCodeCompletor extends Completor {
                 relativeCursor += text.length();
             }
 
-            QualifiedNames qualifiedNames = session.getJshell().sourceCodeAnalysis()
-                    .listQualifiedNames(relativeInput.toString(), relativeCursor);
-
-            if (!qualifiedNames.isResolvable()) {
-                if (!qualifiedNames.getNames().isEmpty()) {
-
-                    for (var name : qualifiedNames.getNames()) {
-                        processing = items.test(new QualifiedNameCompletionItem(
-                                Signature.get(name, null, this::resolveType), this::addImport));
-                        if (!processing) {
-                            break;
-                        }
-                    }
-                }
-            }
-            
             List<Suggestion> suggestions = session.getJshell().sourceCodeAnalysis()
                     .completionSuggestions(relativeInput.toString(), relativeCursor, relativeAnchor);
 
             if (!suggestions.isEmpty()) {
+                docLook = false;
 
                 int absoluteAnchor = inputArea.getCaretPosition()
                         - (relativeCursor + filter.length() - relativeAnchor[0]);
@@ -96,8 +83,12 @@ class SourceCodeCompletor extends Completor {
 
                     if (docs.isEmpty()) {
 
-                        processing = items.test(new SuggestionCompletionItem(inputArea, suggestion.getSuggestion(),
+                        var processing = items.test(new SuggestionCompletionItem(inputArea, suggestion.getSuggestion(),
                                 absoluteAnchor, Signature.get("", expressionType, this::resolveType), this::addImport));
+
+                        if (!processing) {
+                            break main;
+                        }
 
                     } else {
                         var signatures = docs.stream().map(Documentation::signature)
@@ -109,24 +100,34 @@ class SourceCodeCompletor extends Completor {
                                     absoluteAnchor, Signature.get(signature, expressionType, this::resolveType),
                                     this::addImport);
 
-                            processing = items.test(item);
+                            var processing = items.test(item);
 
                             if (!processing) {
-                                break;
+                                break main;
                             }
                         }
                     }
-
-                    if (!processing) {
-                        break;
-                    }
                 }
-                
-                break;
             }
         }
 
         items.test(null);
+    }
+
+    private void resolveType(String input, int cursor, Predicate<CompletionItem> items) {
+        QualifiedNames qualifiedNames = session.getJshell().sourceCodeAnalysis().listQualifiedNames(input, cursor);
+
+        if (!qualifiedNames.isResolvable()) {
+            if (!qualifiedNames.getNames().isEmpty()) {
+                for (var name : qualifiedNames.getNames()) {
+                    var processing = items.test(new QualifiedNameCompletionItem(
+                            Signature.get(name, null, this::resolveType), this::addImport));
+                    if (!processing) {
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     private void addImport(String newImport) {
@@ -134,21 +135,18 @@ class SourceCodeCompletor extends Completor {
         if (session.getJshell().imports().anyMatch(i -> i.source().startsWith(newImport))) {
             return;
         }
-        
-        var importPars = inputArea.getParagraphs().stream()
-                .dropWhile(p -> !p.getText().startsWith("import"))
-                .takeWhile(p -> p.getText().startsWith("import") || p.getText().isBlank())
-                .toList();
+
+        var importPars = inputArea.getParagraphs().stream().dropWhile(p -> !p.getText().startsWith("import"))
+                .takeWhile(p -> p.getText().startsWith("import") || p.getText().isBlank()).toList();
 
         if (!importPars.isEmpty()) {
             var startPar = inputArea.getParagraphs().indexOf(importPars.get(0));
-            var endPar =  inputArea.getParagraphs().indexOf(importPars.get(importPars.size() - 1));
-            
+            var endPar = inputArea.getParagraphs().indexOf(importPars.get(importPars.size() - 1));
+
             int start = inputArea.getAbsolutePosition(startPar, 0);
             int end = inputArea.getAbsolutePosition(endPar, inputArea.getParagraphLength(endPar));
 
-            Set<String> importLines = importPars.stream()
-                    .map(p -> p.getText())
+            Set<String> importLines = importPars.stream().map(p -> p.getText())
                     .collect(Collectors.toCollection(() -> new TreeSet<>()));
 
             if (importLines.add(newImport)) {
@@ -163,7 +161,8 @@ class SourceCodeCompletor extends Completor {
         } else {
 
             var tokens = lexer.getTokens().stream()
-                    .takeWhile(t -> t.getType().equals(GroupNames.COMMENT) || t.getType().equals(GroupNames.JSHELLCOMMAND))
+                    .takeWhile(
+                            t -> t.getType().equals(GroupNames.COMMENT) || t.getType().equals(GroupNames.JSHELLCOMMAND))
                     .map(Token::getEnd).toList();
 
             var startPosition = tokens.isEmpty() ? 0 : tokens.get(tokens.size() - 1) + 1;
