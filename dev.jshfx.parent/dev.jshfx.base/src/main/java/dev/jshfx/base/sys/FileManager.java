@@ -2,6 +2,7 @@ package dev.jshfx.base.sys;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.DirectoryStream;
@@ -63,6 +64,7 @@ public final class FileManager extends Manager {
     public static final Path REPLACE_SUGGESTONS_FILE = Path.of(USER_CONF_DIR + "/replace-suggestions.json");
 
     private static final Logger LOGGER = Logger.getLogger(FileManager.class.getName());
+    private InputStream in;
     private PrintStream err;
     private PrintStream out;
 
@@ -82,6 +84,7 @@ public final class FileManager extends Manager {
 
     @Override
     public void init() throws IOException {
+        in = System.in;
         err = System.err;
         out = System.out;
         Files.createDirectories(LOG_DIR);
@@ -98,7 +101,8 @@ public final class FileManager extends Manager {
         jdkSource.close();
     }
 
-    public void restoreOutput() {
+    public void restoreIO() {
+        System.setIn(in);
         System.setErr(err);
         System.setOut(out);
     }

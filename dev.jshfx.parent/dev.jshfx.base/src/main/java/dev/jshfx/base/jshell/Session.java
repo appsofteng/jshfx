@@ -139,6 +139,7 @@ public class Session {
     }
 
     public void setIO() {
+        System.setIn(consoleModel.getIn());
         System.setErr(consoleModel.getErr());
         System.setOut(consoleModel.getOut());
     }

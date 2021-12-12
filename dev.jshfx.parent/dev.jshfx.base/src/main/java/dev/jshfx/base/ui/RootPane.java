@@ -85,7 +85,7 @@ public class RootPane extends BorderPane {
             } else {
                 consolePane.setContentPane(null);
                 actions.empty();
-                FileManager.get().restoreOutput();
+                FileManager.get().restoreIO();
             }
         });
 

@@ -42,36 +42,40 @@ public class SnippetProcessor extends Processor {
         for (int i = 0; i < lines.length; i++) {
 
             sb.append(lines[i]).append("\n");
-            CompletionInfo info = sourceAnalysis.analyzeCompletion(sb.toString());
+            
+            while (!sb.isEmpty()) {
+                CompletionInfo info = sourceAnalysis.analyzeCompletion(sb.toString());
 
-            if (info.completeness() == Completeness.CONSIDERED_INCOMPLETE) {
-                continue;
-            } else if (info.completeness() == Completeness.DEFINITELY_INCOMPLETE) {
-                if (i == lines.length - 1) {
-                    session.getFeedback().snippetError(FXResourceBundle.getBundle().getString​("definitelyIncomplete")
-                            + "  " + sb.toString().strip() + "\n");
-                }
-                continue;
-            } else if (info.completeness() == Completeness.EMPTY) {
-                sb.delete(0, sb.length());
-                continue;
-            } else if (info.completeness() == Completeness.UNKNOWN) {
-                session.getFeedback().snippetError(
-                        FXResourceBundle.getBundle().getString​("unknown") + "  " + sb.toString().strip() + "\n");
-                sb.delete(0, sb.length());
-                continue;
-            } else if (info.completeness() == Completeness.COMPLETE
-                    || info.completeness() == Completeness.COMPLETE_WITH_SEMI) {
-                if (i + 1 < lines.length && lines[i + 1].trim().startsWith(".")) {
-                    sb.delete(sb.length() - 1, sb.length());
+                if (info.completeness() == Completeness.CONSIDERED_INCOMPLETE) {
                     continue;
+                } else if (info.completeness() == Completeness.DEFINITELY_INCOMPLETE) {
+                    if (i == lines.length - 1) {
+                        session.getFeedback()
+                                .snippetError(FXResourceBundle.getBundle().getString​("definitelyIncomplete") + "  "
+                                        + sb.toString().strip() + "\n");
+                    }
+                    continue;
+                } else if (info.completeness() == Completeness.EMPTY) {
+                    sb.delete(0, sb.length());
+                    continue;
+                } else if (info.completeness() == Completeness.UNKNOWN) {
+                    session.getFeedback().snippetError(
+                            FXResourceBundle.getBundle().getString​("unknown") + "  " + sb.toString().strip() + "\n");
+                    sb.delete(0, sb.length());
+                    continue;
+                } else if (info.completeness() == Completeness.COMPLETE
+                        || info.completeness() == Completeness.COMPLETE_WITH_SEMI) {
+                    if (i + 1 < lines.length && lines[i + 1].trim().startsWith(".")) {
+                        sb.delete(sb.length() - 1, sb.length());
+                        continue;
+                    }
                 }
-            }
 
-            String source = info.source();
-            sb.delete(0, sb.length()).append(info.remaining());
-            List<SnippetEvent> snippetEvents = session.getJshell().eval(source);
-            snippetEvents.forEach(e -> setFeedback(e, false));
+                String source = info.source();
+                sb.delete(0, sb.length()).append(info.remaining());
+                List<SnippetEvent> snippetEvents = session.getJshell().eval(source);
+                snippetEvents.forEach(e -> setFeedback(e, false));
+            }
         }
 
         session.getFeedback().flush();
