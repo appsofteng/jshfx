@@ -118,14 +118,6 @@ public class ShellPane extends AreaPane {
 
     private void setBehavior() {
 
-        getFXPath().pathProperty().addListener((v, o, n) -> {
-            if (n != null) {
-                if (o != null && !n.getParent().equals(o.getParent())) {
-                    setCurDir(n);
-                }
-            }
-        });
-
         consoleHeaderText.bind(session.getTimer().textProperty());
 
         sceneProperty().addListener((v, o, n) -> {
@@ -150,13 +142,6 @@ public class ShellPane extends AreaPane {
                 }
             }
         });
-    }
-
-    private void setCurDir(Path path) {
-        if (path.isAbsolute()) {
-            session.getSnippetProcessor().process(String.format("var CURDIR = Path.of(\"%s\")",
-                    FilenameUtils.separatorsToUnix(path.getParent().toString())));
-        }
     }
 
     public void showCodeCompletion(boolean contains) {
@@ -360,8 +345,6 @@ public class ShellPane extends AreaPane {
                 .collect(Collectors.joining("\n"));
 
         session.process(imports);
-
-        setCurDir(getFXPath().getPath());
     }
 
     @Override

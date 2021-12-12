@@ -1,6 +1,6 @@
 package dev.jshfx.util.sys;
 
-public final class $ extends JSH {
+public final class $ extends JSh {
 
     private $() {
     }

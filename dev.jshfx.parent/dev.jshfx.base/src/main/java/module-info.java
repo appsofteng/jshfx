@@ -39,4 +39,6 @@ module dev.jshfx.base {
 	opens dev.jshfx.base to javafx.graphics;
     opens dev.jshfx.base.jshell to org.eclipse.yasson, javafx.base;
     opens dev.jshfx.base.jshell.commands to info.picocli;
+    
+    provides dev.jshfx.util.sys.JShService with dev.jshfx.base.sys.JShServiceImpl;
 }

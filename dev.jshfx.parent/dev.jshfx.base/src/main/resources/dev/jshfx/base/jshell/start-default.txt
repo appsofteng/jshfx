@@ -11,4 +11,4 @@ import java.util.prefs.*;
 import java.util.regex.*;
 import java.util.stream.*;
 import dev.jshfx.util.sys.$;
-import dev.jshfx.util.sys.JSH;
+import dev.jshfx.util.sys.JSh;
