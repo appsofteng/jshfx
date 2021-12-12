@@ -30,6 +30,7 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.wellbehaved.event.Nodes;
 
 import dev.jshfx.jx.tools.Lexer;
+import dev.jshfx.jx.tools.Token;
 import javafx.application.Platform;
 
 public final class CodeAreaWrappers {
@@ -126,7 +127,7 @@ public final class CodeAreaWrappers {
                         spans.add(styleSpan);
                     });
 
-                    highlightWrapper.setToken(getLexer().getTokenOnCaretPosition());
+                    highlightWrapper.setToken(getLexer().getTokensOnCaretPosition());
                     highlightWrapper.setAreaLength(area.getLength());
 
                     StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
@@ -136,10 +137,10 @@ public final class CodeAreaWrappers {
 
                     area.setStyleSpans(0, styleSpans);
 
-                    var tokenOnCaret = getLexer().getTokenOnCaretPosition();
+                    var tokenOnCaret = getLexer().getTokensOnCaretPosition().stream().filter(Token::isClose).findFirst().orElse(null);
 
                     if (insertionEnd == area.getCaretPosition() && tokenOnCaret != null &&
-                            tokenOnCaret.isClose() && tokenOnCaret.getValue().equals(plainChange.getInserted())) {
+                            tokenOnCaret.getValue().equals(plainChange.getInserted())) {
                         blockEndWrapper.indentEnd(tokenOnCaret);
                     }
 

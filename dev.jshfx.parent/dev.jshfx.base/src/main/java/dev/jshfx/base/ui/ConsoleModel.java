@@ -7,31 +7,41 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.fxmisc.richtext.model.StyleSpans;
+import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener.Change;
-import javafx.collections.ObservableList;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.concurrent.ScheduledService;
+import javafx.concurrent.Task;
+import javafx.util.Duration;
 
 public class ConsoleModel {
 
-    private static final int LIMIT = 1500;
+    private static final int LIMIT = 80000;
     public static final String NORMAL_STYLE = "jsh-console-normal";
     public static final String COMMENT_STYLE = "jsh-console-comment";
     public static final String HELP_STYLE = "jsh-console-help";
     public static final String ERROR_STYLE = "jsh-console-error";
-    private ObservableList<TextStyleSpans> input = FXCollections.observableArrayList();
-    private ObservableList<TextStyleSpans> inputToOutput = FXCollections.observableArrayList();
-    private ObservableList<TextStyleSpans> output = FXCollections.observableArrayList();
+    private StringBuilder textBuilder = new StringBuilder();
+    private StyleSpans<Collection<String>> styleSpans;
+    private ObjectProperty<TextStyleSpans> output = new SimpleObjectProperty<>(new TextStyleSpans(""));
     private PipedOutputStream outPipe = new PipedOutputStream();
     private PrintStream outToInStream = new PrintStream(outPipe, true);
     private InputStream in;
     private PrintStream out = new PrintStream(new ConsoleOutputStream(NORMAL_STYLE), true);
     private PrintStream err = new PrintStream(new ConsoleOutputStream(ERROR_STYLE), true);
     private AtomicBoolean readFromPipe = new AtomicBoolean();
+    private AtomicBoolean setOutput = new AtomicBoolean();
+    private ScheduledService<Void> bufferService;
+    private ReentrantLock lock = new ReentrantLock();
 
     public ConsoleModel() {
 
@@ -41,27 +51,36 @@ public class ConsoleModel {
             throw new RuntimeException(e);
         }
 
-        setBehavior();
-    }
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+        spansBuilder.add(Collections.emptyList(), 0);
+        styleSpans = spansBuilder.create();
 
-    private void setBehavior() {
-        input.addListener((Change<? extends TextStyleSpans> c) -> {
+        bufferService = new ScheduledService<>() {
+            protected Task<Void> createTask() {
+                return new Task<Void>() {
+                    protected Void call() {
+                        if (setOutput.get()) {
+                            lock.lock();
+                            try {
+                                if (!textBuilder.isEmpty()) {
+                                    StyleSpansBuilder<Collection<String>> styleSpansBuilder = new StyleSpansBuilder<>();
+                                    styleSpansBuilder.addAll(styleSpans);
 
-            while (c.next()) {
-
-                if (c.wasAdded()) {
-                    List<? extends TextStyleSpans> added = new ArrayList<>(c.getAddedSubList());
-
-                    if (isReadFromPipe()) {
-                        added.stream().map(TextStyleSpans::getText).forEach(outToInStream::print);
-                    } else {
-                        add(inputToOutput, added, LIMIT);
+                                    output.set(new TextStyleSpans(textBuilder.toString(), styleSpansBuilder.create()));
+                                }
+                            } finally {
+                                setOutput.set(false);
+                                lock.unlock();
+                            }
+                        }
+                        return null;
                     }
-
-                    add(output, added, LIMIT);
-                }
+                };
             }
-        });
+        };
+
+        bufferService.setPeriod(Duration.seconds(1));
+        bufferService.start();
     }
 
     public boolean isReadFromPipe() {
@@ -72,15 +91,25 @@ public class ConsoleModel {
         return readFromPipe;
     }
 
-    public void addInput(TextStyleSpans span) {
-        add(input, span, LIMIT);
+    public boolean addInput(TextStyleSpans span) {
+        boolean evalSnippet = true;
+
+        if (isReadFromPipe()) {
+            // Used when System.in.read waits for input string.
+            outToInStream.print(span.getText());
+            evalSnippet = false;
+        }
+
+        addOutput(span);
+
+        return evalSnippet;
     }
 
-    public ObservableList<TextStyleSpans> getInputToOutput() {
-        return inputToOutput;
+    public TextStyleSpans getOutput() {
+        return output.get();
     }
 
-    public ObservableList<TextStyleSpans> getOutput() {
+    public ReadOnlyObjectProperty<TextStyleSpans> outputProperty() {
         return output;
     }
 
@@ -100,35 +129,70 @@ public class ConsoleModel {
         return new ConsoleOutputStream(style);
     }
 
-    public synchronized void addNewLineOutput(TextStyleSpans textStyleSpans) {
+    public void addNewLineOutput(TextStyleSpans textStyleSpans) {
+        lock.lock();
+        try {
 
-        if (textStyleSpans.getText().isEmpty()) {
-            return;
-        }
+            if (textStyleSpans.getText().isEmpty()) {
+                return;
+            }
 
-        if (!output.isEmpty() && !output.get(output.size() - 1).getText().endsWith("\n")) {
-            addOutput(new TextStyleSpans("\n"));
-        }
+            if (!textBuilder.isEmpty() && textBuilder.charAt(textBuilder.length() - 1) != '\n') {
+                addOutput(new TextStyleSpans("\n"));
+            }
 
-        if (!textStyleSpans.getText().isBlank()) {
-            addOutput(textStyleSpans);
+            if (!textStyleSpans.getText().isBlank()) {
+                addOutput(textStyleSpans);
+            }
+        } finally {
+            lock.unlock();
         }
     }
-    
-    public synchronized void addOutput(TextStyleSpans textStyleSpans) {
-        add(output, textStyleSpans, LIMIT);
-    }
 
-    private <T> void add(ObservableList<T> list, T added, int limit) {
-        add(list, List.of(added), limit);
-    }
-    
-    private <T> void add(ObservableList<T> list, List<? extends T> added, int limit) {
-        list.addAll(added);
+    public void addOutput(TextStyleSpans textStyleSpans) {
+        lock.lock();
+        try {
+            textBuilder.append(textStyleSpans.getText());
+            styleSpans = styleSpans.concat(textStyleSpans.getStyleSpans());
 
-        if (list.size() > limit) {
-            list.remove(0, list.size() - limit);
+            int oldLength = textBuilder.length();
+
+            if (oldLength > LIMIT) {
+                textBuilder.delete(0, textBuilder.length() - LIMIT);
+                int index = textBuilder.indexOf("\n");
+                if (index > -1) {
+                    textBuilder.delete(0, index + 1);
+                }
+
+                int newLength = textBuilder.length();
+                int from = oldLength - newLength;
+                var subView = styleSpans.subView(from, styleSpans.length());
+                StyleSpansBuilder<Collection<String>> styleSpansBuilder = new StyleSpansBuilder<>();
+                styleSpansBuilder.addAll(subView);
+                styleSpans = styleSpansBuilder.create();
+            }
+
+            setOutput.set(true);
+        } finally {
+            lock.unlock();
         }
+    }
+
+    public void clear() {
+
+        lock.lock();
+        try {
+            textBuilder.setLength(0);
+            StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+            spansBuilder.add(Collections.emptyList(), 0);
+            styleSpans = spansBuilder.create();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void dispose() {
+        bufferService.cancel();
     }
 
     private class ConsoleOutputStream extends ByteArrayOutputStream {
@@ -151,7 +215,6 @@ public class ConsoleModel {
             string = string.replace("\r", "");
 
             TextStyleSpans textStyleSpans = new TextStyleSpans(string, style);
-
             addOutput(textStyleSpans);
             reset();
         }

@@ -1,8 +1,5 @@
 package dev.jshfx.base.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 
@@ -10,44 +7,30 @@ import dev.jshfx.fxmisc.richtext.AreaWrapper;
 import dev.jshfx.fxmisc.richtext.CustomCodeArea;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import javafx.application.Platform;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ListChangeListener.Change;
+import javafx.beans.value.ChangeListener;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 
 public class ConsolePane extends EnvPane {
-
-    private static final int OUTPUT_AREA_LIMIT = 1500;
 
     private CodeArea area = new CustomCodeArea();
     private AreaWrapper<CodeArea> areaWrapper = new AreaWrapper<>(area);
     private Label header = new Label();
     private ContentPane contentPane;
     private Finder finder = new FinderImpl(area);;
-    private ListChangeListener<? super TextStyleSpans> listener = (Change<? extends TextStyleSpans> c) -> {
+    private ChangeListener<? super TextStyleSpans> listener = (v, o, n) -> {
 
-        while (c.next()) {
+        if (n != null) {
+            String text = n.getText();
+            var styleSpans = n.getStyleSpans();
 
-            if (c.wasAdded()) {
-                List<? extends TextStyleSpans> added = new ArrayList<>(c.getAddedSubList());
+            Platform.runLater(() -> {
+                area.replaceText(text);
+                area.setStyleSpans(0, styleSpans);
 
-                Platform.runLater(() -> {
-                    for (TextStyleSpans span : added) {
-                        area.appendText(span.getText());
-                        int from = area.getLength() - span.getStyleSpans().length();
-                        area.setStyleSpans(from, span.getStyleSpans());
-                    }
-
-                    int paragraphCount = area.getParagraphs().size();
-                    if (paragraphCount > OUTPUT_AREA_LIMIT) {
-                        int lastExtraParagraph = paragraphCount - OUTPUT_AREA_LIMIT - 1;
-                        area.deleteText(0, 0, lastExtraParagraph, area.getParagraph(lastExtraParagraph).length());
-                    }
-
-                    area.moveTo(area.getLength());
-                    area.requestFollowCaret();
-                });
-            }
+                area.moveTo(area.getLength());
+                area.requestFollowCaret();
+            });
         }
     };
 
@@ -99,7 +82,7 @@ public class ConsolePane extends EnvPane {
     public Finder getFinder() {
         return finder;
     }
-    
+
     public void setContentPane(ContentPane contentPane) {
 
         area.clear();
@@ -107,21 +90,18 @@ public class ConsolePane extends EnvPane {
         header.setText("");
 
         if (this.contentPane != null) {
-            this.contentPane.getConsoleOutput().removeListener(listener);
+            this.contentPane.getConsoleModel().outputProperty().removeListener(listener);
         }
 
         this.contentPane = contentPane;
 
         if (contentPane != null) {
             header.textProperty().bind(contentPane.consoleHeaderTextProperty());
-            contentPane.getConsoleOutput().addListener(listener);
+            contentPane.getConsoleModel().outputProperty().addListener(listener);
 
-            for (TextStyleSpans span : contentPane.getConsoleOutput()) {
-                area.appendText(span.getText());
-                int from = area.getLength() - span.getStyleSpans().length();
-                area.setStyleSpans(from, span.getStyleSpans());
-            }
-
+            area.replaceText(contentPane.getConsoleModel().getOutput().getText());
+            area.setStyleSpans(0, contentPane.getConsoleModel().getOutput().getStyleSpans());
+            
             area.moveTo(area.getLength());
             area.requestFollowCaret();
         }
@@ -135,7 +115,7 @@ public class ConsolePane extends EnvPane {
         area.clear();
 
         if (contentPane != null) {
-            contentPane.getConsoleOutput().clear();
+            contentPane.getConsoleModel().clear();
         }
     }
 }

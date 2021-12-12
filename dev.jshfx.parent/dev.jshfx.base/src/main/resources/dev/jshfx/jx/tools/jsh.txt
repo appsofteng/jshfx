@@ -3,6 +3,6 @@ JSHELLCOMMAND,TEXTBLOCK,STRING,COMMENT,OTHER,NEWLINE
 (?m)(?<JSHELLCOMMAND>^/(?:[^/\*](?:.*[^\\])?)?$\v?|(?:^/(?:[^/\*].* )?\\\v*)+(?:^/(?:[^/\*](?:.*[^\\])?)?$\v?)?)
 |(?<TEXTBLOCK>"""\v(?:.|\v)*?"""\v?)
 |(?<STRING>"(?:[^"\\]|\\.)*"\v?)
-|(?<COMMENT>//[^\n]*\v?|/\*[\s\S]*?\*/\v?)
-|(?<OTHER>[^"\v]+\v?)
+|(?<COMMENT>\s*//.*\v?|\s*/\*[\s\S]*?\*/\s*\v?)
+|(?<OTHER>(?:(?!//|/\*)[^"\v])+\v?)
 |(?<NEWLINE>\v)

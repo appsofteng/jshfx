@@ -1,11 +1,13 @@
 package dev.jshfx.base.jshell;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.fxmisc.richtext.CodeArea;
 
@@ -146,17 +148,21 @@ class SourceCodeCompletor extends Completor {
             int start = inputArea.getAbsolutePosition(startPar, 0);
             int end = inputArea.getAbsolutePosition(endPar, inputArea.getParagraphLength(endPar));
 
-            Set<String> importLines = importPars.stream().map(p -> p.getText())
-                    .collect(Collectors.toCollection(() -> new TreeSet<>()));
+            List<String> importLines = importPars.stream().map(p -> p.getText())
+                    .collect(Collectors.toCollection(() -> new ArrayList<>()));
 
-            if (importLines.add(newImport)) {
-                var newImports = importLines.stream().collect(Collectors.joining("\n"));
-                Platform.runLater(() -> {
-                    int caret = inputArea.getCaretPosition();
-                    inputArea.replaceText(start, end, newImports);
-                    inputArea.moveTo(caret + newImport.length() + 1);
-                });
-            }
+            int index = IntStream.range(0, importLines.size()).filter(i -> importLines.get(i).startsWith("import"))
+                    .filter(i -> importLines.get(i).compareToIgnoreCase(newImport) > 0).findFirst()
+                    .orElse(importLines.size());
+
+            importLines.add(index, newImport);
+
+            var newImports = importLines.stream().collect(Collectors.joining("\n"));
+            Platform.runLater(() -> {
+                int caret = inputArea.getCaretPosition();
+                inputArea.replaceText(start, end, newImports);
+                inputArea.moveTo(caret + newImport.length() + 1);
+            });
 
         } else {
 

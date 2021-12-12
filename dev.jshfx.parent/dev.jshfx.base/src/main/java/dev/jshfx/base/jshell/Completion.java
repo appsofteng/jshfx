@@ -4,7 +4,6 @@ import org.fxmisc.richtext.CodeArea;
 
 import dev.jshfx.jx.tools.GroupNames;
 import dev.jshfx.jx.tools.Lexer;
-import dev.jshfx.jx.tools.Token;
 
 public class Completion {
     
@@ -22,9 +21,9 @@ public class Completion {
 
     public Completor getCompletor() {
         Completor completion = null;
-        Token token = lexer.getTokenOnCaretPosition();
+        var token = lexer.getTokensOnCaretPosition().stream().filter(t -> t.getType().equals(GroupNames.JSHELLCOMMAND)).findFirst();
                 
-        if (inputArea.getText().isBlank() || token != null && token.getType().equals(GroupNames.JSHELLCOMMAND)) {
+        if (inputArea.getText().isBlank() || token.isPresent()) {
             completion = commandCompletion;
         } else {
             completion = sourceCodeCompletion;

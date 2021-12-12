@@ -24,7 +24,8 @@ class CommandCompletor extends Completor {
 
     @Override
     public void getCompletionItems(boolean contains, Predicate<CompletionItem> items) {
-        var commandToken = lexer.getTokenOnCaretPosition();
+        var commandToken = lexer.getTokensOnCaretPosition().stream()
+                .filter(t -> t.getType().equals(GroupNames.JSHELLCOMMAND)).findFirst().orElse(null);
         String parText = "";
         Token tokenOnCaret = null;
         List<String> arguments = new ArrayList<>();
@@ -34,16 +35,12 @@ class CommandCompletor extends Completor {
             String input = commandToken.getValue();
             int originalRelativeCaretPosition = inputArea.getCaretPosition() - commandToken.getStart();
             relativeCaretPosition = originalRelativeCaretPosition;
-            arguments = session.getCommandProcessor().getLexer().tokenize(input, relativeCaretPosition)
-                    .stream()
-                    .filter(t -> !t.getType().equals(GroupNames.COMMANDBREAK))
-                    .map(Token::getValue).collect(Collectors.toCollection(() -> new ArrayList<>()));
-            tokenOnCaret = session.getCommandProcessor().getLexer().getTokenOnCaretPosition();
+            arguments = session.getCommandProcessor().getLexer().tokenize(input, relativeCaretPosition).stream()
+                    .filter(t -> !t.getType().equals(GroupNames.COMMANDBREAK)).map(Token::getValue)
+                    .collect(Collectors.toCollection(() -> new ArrayList<>()));
+            tokenOnCaret = session.getCommandProcessor().getLexer().getTokensOnCaretPosition().stream()
+                    .filter(t -> !t.getType().equals(GroupNames.COMMANDBREAK)).findFirst().orElse(null);
 
-            if (tokenOnCaret.getType().equals(GroupNames.COMMANDBREAK)) {
-                tokenOnCaret = null;
-            }
-            
             if (contains) {
                 parText = input;
                 while (--relativeCaretPosition >= 0 && !Character.isWhitespace(parText.charAt(relativeCaretPosition))) {

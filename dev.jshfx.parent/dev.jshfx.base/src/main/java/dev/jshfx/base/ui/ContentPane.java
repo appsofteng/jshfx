@@ -11,7 +11,6 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -42,7 +41,7 @@ public class ContentPane extends EnvPane {
 
     @Override
     public void bindActions(Actions actions) {
-       actions.getSaveAction().disabledProperty().bind(modifiedProperty().not());
+        actions.getSaveAction().disabledProperty().bind(modifiedProperty().not());
     }
 
     private String createTitle() {
@@ -94,8 +93,8 @@ public class ContentPane extends EnvPane {
     public void init() {
     }
 
-    public ObservableList<TextStyleSpans> getConsoleOutput() {
-        return consoleModel.getOutput();
+    public ConsoleModel getConsoleModel() {
+        return consoleModel;
     }
 
     public void activate() {
@@ -105,5 +104,6 @@ public class ContentPane extends EnvPane {
     public void dispose() {
         modified.unbind();
         modified.set(false);
+        consoleModel.dispose();
     }
 }

@@ -26,7 +26,7 @@ public class Lexer {
     private Map<String, String> closeOpenTypes = new HashMap<>();
     private List<Token> tokens = new ArrayList<>();
     private Map<String, Deque<Token>> tokenStack = new HashMap<>();
-    private Token tokenOnCaretPosition;
+    private List<Token> tokensOnCaretPosition = new ArrayList<>();
 
     private Lexer(String regex, List<String> groups, String openingTokenPattern) {
         this.pattern = Pattern.compile(regex);
@@ -52,8 +52,8 @@ public class Lexer {
         return tokens;
     }
     
-    public Token getTokenOnCaretPosition() {
-        return tokenOnCaretPosition;
+    public List<Token> getTokensOnCaretPosition() {
+        return tokensOnCaretPosition;
     }
     
     public static Lexer get(String fileName) {
@@ -104,7 +104,7 @@ public class Lexer {
         int lastEnd = 0;
         tokens.clear();
         tokenStack.clear();
-        tokenOnCaretPosition = null;
+        tokensOnCaretPosition.clear();;
         int index = 0;
 
         while (matcher.find()) {
@@ -112,7 +112,7 @@ public class Lexer {
             Token token = new Token(index++, matcher.start(), matcher.end(), type, matcher.group());
 
             if (token.isOnCaretPosition(caretPosition)) {
-                tokenOnCaretPosition = token;
+                tokensOnCaretPosition.add(token);
             }
 
             updateStack(token);

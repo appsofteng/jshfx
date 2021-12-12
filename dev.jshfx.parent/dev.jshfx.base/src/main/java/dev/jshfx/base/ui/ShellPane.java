@@ -71,7 +71,7 @@ public class ShellPane extends AreaPane {
         session.setOnExitCommand(
                 () -> Platform.runLater(() -> onCloseRequest.handle(new Event(this, this, Event.ANY))));
         session.setOnResult(this::handleResult);
-        completion = new Completion(getArea(), session, lexer);        
+        completion = new Completion(getArea(), session, lexer);
 
         getChildren().add(new VirtualizedScrollPane<>(getArea()));
 
@@ -116,12 +116,14 @@ public class ShellPane extends AreaPane {
 
     @Override
     protected void wrap(CodeArea area) {
-        lexer = CodeAreaWrappers.get(area, "java").style().highlighting(consoleModel.getReadFromPipe()).indentation().find().getLexer();
+        lexer = CodeAreaWrappers.get(area, "java").style().highlighting(consoleModel.getReadFromPipe()).indentation()
+                .find().getLexer();
     }
-    
+
     private void handleResult(SnippetEvent event, Object obj) {
 
-        if (event.snippet().subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND && obj instanceof WindowContent windowContent) {
+        if (event.snippet().subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND
+                && obj instanceof WindowContent windowContent) {
             Platform.runLater(() -> WindowUtils.show(getScene().getWindow(), windowContent));
         }
     }
@@ -150,19 +152,6 @@ public class ShellPane extends AreaPane {
             }
         });
 
-        consoleModel.getInputToOutput().addListener((Change<? extends TextStyleSpans> c) -> {
-
-            while (c.next()) {
-
-                if (c.wasAdded()) {
-                    List<? extends TextStyleSpans> added = new ArrayList<>(c.getAddedSubList());
-                    for (TextStyleSpans span : added) {
-                        session.process(span.getText());
-                    }
-                }
-            }
-        });
-
         history.addListener((Change<? extends String> c) -> {
 
             while (c.next()) {
@@ -177,14 +166,14 @@ public class ShellPane extends AreaPane {
 
     private void setCurDir(Path path) {
         if (path.isAbsolute()) {
-            session.getSnippetProcessor()
-                    .process(String.format("var CURDIR = Path.of(\"%s\")", FilenameUtils.separatorsToUnix(path.getParent().toString())));
+            session.getSnippetProcessor().process(String.format("var CURDIR = Path.of(\"%s\")",
+                    FilenameUtils.separatorsToUnix(path.getParent().toString())));
         }
     }
 
     public void showCodeCompletion(boolean contains) {
         completionContains = contains;
-        
+
         Optional<Bounds> boundsOption = getArea().getCaretBounds();
         if (boundsOption.isPresent()) {
             Bounds bounds = boundsOption.get();
@@ -192,8 +181,8 @@ public class ShellPane extends AreaPane {
             CompletionPopup.get().setCompletionItem(completion.getCompletor()::getCompletionItem);
             CompletionPopup.get().clear();
             CompletionPopup.get().show(getArea(), bounds.getMaxX(), bounds.getMaxY());
-            CTask<Void> task = CTask
-                    .create(() -> completion.getCompletor().getCompletionItems(contains, i -> CompletionPopup.get().add(i)));
+            CTask<Void> task = CTask.create(
+                    () -> completion.getCompletor().getCompletionItems(contains, i -> CompletionPopup.get().add(i)));
             taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
         }
     }
@@ -275,7 +264,9 @@ public class ShellPane extends AreaPane {
         historyStartReached.set(historyIndex == 0);
         historyEndReached.set(historyIndex == history.size());
 
-        consoleModel.addInput(span);
+        if (consoleModel.addInput(span)) {
+            session.process(text);
+        }
     }
 
     private StyleSpans<Collection<String>> filterStyles(int from, int length) {
@@ -371,19 +362,17 @@ public class ShellPane extends AreaPane {
 
     @Override
     public void init() {
-        var resolveCommands = lexer.getTokens().stream()
-                .filter(t -> t.getType().equals(GroupNames.JSHELLCOMMAND) && t.getValue().startsWith(ResolveCommand.NAME))
-                .map(Token::getValue)
-                .collect(Collectors.joining("\n"));
-        
+        var resolveCommands = lexer.getTokens().stream().filter(
+                t -> t.getType().equals(GroupNames.JSHELLCOMMAND) && t.getValue().startsWith(ResolveCommand.NAME))
+                .map(Token::getValue).collect(Collectors.joining("\n"));
+
         session.process(resolveCommands);
-        
-        String imports = getArea().getText().lines().map(line -> line.trim())
-                .filter(line -> line.startsWith("import"))
+
+        String imports = getArea().getText().lines().map(line -> line.trim()).filter(line -> line.startsWith("import"))
                 .collect(Collectors.joining("\n"));
-        
+
         session.process(imports);
-        
+
         setCurDir(getFXPath().getPath());
     }
 

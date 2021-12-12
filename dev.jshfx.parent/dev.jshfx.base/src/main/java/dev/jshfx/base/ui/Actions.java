@@ -106,6 +106,7 @@ public class Actions {
             }
         };
         clipboardService.setPeriod(Duration.seconds(1));
+        clipboardService.start();
 
         actionController = new ActionController(rootPane);
 

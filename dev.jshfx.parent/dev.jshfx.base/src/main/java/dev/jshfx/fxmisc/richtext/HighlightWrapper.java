@@ -60,9 +60,11 @@ public class HighlightWrapper extends StyleClassedTextAreaWrapper {
         this.areaLength = areaLength;
     }
 
-    void setToken(Token token) {
+    void setToken(List<Token> tokens) {
+        
+        var token = tokens.stream().filter(Token::isDelimiter).findFirst().orElse(null);
 
-        if (token != null && token.isDelimiter()) {
+        if (token != null) {
 
             token.getStyle().add("block-delimiter-match");
             token.getOppositeToken().getStyle().add("block-delimiter-match");
