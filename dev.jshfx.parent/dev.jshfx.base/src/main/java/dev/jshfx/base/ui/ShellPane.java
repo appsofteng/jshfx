@@ -30,7 +30,6 @@ import dev.jshfx.jfx.concurrent.TaskQueuer;
 import dev.jshfx.jx.tools.GroupNames;
 import dev.jshfx.jx.tools.Lexer;
 import dev.jshfx.jx.tools.Token;
-import dev.jshfx.util.sys.WindowContent;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -41,8 +40,6 @@ import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
 import javafx.scene.control.IndexRange;
-import jdk.jshell.Snippet;
-import jdk.jshell.SnippetEvent;
 
 public class ShellPane extends AreaPane {
 
@@ -70,7 +67,6 @@ public class ShellPane extends AreaPane {
         session = new Session(consoleModel, taskQueuer);
         session.setOnExitCommand(
                 () -> Platform.runLater(() -> onCloseRequest.handle(new Event(this, this, Event.ANY))));
-        session.setOnResult(this::handleResult);
         completion = new Completion(getArea(), session, lexer);
 
         getChildren().add(new VirtualizedScrollPane<>(getArea()));
@@ -118,14 +114,6 @@ public class ShellPane extends AreaPane {
     protected void wrap(CodeArea area) {
         lexer = CodeAreaWrappers.get(area, "java").style().highlighting(consoleModel.getReadFromPipe()).indentation()
                 .find().getLexer();
-    }
-
-    private void handleResult(SnippetEvent event, Object obj) {
-
-        if (event.snippet().subKind() == Snippet.SubKind.TEMP_VAR_EXPRESSION_SUBKIND
-                && obj instanceof WindowContent windowContent) {
-            Platform.runLater(() -> WindowUtils.show(getScene().getWindow(), windowContent));
-        }
     }
 
     private void setBehavior() {

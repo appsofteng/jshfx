@@ -11,7 +11,9 @@ import dev.jshfx.base.MainApp;
 import dev.jshfx.base.sys.ResourceManager;
 import dev.jshfx.jfx.scene.control.AutoCompleteArea;
 import dev.jshfx.jfx.util.FXResourceBundle;
+import dev.jshfx.util.sys.JSH;
 import dev.jshfx.util.sys.WindowContent;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.geometry.Pos;
@@ -34,6 +36,14 @@ import javafx.stage.Window;
 
 public final class WindowUtils {
 
+    static {
+        JSH.windowContentProperty().addListener((v,o,n) -> {
+            if (n != null) {
+                Platform.runLater(() -> show(RootPane.get().getScene().getWindow(), n));
+            }
+        });
+    }
+    
     private WindowUtils() {
     }
 
