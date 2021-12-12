@@ -10,7 +10,7 @@ public class WindowContent {
     private int columns;
     private List<Node> nodes;
 
-    WindowContent(List<Node> nodes) {
+    public WindowContent(List<Node> nodes) {
         this.nodes = nodes;
     }
 
