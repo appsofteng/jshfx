@@ -26,6 +26,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tooltip;
@@ -41,6 +42,7 @@ public class CompletionPopup extends Tooltip {
     static final double DEFAULT_WIDTH = 450;
     static final double DEFAULT_HEIGHT = 200;
     private ListView<CompletionItem> itemView = new ListView<>();
+    private Label placeHolder = new Label();
     private DocPopup docPopup;
     private ChangeListener<Boolean> focusListener;
     private ChangeListener<Number> windowListener;
@@ -59,7 +61,8 @@ public class CompletionPopup extends Tooltip {
 
         setMinSize(10, 10);
         setPrefSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-
+        itemView.setPlaceholder(placeHolder);
+        placeHolder.setStyle("-fx-text-fill: black;");
         StackPane pane = new StackPane(itemView);
         pane.setPadding(new Insets(5));
         setGraphic(pane);
@@ -107,6 +110,10 @@ public class CompletionPopup extends Tooltip {
                     }
                 });
                 buffer.clear();
+            }
+            
+            if (item == null && itemView.getItems().isEmpty()) {
+                Platform.runLater(() -> placeHolder.setText(FXResourceBundle.getBundle().getString​("noItemsFound")));
             }
         } 
         
@@ -254,6 +261,7 @@ public class CompletionPopup extends Tooltip {
 
     @Override
     public void show(Node ownerNode, double anchorX, double anchorY) {
+        placeHolder.setText(FXResourceBundle.getBundle().getString​("loadingItems"));
         if (isShowing()) {
             setAnchorX(anchorX);
             setAnchorY(anchorY);
