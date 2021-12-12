@@ -8,7 +8,7 @@ import static java.util.stream.Collectors.collectingAndThen
 import static java.util.stream.Collectors.toCollection
 import static javafx.collections.FXCollections.observableArrayList
 
-var lines = Files.lines(CURDIR.resolve("../../resources/ourworldindata/demography/life-expectancy-vs-gdp-per-capita.csv"))
+var lines = Files.lines(JSh.getCurDir().resolve("../../resources/ourworldindata/demography/life-expectancy-vs-gdp-per-capita.csv"))
 
 var series = lines
     .map(line -> line.split(",", -1))
@@ -29,4 +29,4 @@ chart.getXAxis().setLabel("GDP per Capita (USD)")
 chart.getYAxis().setLabel("Life Expectancy")
 chart.setLegendVisible(false)
 
-JSH.show(chart)
+JSh.show(chart)

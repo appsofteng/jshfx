@@ -4,8 +4,8 @@ import java.nio.file.Path;
 
 import dev.jshfx.base.ui.RootPane;
 import dev.jshfx.base.ui.WindowUtils;
+import dev.jshfx.util.jsh.WindowContent;
 import dev.jshfx.util.sys.JShService;
-import dev.jshfx.util.sys.WindowContent;
 import javafx.application.Platform;
 
 public class JShServiceImpl implements JShService {

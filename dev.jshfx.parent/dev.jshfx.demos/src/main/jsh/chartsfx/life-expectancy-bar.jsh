@@ -10,7 +10,7 @@ import static java.util.stream.Collectors.groupingBy
 import static java.util.stream.Collectors.toCollection
 import static javafx.collections.FXCollections.observableArrayList
 
-var lines = Files.lines(CURDIR.resolve("../../resources/ourworldindata/demography/life-expectancy.csv"))
+var lines = Files.lines(JSh.getCurDir().resolve("../../resources/ourworldindata/demography/life-expectancy.csv"))
 
 var series = lines
     .skip(1)
@@ -30,4 +30,4 @@ chart.getXAxis().setLabel("Age")
 chart.getYAxis().setLabel("Country")
 chart.getYAxis().setTickLabelFont(new Font(14))
 chart.setPrefHeight(series.getData().size() * chart.getYAxis().getTickLabelFont().getSize() * 3)
-JSH.show(chart)
+JSh.show(chart)

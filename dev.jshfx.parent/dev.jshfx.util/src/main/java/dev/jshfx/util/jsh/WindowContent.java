@@ -1,4 +1,4 @@
-package dev.jshfx.util.sys;
+package dev.jshfx.util.jsh;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ public class WindowContent {
     private int columns;
     private List<Node> nodes;
 
-    public WindowContent(List<Node> nodes) {
+    WindowContent(List<Node> nodes) {
         this.nodes = nodes;
     }
 

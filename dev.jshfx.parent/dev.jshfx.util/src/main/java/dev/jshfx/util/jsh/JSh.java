@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 import dev.jshfx.util.sys.JShService;
-import dev.jshfx.util.sys.WindowContent;
 import javafx.scene.Node;
 
 public sealed class JSh permits $ {

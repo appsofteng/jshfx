@@ -8,7 +8,7 @@ import static java.util.stream.Collectors.groupingBy
 import static java.util.stream.Collectors.toCollection
 import static javafx.collections.FXCollections.observableArrayList
 
-var lines = Files.lines(CURDIR.resolve("../../resources/ourworldindata/demography/life-expectancy.csv"))
+var lines = Files.lines(JSh.getCurDir().resolve("../../resources/ourworldindata/demography/life-expectancy.csv"))
 
 var countries = lines
     .skip(1)
@@ -20,9 +20,9 @@ var series = IntStream.of(0, countries.size() - 1).mapToObj(i -> new Series<>(co
     .map(values -> new Data<>(parseInt(values[2]), parseDouble(values[3])))
     .collect(toCollection(() -> observableArrayList())))).toList()     
 
-var lineChart = Charts.getLineChart(series)
+var chart = Charts.getLineChart(series)
 
-lineChart.setTitle("Life Expectancy")
-lineChart.getXAxis().setLabel("Year")
-lineChart.getYAxis().setLabel("Age")
-JSH.show(lineChart)
+chart.setTitle("Life Expectancy")
+chart.getXAxis().setLabel("Year")
+chart.getYAxis().setLabel("Age")
+JSh.show(chart)
