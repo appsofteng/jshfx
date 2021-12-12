@@ -112,7 +112,6 @@ public class ConsolePane extends EnvPane {
     }
 
     private void clear() {
-        area.clear();
 
         if (contentPane != null) {
             contentPane.getConsoleModel().clear();

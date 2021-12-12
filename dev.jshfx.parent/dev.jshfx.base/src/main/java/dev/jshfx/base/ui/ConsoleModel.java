@@ -62,12 +62,9 @@ public class ConsoleModel {
                         if (setOutput.get()) {
                             lock.lock();
                             try {
-                                if (!textBuilder.isEmpty()) {
-                                    StyleSpansBuilder<Collection<String>> styleSpansBuilder = new StyleSpansBuilder<>();
-                                    styleSpansBuilder.addAll(styleSpans);
-
-                                    output.set(new TextStyleSpans(textBuilder.toString(), styleSpansBuilder.create()));
-                                }
+                                StyleSpansBuilder<Collection<String>> styleSpansBuilder = new StyleSpansBuilder<>();
+                                styleSpansBuilder.addAll(styleSpans);
+                                output.set(new TextStyleSpans(textBuilder.toString(), styleSpansBuilder.create()));
                             } finally {
                                 setOutput.set(false);
                                 lock.unlock();
@@ -186,6 +183,8 @@ public class ConsoleModel {
             StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
             spansBuilder.add(Collections.emptyList(), 0);
             styleSpans = spansBuilder.create();
+            output.set(new TextStyleSpans(textBuilder.toString(), styleSpans));
+            setOutput.set(false);
         } finally {
             lock.unlock();
         }

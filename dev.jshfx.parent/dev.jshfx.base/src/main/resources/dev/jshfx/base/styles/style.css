@@ -55,6 +55,10 @@
     -fx-font-weight: bold;
 }
 
+.styled-text-area .list-view .placeholder .label .text {
+	-fx-fill: black;
+}
+
 .list-cell .text {
 	-fx-text-fill: -fx-text-background-color;
 	-fx-fill: -fx-text-background-color;

@@ -62,7 +62,6 @@ public class CompletionPopup extends Tooltip {
         setMinSize(10, 10);
         setPrefSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
         itemView.setPlaceholder(placeHolder);
-        placeHolder.setStyle("-fx-text-fill: black;");
         StackPane pane = new StackPane(itemView);
         pane.setPadding(new Insets(5));
         setGraphic(pane);
@@ -113,7 +112,7 @@ public class CompletionPopup extends Tooltip {
             }
             
             if (item == null && itemView.getItems().isEmpty()) {
-                Platform.runLater(() -> placeHolder.setText(FXResourceBundle.getBundle().getString​("noItemsFound")));
+                Platform.runLater(() -> placeHolder.setText(FXResourceBundle.getBundle().getString​("nothingFound")));
             }
         } 
         
@@ -261,7 +260,7 @@ public class CompletionPopup extends Tooltip {
 
     @Override
     public void show(Node ownerNode, double anchorX, double anchorY) {
-        placeHolder.setText(FXResourceBundle.getBundle().getString​("loadingItems"));
+        placeHolder.setText(FXResourceBundle.getBundle().getString​("searching"));
         if (isShowing()) {
             setAnchorX(anchorX);
             setAnchorY(anchorY);
