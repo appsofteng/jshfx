@@ -9,7 +9,7 @@ public final class PathUtils {
     }
     
     public static Path relativize(Path parent, Path path) {       
-        if (parent != null && path.startsWith(parent)) {
+        if (parent != null && parent.isAbsolute()) {
             path = parent.relativize(path);
         }
         

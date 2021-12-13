@@ -1,13 +1,16 @@
 package dev.jshfx.base.ui;
 
 import java.nio.file.Path;
+import java.util.stream.Collectors;
 
+import org.apache.commons.io.FilenameUtils;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
 import dev.jshfx.fxmisc.richtext.AreaWrapper;
 import dev.jshfx.fxmisc.richtext.CustomCodeArea;
+import dev.jshfx.j.nio.file.PathUtils;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 
 public class AreaPane extends ContentPane {
@@ -31,11 +34,11 @@ public class AreaPane extends ContentPane {
         forgetEdit();
         finder = new FinderImpl(area);
     }
-    
+
     @Override
     public void setActions(Actions actions) {
         super.setActions(actions);
-        
+
         handlers.put(actions.getCopyAction(), () -> area.copy());
         handlers.put(actions.getCutAction(), () -> area.cut());
         handlers.put(actions.getPasteAction(), () -> area.paste());
@@ -44,11 +47,11 @@ public class AreaPane extends ContentPane {
         handlers.put(actions.getUndoAction(), () -> area.undo());
         handlers.put(actions.getRedoAction(), () -> area.redo());
     }
-    
+
     @Override
     public void bindActions(Actions actions) {
         super.bindActions(actions);
-        
+
         actions.getSelectAllAction().disabledProperty().bind(areaWrapper.allSelectedProperty());
         actions.getCopyAction().disabledProperty().bind(areaWrapper.selectionEmptyProperty());
         actions.getCutAction().disabledProperty().bind(areaWrapper.selectionEmptyProperty());
@@ -57,20 +60,49 @@ public class AreaPane extends ContentPane {
         actions.getRedoAction().disabledProperty().bind(areaWrapper.redoEmptyProperty());
     }
 
+    public void insertDirPath() {
+        var dir = FileDialogUtils.getDirectory(getScene().getWindow());
+
+        dir.ifPresent(d -> {
+            getArea().insertText(getArea().getCaretPosition(), FilenameUtils.separatorsToUnix(d.toString()));
+        });
+    }
+
+    public void insertFilePaths() {
+        insertFilePaths(" ");
+    }
+
+    public void insertFilePaths(String separator) {
+        var files = FileDialogUtils.openJavaFiles(getScene().getWindow());
+
+        String path = files.stream().map(f -> PathUtils.relativize(getFXPath().getPath().getParent(), f))
+                .map(f -> FilenameUtils.separatorsToUnix(f.toString())).collect(Collectors.joining(separator));
+
+        getArea().insertText(getArea().getCaretPosition(), path);
+    }
+
+    public void insertSaveFilePath() {
+        var file = FileDialogUtils.saveSourceJavaFile(getScene().getWindow());
+
+        file.ifPresent(f -> {
+            getArea().insertText(getArea().getCaretPosition(), FilenameUtils.separatorsToUnix(f.toString()) + " ");
+        });
+    }
+
     @Override
     public void requestFocus() {
         super.requestFocus();
         area.requestFocus();
     }
-    
+
     public CodeArea getArea() {
         return area;
     }
 
     protected void wrap(CodeArea area) {
-        
+
     }
-    
+
     private void forgetEdit() {
         edited.set(false);
         area.getUndoManager().forgetHistory();
