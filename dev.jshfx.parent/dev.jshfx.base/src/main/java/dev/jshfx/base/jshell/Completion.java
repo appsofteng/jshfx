@@ -21,14 +21,14 @@ public class Completion {
 
     public Completor getCompletor() {
         Completor completion = null;
-        var token = lexer.getTokensOnCaretPosition().stream().filter(t -> t.getType().equals(GroupNames.JSHELLCOMMAND)).findFirst();
+        var token = lexer.getTokenOnCaretPosition().stream().filter(t -> t.getType().equals(GroupNames.JSHELLCOMMAND)).findFirst();
                 
         if (inputArea.getText().isBlank() || token.isPresent()) {
             completion = commandCompletion;
         } else {
             completion = sourceCodeCompletion;
         }
-        
+         
         return completion;
     }
 }

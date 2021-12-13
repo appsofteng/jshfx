@@ -24,7 +24,7 @@ class CommandCompletor extends Completor {
 
     @Override
     public void getCompletionItems(boolean contains, Predicate<CompletionItem> items) {
-        var commandToken = lexer.getTokensOnCaretPosition().stream()
+        var commandToken = lexer.getTokenOnCaretPosition().stream()
                 .filter(t -> t.getType().equals(GroupNames.JSHELLCOMMAND)).findFirst().orElse(null);
         String parText = "";
         Token tokenOnCaret = null;
@@ -38,7 +38,7 @@ class CommandCompletor extends Completor {
             arguments = session.getCommandProcessor().getLexer().tokenize(input, relativeCaretPosition).stream()
                     .filter(t -> !t.getType().equals(GroupNames.COMMANDBREAK)).map(Token::getValue)
                     .collect(Collectors.toCollection(() -> new ArrayList<>()));
-            tokenOnCaret = session.getCommandProcessor().getLexer().getTokensOnCaretPosition().stream()
+            tokenOnCaret = session.getCommandProcessor().getLexer().getTokenOnCaretPosition().stream()
                     .filter(t -> !t.getType().equals(GroupNames.COMMANDBREAK)).findFirst().orElse(null);
 
             if (contains) {

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
@@ -26,7 +27,8 @@ public class Lexer {
     private Map<String, String> closeOpenTypes = new HashMap<>();
     private List<Token> tokens = new ArrayList<>();
     private Map<String, Deque<Token>> tokenStack = new HashMap<>();
-    private List<Token> tokensOnCaretPosition = new ArrayList<>();
+    private Token tokenOnCaretPosition = null;
+    private List<Token> tokensNextToCaretPosition = new ArrayList<>();
 
     private Lexer(String regex, List<String> groups, String openingTokenPattern) {
         this.pattern = Pattern.compile(regex);
@@ -51,11 +53,15 @@ public class Lexer {
     public List<Token> getTokens() {
         return tokens;
     }
-    
-    public List<Token> getTokensOnCaretPosition() {
-        return tokensOnCaretPosition;
+
+    public Optional<Token> getTokenOnCaretPosition() {
+        return Optional.of(tokenOnCaretPosition);
     }
     
+    public List<Token> getTokensNextToCaretPosition() {
+        return tokensNextToCaretPosition;
+    }
+
     public static Lexer get(String fileName) {
         return get(fileName, "");
     }
@@ -85,17 +91,17 @@ public class Lexer {
 
         return lexer;
     }
-    
+
     public List<Token> tokenize(String input) {
-        
+
         return tokenize(input, 0);
     }
-    
+
     public List<Token> tokenize(String input, int caretPosition) {
         List<Token> tokens = new ArrayList<>();
-        
+
         tokenize(input, caretPosition, (le, t) -> tokens.add(t));
-        
+
         return tokens;
     }
 
@@ -104,7 +110,8 @@ public class Lexer {
         int lastEnd = 0;
         tokens.clear();
         tokenStack.clear();
-        tokensOnCaretPosition.clear();;
+        tokenOnCaretPosition = null;
+        tokensNextToCaretPosition.clear();
         int index = 0;
 
         while (matcher.find()) {
@@ -112,7 +119,11 @@ public class Lexer {
             Token token = new Token(index++, matcher.start(), matcher.end(), type, matcher.group());
 
             if (token.isOnCaretPosition(caretPosition)) {
-                tokensOnCaretPosition.add(token);
+                tokenOnCaretPosition = token;
+            }
+
+            if (token.isNextToCaretPosition(caretPosition)) {
+                tokensNextToCaretPosition.add(token);
             }
 
             updateStack(token);
@@ -147,9 +158,10 @@ public class Lexer {
         return openTokenPattern;
     }
 
-    public List<Token> getToken(int caretPosition) {
+    public List<Token> getTokens(int caretPosition) {
 
-        if (tokens.isEmpty() || caretPosition < tokens.get(0).getStart() || caretPosition > tokens.get(tokens.size() - 1).getEnd()) {
+        if (tokens.isEmpty() || caretPosition < tokens.get(0).getStart()
+                || caretPosition > tokens.get(tokens.size() - 1).getEnd()) {
             return List.of();
         }
 

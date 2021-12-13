@@ -31,7 +31,7 @@ public class HighlightWrapper extends StyleClassedTextAreaWrapper {
             removeHighlightDelimiter();
         }
 
-        token = lexer.getToken(caretPosition).stream().filter(Token::isDelimiter).findFirst().orElse(null);
+        token = lexer.getTokens(caretPosition).stream().filter(Token::isDelimiter).findFirst().orElse(null);
         if (token != null) {
             highlightDelimiter();
         }
