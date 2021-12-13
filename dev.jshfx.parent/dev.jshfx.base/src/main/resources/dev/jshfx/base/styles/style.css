@@ -35,6 +35,10 @@
 
 /******************************************************************************/
 
+.center-pane {
+	 -fx-background-color: #282828;
+}
+
 .glyph-font {
     -fx-text-fill: -fx-text-background-color;
 } 

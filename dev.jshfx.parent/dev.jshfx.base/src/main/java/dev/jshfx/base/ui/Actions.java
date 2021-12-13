@@ -86,7 +86,7 @@ public class Actions {
 
     private BooleanExpression savedAllExpression;
     
-    private BooleanProperty savedAll = new SimpleBooleanProperty();
+    private BooleanProperty savedAll = new SimpleBooleanProperty(true);
     private BooleanProperty clipboardEmpty = new SimpleBooleanProperty();
 
     private Consumer<ActionEvent> saveSnapshotHandler;
@@ -128,6 +128,7 @@ public class Actions {
         FXResourceBundle.getBundle().put(saveAction.textProperty(), "save");
         FXResourceBundle.getBundle().put(saveAction.longTextProperty(), "saveLong",
                 saveAction.getAccelerator().getDisplayText());
+        saveAction.setDisabled(true);
 
         saveAsAction = new Action(e -> actionController.saveAsFile());
         saveAsAction.setGraphic(new ImageView(ResourceManager.get().getImage("save-as.png")));

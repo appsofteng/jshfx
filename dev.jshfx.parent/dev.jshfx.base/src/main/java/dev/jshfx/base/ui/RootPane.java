@@ -33,6 +33,7 @@ public class RootPane extends BorderPane {
     public RootPane() {
         actions = new Actions(this);
         actions.setActions(this);
+        actions.empty();
         consolePane.setActions(actions);
 
         SplitPane splitPane = new SplitPane(centerPane, consolePane);
@@ -42,8 +43,8 @@ public class RootPane extends BorderPane {
         setCenter(splitPane);
         setListeners();
 
-        actions.getActionController().newShell();
         centerPane.setTabDragPolicy(TabDragPolicy.REORDER);
+        centerPane.getStyleClass().add("center-pane");
         instance = this;
     }
 
