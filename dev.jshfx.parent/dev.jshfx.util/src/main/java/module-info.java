@@ -1,5 +1,6 @@
 module dev.jshfx.util {
     requires javafx.controls;
+    requires javafx.graphics;
     
     exports dev.jshfx.util.chart;
     exports dev.jshfx.util.jsh;

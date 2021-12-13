@@ -1,5 +1,6 @@
 package dev.jshfx.base.ui;
 
+import java.util.List;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -11,7 +12,7 @@ import dev.jshfx.base.MainApp;
 import dev.jshfx.base.sys.ResourceManager;
 import dev.jshfx.jfx.scene.control.AutoCompleteArea;
 import dev.jshfx.jfx.util.FXResourceBundle;
-import dev.jshfx.util.jsh.WindowContent;
+import dev.jshfx.util.jsh.WindowOptions;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.geometry.Pos;
@@ -44,19 +45,19 @@ public final class WindowUtils {
         progressDialog.show();
     }
 
-    public static void show(Window window, WindowContent windowContent) {
+    public static void show(Window window, List<Node> nodes, WindowOptions options) {
 
-        Node content = windowContent.getNodes().get(0);
+        Node content = nodes.get(0);
 
-        if (windowContent.getNodes().size() > 1) {
-            if (windowContent.getColumns() > 0) {
-                content = getGridPane(windowContent);
+        if (nodes.size() > 1) {
+            if (options.columns() > 0) {
+                content = getGridPane(nodes, options);
             } else {
-                content = getTabPane(windowContent);
+                content = getTabPane(nodes);
             }
         }
 
-        var name = windowContent.getTitle();
+        var name = options.title();
 
         if (name == null || name.isEmpty()) {
             name = FXResourceBundle.getBundle().getString​("untitled");
@@ -66,8 +67,8 @@ public final class WindowUtils {
 
         BorderPane borderPane = new BorderPane(content);
 
-        if (!windowContent.getTitle().isEmpty() && windowContent.getNodes().size() > 1) {
-            var label = new Label(windowContent.getTitle());
+        if (!options.title().isEmpty() && nodes.size() > 1) {
+            var label = new Label(options.title());
             label.setFont(new Font(label.getFont().getName(), 20));
             borderPane.setTop(label);
             BorderPane.setAlignment(label, Pos.CENTER);
@@ -85,7 +86,7 @@ public final class WindowUtils {
         });
 
         Stage stage = new Stage();
-        stage.setTitle(windowContent.getTitle());
+        stage.setTitle(options.title());
         stage.getIcons().add(ResourceManager.get().getIconImage());
         stage.initOwner(window);
         Scene scene = new Scene(scrollPane);
@@ -94,28 +95,28 @@ public final class WindowUtils {
         stage.show();
     }
 
-    private static Node getTabPane(WindowContent windowContent) {
+    private static Node getTabPane(List<Node> nodes) {
 
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
 
-        IntStream.range(0, windowContent.getNodes().size())
-                .mapToObj(i -> new Tab(windowContent.getNodes().get(i).getId() == null ? "T" + i
-                        : windowContent.getNodes().get(i).getId(), windowContent.getNodes().get(i)))
+        IntStream.range(0, nodes.size())
+                .mapToObj(i -> new Tab(nodes.get(i).getId() == null ? "T" + i
+                        : nodes.get(i).getId(), nodes.get(i)))
                 .collect(Collectors.toCollection(() -> tabPane.getTabs()));
 
         return tabPane;
     }
 
-    private static Node getGridPane(WindowContent windowContent) {
-        int columns = windowContent.getColumns();
-        int rows = windowContent.getNodes().size() / columns
-                + (int) Math.signum(windowContent.getNodes().size() % columns);
+    private static Node getGridPane(List<Node> nodes, WindowOptions options) {
+        int columns = options.columns();
+        int rows = nodes.size() / columns
+                + (int) Math.signum(nodes.size() % columns);
 
         GridPane pane = new GridPane();
 
-        for (int i = 0; i < windowContent.getNodes().size(); i++) {
-            var chart = windowContent.getNodes().get(i);
+        for (int i = 0; i < nodes.size(); i++) {
+            var chart = nodes.get(i);
 
             int column = i % columns;
             int row = (i + 1) / columns + (int) Math.signum((i + 1) % columns) - 1;
@@ -136,7 +137,7 @@ public final class WindowUtils {
             pane.getRowConstraints().add(row);
         }
 
-        pane.getChildren().addAll(windowContent.getNodes());
+        pane.getChildren().addAll(nodes);
 
         return pane;
     }

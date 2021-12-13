@@ -29,9 +29,12 @@ public sealed class JSh permits $ {
     }
 
     public static void show(List<Node> nodes) {
+        show(nodes, new WindowOptions());
+    }
+    
+    public static void show(List<Node> nodes, WindowOptions options) {
         if (nodes != null && !nodes.isEmpty() && !nodes.contains(null)) {
-            WindowContent content = new WindowContent(nodes);
-            jshService.show(content);
+            jshService.show(nodes, options);
         }
     }
 }
