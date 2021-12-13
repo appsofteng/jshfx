@@ -28,7 +28,8 @@ public class ResolveCommand extends BaseCommand {
     public void run() {
 
         if (coords != null && !coords.isEmpty()) {
-
+            commandProcessor.getSession().getFeedback()
+            .commandSuccess(FXResourceBundle.getBundle().getString​("msg.resolution.started")).flush();
             try {
                 Set<String> classPaths = new HashSet<>();
                 Set<String> sourcePaths = new HashSet<>();
