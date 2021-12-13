@@ -1,5 +1,5 @@
 /resolve org.jfree:jfreechart-fx:1.0.1
-import dev.jshfx.util.stage.Windows
+
 import org.jfree.chart.axis.NumberAxis
 import org.jfree.chart.ChartFactory
 import org.jfree.chart.fx.ChartViewer
@@ -10,7 +10,7 @@ import static java.lang.Double.parseDouble
 import static java.util.Comparator.comparingInt
 import static java.util.stream.Collectors.groupingBy
 
-var lines = Files.lines(CURDIR.resolve("../../resources/ourworldindata/demography/life-expectancy.csv"))
+var lines = Files.lines(JSh.getCurDir().resolve("../../resources/ourworldindata/demography/life-expectancy.csv"))
 var dataset = lines
     .skip(1)
     .map(line -> line.split(","))
@@ -27,4 +27,4 @@ var yearAxis = (NumberAxis)chart.getXYPlot().getDomainAxis();
 yearAxis.setNumberFormatOverride(new DecimalFormat("####"))
 var viewer = new ChartViewer(chart)
 
-Windows.show(viewer)
+JSh.show(viewer)

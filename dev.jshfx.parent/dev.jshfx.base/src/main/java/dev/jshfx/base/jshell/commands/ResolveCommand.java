@@ -51,6 +51,7 @@ public class ResolveCommand extends BaseCommand {
                         .commandSuccess(FXResourceBundle.getBundle().getString​("msg.resolution.success")).flush();
 
                 commandProcessor.getSession().setSourcepath(sourcePaths);
+                
                 if (commandProcessor.getSession().setClasspath(classPaths)) {
                     commandProcessor.getSession().getFeedback()
                     .commandSuccess(FXResourceBundle.getBundle().getString​("msg.reload")).flush();
