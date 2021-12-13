@@ -126,6 +126,14 @@ public class ShellPane extends AreaPane {
 
         getArea().caretPositionProperty().addListener((v, o, n) -> {
             if (CompletionPopup.get().isShowing()) {
+                if (getArea().getLength() == lexer.getLength()) {
+                    showCodeCompletion(completionContains);
+                }
+            }
+        });
+
+        lexer.lengthProperty().addListener((v, o, n) -> {
+            if (CompletionPopup.get().isShowing()) {
                 showCodeCompletion(completionContains);
             }
         });
@@ -148,12 +156,13 @@ public class ShellPane extends AreaPane {
         Optional<Bounds> boundsOption = getArea().getCaretBounds();
         if (boundsOption.isPresent()) {
             Bounds bounds = boundsOption.get();
-            CompletionPopup.get().setDocumentation(completion.getCompletor()::loadDocumentation);
-            CompletionPopup.get().setCompletionItem(completion.getCompletor()::getCompletionItem);
+            var completor = completion.getCompletor();
+            CompletionPopup.get().setDocumentation(completor::loadDocumentation);
+            CompletionPopup.get().setCompletionItem(completor::getCompletionItem);
             CompletionPopup.get().clear();
             CompletionPopup.get().show(getArea(), bounds.getMaxX(), bounds.getMaxY());
-            CTask<Void> task = CTask.create(
-                    () -> completion.getCompletor().getCompletionItems(contains, i -> CompletionPopup.get().add(i)));
+            CTask<Void> task = CTask
+                    .create(() -> completor.getCompletionItems(contains, i -> CompletionPopup.get().add(i)));
             taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
         }
     }
@@ -262,7 +271,7 @@ public class ShellPane extends AreaPane {
     public Session getSession() {
         return session;
     }
-    
+
     public void historyUp() {
 
         if (historyIndex > 0 && historyIndex <= history.size()) {

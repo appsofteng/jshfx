@@ -18,6 +18,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+
 public class Lexer {
 
     private Pattern pattern;
@@ -28,6 +32,7 @@ public class Lexer {
     private List<Token> tokens = new ArrayList<>();
     private Map<String, Deque<Token>> tokenStack = new HashMap<>();
     private List<Token> tokensOnCaretPosition = new ArrayList<>();
+    private IntegerProperty length = new SimpleIntegerProperty();
 
     private Lexer(String regex, List<String> groups, String openingTokenPattern) {
         this.pattern = Pattern.compile(regex);
@@ -51,6 +56,14 @@ public class Lexer {
 
     public List<Token> getTokens() {
         return tokens;
+    }
+
+    public int getLength() {
+        return length.get();
+    }
+    
+    public ReadOnlyIntegerProperty lengthProperty() {
+        return length;
     }
     
     public List<Token> getTokensOnCaretPosition() {
@@ -122,6 +135,8 @@ public class Lexer {
             lastEnd = matcher.end();
         }
 
+        length.set(input.length());
+        
         return lastEnd;
     }
 
@@ -194,15 +209,15 @@ public class Lexer {
 
         return result;
     }
-    
+
     public Optional<Token> getTokenOnCarretPosition(int caretPosition) {
 
         Optional<Token> result = Optional.empty();
-        
+
         if (tokens.isEmpty() || caretPosition < tokens.get(0).getStart()
                 || caretPosition > tokens.get(tokens.size() - 1).getEnd()) {
             return result;
-        }       
+        }
 
         Token token = null;
         int index = tokens.size() / 2;
