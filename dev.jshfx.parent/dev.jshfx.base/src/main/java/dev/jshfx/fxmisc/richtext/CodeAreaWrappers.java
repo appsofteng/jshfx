@@ -127,7 +127,7 @@ public final class CodeAreaWrappers {
                         spans.add(styleSpan);
                     });
 
-                    highlightWrapper.setToken(getLexer().getTokensNextToCaretPosition());
+                    highlightWrapper.setToken(getLexer().getTokensOnCaretPosition());
                     highlightWrapper.setAreaLength(area.getLength());
 
                     StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
@@ -137,7 +137,7 @@ public final class CodeAreaWrappers {
 
                     area.setStyleSpans(0, styleSpans);
 
-                    var tokenOnCaret = getLexer().getTokensNextToCaretPosition().stream().filter(Token::isClose).findFirst().orElse(null);
+                    var tokenOnCaret = getLexer().getTokensOnCaretPosition().stream().filter(Token::isClose).findFirst().orElse(null);
 
                     if (insertionEnd == area.getCaretPosition() && tokenOnCaret != null &&
                             tokenOnCaret.getValue().equals(plainChange.getInserted())) {

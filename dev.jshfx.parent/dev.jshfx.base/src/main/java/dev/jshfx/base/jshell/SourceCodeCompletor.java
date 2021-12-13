@@ -3,8 +3,6 @@ package dev.jshfx.base.jshell;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -138,22 +136,28 @@ class SourceCodeCompletor extends Completor {
             return;
         }
 
-        var importPars = inputArea.getParagraphs().stream().dropWhile(p -> !p.getText().startsWith("import"))
-                .takeWhile(p -> p.getText().startsWith("import") || p.getText().isBlank()).toList();
+        var importPars = IntStream.range(0, inputArea.getParagraphs().size())
+                .dropWhile(i -> !inputArea.getParagraph(i).getText().startsWith("import"))
+                .takeWhile(i -> inputArea.getParagraph(i).getText().startsWith("import")
+                        || inputArea.getParagraph(i).getText().isBlank())
+                .boxed().toList();
 
         if (!importPars.isEmpty()) {
-            var startPar = inputArea.getParagraphs().indexOf(importPars.get(0));
-            var endPar = inputArea.getParagraphs().indexOf(importPars.get(importPars.size() - 1));
+            var startPar = importPars.get(0);
+            var endPar = importPars.get(importPars.size() - 1);
 
             int start = inputArea.getAbsolutePosition(startPar, 0);
             int end = inputArea.getAbsolutePosition(endPar, inputArea.getParagraphLength(endPar));
 
-            List<String> importLines = importPars.stream().map(p -> p.getText())
+            List<String> importLines = importPars.stream().map(i -> inputArea.getParagraph(i).getText())
                     .collect(Collectors.toCollection(() -> new ArrayList<>()));
 
+            int lastIndex = importLines.size() - 1;
+            while (importLines.get(lastIndex--).isBlank()) {}
+            
             int index = IntStream.range(0, importLines.size()).filter(i -> importLines.get(i).startsWith("import"))
                     .filter(i -> importLines.get(i).compareToIgnoreCase(newImport) > 0).findFirst()
-                    .orElse(importLines.size());
+                    .orElse(lastIndex);
 
             importLines.add(index, newImport);
 

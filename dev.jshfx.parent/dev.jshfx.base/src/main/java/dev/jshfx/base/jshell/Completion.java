@@ -6,7 +6,7 @@ import dev.jshfx.jx.tools.GroupNames;
 import dev.jshfx.jx.tools.Lexer;
 
 public class Completion {
-    
+
     private CodeArea inputArea;
     private Lexer lexer;
     private CommandCompletor commandCompletion;
@@ -21,14 +21,16 @@ public class Completion {
 
     public Completor getCompletor() {
         Completor completion = null;
-        var token = lexer.getTokenOnCaretPosition().stream().filter(t -> t.getType().equals(GroupNames.JSHELLCOMMAND)).findFirst();
-                
+        var token = lexer.getTokenOnCarretPosition(inputArea.getCaretPosition()).stream()
+                .filter(t -> t.getType().equals(GroupNames.JSHELLCOMMAND)).findFirst();
+
         if (inputArea.getText().isBlank() || token.isPresent()) {
+            commandCompletion.setCommandToken(token.orElse(null));
             completion = commandCompletion;
         } else {
             completion = sourceCodeCompletion;
         }
-         
+
         return completion;
     }
 }

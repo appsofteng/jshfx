@@ -52,7 +52,11 @@ public class ResolveCommand extends BaseCommand {
 
                 commandProcessor.getSession().setSourcepath(sourcePaths);
                 if (commandProcessor.getSession().setClasspath(classPaths)) {
+                    commandProcessor.getSession().getFeedback()
+                    .commandSuccess(FXResourceBundle.getBundle().getString​("msg.reload")).flush();
                     commandProcessor.getSession().reload(true);
+                    commandProcessor.getSession().getFeedback()
+                    .commandSuccess(FXResourceBundle.getBundle().getString​("msg.reload.done")).flush();
                 }
 
             } catch (Exception e) {

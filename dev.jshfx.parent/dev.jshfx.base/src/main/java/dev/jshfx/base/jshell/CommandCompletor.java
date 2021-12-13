@@ -18,14 +18,18 @@ import picocli.CommandLine;
 
 class CommandCompletor extends Completor {
 
+    private Token commandToken;
+    
     CommandCompletor(CodeArea inputArea, Session session, Lexer lexer) {
         super(inputArea, session, lexer);
     }
 
+    public void setCommandToken(Token commandToken) {
+        this.commandToken = commandToken;
+    }
+    
     @Override
     public void getCompletionItems(boolean contains, Predicate<CompletionItem> items) {
-        var commandToken = lexer.getTokenOnCaretPosition().stream()
-                .filter(t -> t.getType().equals(GroupNames.JSHELLCOMMAND)).findFirst().orElse(null);
         String parText = "";
         Token tokenOnCaret = null;
         List<String> arguments = new ArrayList<>();
@@ -38,7 +42,7 @@ class CommandCompletor extends Completor {
             arguments = session.getCommandProcessor().getLexer().tokenize(input, relativeCaretPosition).stream()
                     .filter(t -> !t.getType().equals(GroupNames.COMMANDBREAK)).map(Token::getValue)
                     .collect(Collectors.toCollection(() -> new ArrayList<>()));
-            tokenOnCaret = session.getCommandProcessor().getLexer().getTokenOnCaretPosition().stream()
+            tokenOnCaret = session.getCommandProcessor().getLexer().getTokensOnCaretPosition().stream()
                     .filter(t -> !t.getType().equals(GroupNames.COMMANDBREAK)).findFirst().orElse(null);
 
             if (contains) {

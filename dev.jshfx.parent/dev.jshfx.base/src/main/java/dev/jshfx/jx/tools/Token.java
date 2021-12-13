@@ -60,13 +60,9 @@ public class Token {
     }
 
     public boolean isOnCaretPosition(int caretPosition) {
-        return start <= caretPosition && caretPosition < end;
+        return start <= caretPosition && caretPosition <= end;
     }
     
-    public boolean isNextToCaretPosition(int caretPosition) {
-        return caretPosition == start || caretPosition == end;
-    }
-
     public boolean isDelimiter() {
         return (isOpen(type) || isClose(type)) && oppositeToken != null;
     }
