@@ -8,32 +8,37 @@ import javafx.concurrent.Task;
 
 public class TaskQueuer {
 
-	private TaskQueue defaultTaskQueue = new TaskQueue();
-	private Map<String, TaskQueue> taskQueues = new ConcurrentHashMap<>();
+    private TaskQueue defaultTaskQueue = new TaskQueue();
+    private Map<String, TaskQueue> taskQueues = new ConcurrentHashMap<>();
 
-	public <T> Task<T> add(Task<T> task) {
-		defaultTaskQueue.add(task);
-		return task;
-	}
+    public <T> Task<T> add(Task<T> task) {
+        defaultTaskQueue.add(task);
+        return task;
+    }
 
-	public Task<Void> add(TRunnable task) {
-		Task<Void> t = CTask.create(() -> task.run());
-		defaultTaskQueue.add(t);
-		return t;
-	}
+    public Task<Void> add(TRunnable task) {
+        Task<Void> t = QueueTask.create(() -> task.run());
+        defaultTaskQueue.add(t);
+        return t;
+    }
 
-	public <T> Task<T> add(String queueId, Task<T> task) {
-		taskQueues.computeIfAbsent(queueId, k -> new TaskQueue()).add(task);
-		return task;
-	}
+    public <T> Task<T> add(QueueTask<T> task) {
 
-	public Task<Void> add(String queueId, TRunnable task) {
-		Task<Void> t = CTask.create(() -> task.run());
-		taskQueues.computeIfAbsent(queueId, k -> new TaskQueue()).add(t);
-		return t;
-	}
-	
-	public void clear() {
-	    taskQueues.values().forEach(q -> q.clear());
-	}
+        if (task.queueId() == null) {
+            defaultTaskQueue.add(task);
+        } else {
+            taskQueues.computeIfAbsent(task.queueId(), k -> new TaskQueue()).add(task);
+        }
+        return task;
+    }
+
+    public Task<Void> add(String queueId, TRunnable task) {
+        Task<Void> t = QueueTask.create(() -> task.run());
+        taskQueues.computeIfAbsent(queueId, k -> new TaskQueue()).add(t);
+        return t;
+    }
+
+    public void clear() {
+        taskQueues.values().forEach(q -> q.clear());
+    }
 }

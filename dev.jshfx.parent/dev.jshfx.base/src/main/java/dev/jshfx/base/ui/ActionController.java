@@ -13,7 +13,7 @@ import org.apache.commons.io.FilenameUtils;
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.base.sys.TaskManager;
 import dev.jshfx.j.nio.file.PathUtils;
-import dev.jshfx.jfx.concurrent.CTask;
+import dev.jshfx.jfx.concurrent.QueueTask;
 import dev.jshfx.jfx.scene.control.AlertBuilder;
 import dev.jshfx.jfx.scene.control.ButtonTypes;
 import dev.jshfx.jfx.util.FXResourceBundle;
@@ -203,7 +203,7 @@ public class ActionController {
         var path = FileDialogUtils.saveSourceJavaFile(contentPane.getScene().getWindow(), fileName);
 
         path.ifPresent(savePath -> TaskManager.get().executeSequentially(
-                CTask.create(() -> Files.writeString(savePath, output)).onSucceeded(p -> contentPane.saved(p))));
+                QueueTask.create(() -> Files.writeString(savePath, output)).onSucceeded(p -> contentPane.saved(p))));
     }
 
     public void save(ContentPane contentPane) {
@@ -223,7 +223,7 @@ public class ActionController {
         if (path != null) {
             var savePath = path;
             TaskManager.get()
-                    .executeSequentially(CTask.create(() -> Files.writeString(savePath, output)).onSucceeded(p -> {
+                    .executeSequentially(QueueTask.create(() -> Files.writeString(savePath, output)).onSucceeded(p -> {
                         pane.saved(p);
                         onSucceded.run();
                     }).onFailed(p -> onFailed.run()));

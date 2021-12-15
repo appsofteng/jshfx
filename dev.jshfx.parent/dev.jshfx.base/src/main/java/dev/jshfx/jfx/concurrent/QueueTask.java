@@ -3,13 +3,25 @@ package dev.jshfx.jfx.concurrent;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
+import dev.jshfx.j.TRunnable;
 import javafx.concurrent.Task;
 
-public abstract class CTask<V> extends Task<V> {
+public abstract class QueueTask<V> extends Task<V> {
 
-
-    public static CTask<Void> create(TRunnable task) {
-        CTask<Void> t = new CTask<>() {
+    private String queueId;    
+    
+    public String queueId() {
+        return queueId;
+    }
+    
+    public QueueTask<V> queueId(String value) {
+        queueId = value;
+        
+        return this;
+    }
+    
+    public static QueueTask<Void> create(TRunnable task) {
+        QueueTask<Void> t = new QueueTask<>() {
 
             @Override
             protected Void call() throws Exception {
@@ -25,8 +37,8 @@ public abstract class CTask<V> extends Task<V> {
         return t;
     }
 
-    public static <T> CTask<T> create(Callable<T> task) {
-        CTask<T> t = new CTask<>() {
+    public static <T> QueueTask<T> create(Callable<T> task) {
+        QueueTask<T> t = new QueueTask<>() {
 
             @Override
             protected T call() throws Exception {
@@ -41,7 +53,7 @@ public abstract class CTask<V> extends Task<V> {
         return t;
     }
 
-    public CTask<V> onFinished(Consumer<CTask<V>> value) {
+    public QueueTask<V> onFinished(Consumer<QueueTask<V>> value) {
 
         setOnSucceeded(e -> value.accept(this));
         setOnCancelled(e -> value.accept(this));
@@ -50,19 +62,15 @@ public abstract class CTask<V> extends Task<V> {
         return this;
     }
 
-    public CTask<V> onSucceeded(Consumer<V> value) {
+    public QueueTask<V> onSucceeded(Consumer<V> value) {
 
         setOnSucceeded(e -> value.accept(getValue()));
         return this;
     }
     
-    public CTask<V> onFailed(Consumer<V> value) {
+    public QueueTask<V> onFailed(Consumer<V> value) {
 
         setOnFailed(e -> value.accept(getValue()));
         return this;
-    }
-
-    public static interface TRunnable {
-        void run() throws Exception;
     }
 }

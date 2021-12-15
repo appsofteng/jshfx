@@ -23,7 +23,7 @@ import dev.jshfx.fxmisc.richtext.CommentWrapper;
 import dev.jshfx.fxmisc.richtext.CompletionPopup;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import dev.jshfx.j.util.json.JsonUtils;
-import dev.jshfx.jfx.concurrent.CTask;
+import dev.jshfx.jfx.concurrent.QueueTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
 import dev.jshfx.jx.tools.GroupNames;
 import dev.jshfx.jx.tools.Lexer;
@@ -161,9 +161,10 @@ public class ShellPane extends AreaPane {
             CompletionPopup.get().setCompletionItem(completor::getCompletionItem);
             CompletionPopup.get().clear();
             CompletionPopup.get().show(getArea(), bounds.getMaxX(), bounds.getMaxY());
-            CTask<Void> task = CTask
-                    .create(() -> completor.getCompletionItems(contains, i -> CompletionPopup.get().add(i)));
-            taskQueuer.add(Session.PRIVILEDGED_TASK_QUEUE, task);
+            QueueTask<Void> task = QueueTask
+                    .create(() -> completor.getCompletionItems(contains, i -> CompletionPopup.get().add(i)))
+                    .queueId(Session.PRIVILEDGED_TASK_QUEUE);
+            taskQueuer.add(task);
         }
     }
 
@@ -313,9 +314,9 @@ public class ShellPane extends AreaPane {
 
     @Override
     public void init() {
-        
+
         session.init();
-        
+
         var resolveCommands = lexer.getTokens().stream().filter(
                 t -> t.getType().equals(GroupNames.JSHELLCOMMAND) && t.getValue().startsWith(ResolveCommand.NAME))
                 .map(Token::getValue).collect(Collectors.joining("\n"));

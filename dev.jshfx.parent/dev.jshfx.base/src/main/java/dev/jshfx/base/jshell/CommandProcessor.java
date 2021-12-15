@@ -32,11 +32,12 @@ import dev.jshfx.base.jshell.commands.StopCommand;
 import dev.jshfx.base.jshell.commands.TypeCommand;
 import dev.jshfx.base.jshell.commands.VarCommand;
 import dev.jshfx.base.ui.ConsoleModel;
+import dev.jshfx.j.TRunnable;
+import dev.jshfx.jfx.concurrent.QueueTask;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.jx.tools.GroupNames;
 import dev.jshfx.jx.tools.Lexer;
 import dev.jshfx.jx.tools.Token;
-import javafx.concurrent.Task;
 import jdk.jshell.Snippet;
 import picocli.CommandLine;
 
@@ -156,7 +157,7 @@ public class CommandProcessor extends Processor {
 	}
 
 	@Override
-	void process(String input) {
+	QueueTask<Void> getTask(String input) {
 
 	    List<String> args = lexer.tokenize(input).stream()
 	            .filter(t -> !t.getType().equals(GroupNames.COMMANDBREAK))
@@ -170,16 +171,13 @@ public class CommandProcessor extends Processor {
 
 		String[] arguments = args.toArray(new String[0]);
 
-		Task<Void> task = null;
+		 QueueTask<Void> task = QueueTask.create((TRunnable)() -> getCommandLine().execute(arguments));
 		
-		if (PRIVILEGED_COMMANDS.stream().anyMatch(c -> input.startsWith(c))) {
-			task = getSession().getTaskQueuer().add(Session.PRIVILEDGED_TASK_QUEUE, () -> getCommandLine().execute(arguments));
-		} else {
-			task = getSession().getTaskQueuer().add(() -> getCommandLine().execute(arguments));			
-		}
+		if (PRIVILEGED_COMMANDS.stream().anyMatch(c -> input.startsWith(c))) {		    
+			task.queueId(Session.PRIVILEDGED_TASK_QUEUE);
+		} 
 		
-		task.setOnSucceeded(e -> getSession().getTimer().stop());
-		task.setOnFailed(e -> getSession().getTimer().stop());
+		return task;
 	}
 
 	private static class CachingCommandLine extends CommandLine {

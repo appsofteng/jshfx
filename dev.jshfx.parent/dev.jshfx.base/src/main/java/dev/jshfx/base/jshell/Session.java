@@ -20,12 +20,12 @@ import dev.jshfx.base.ui.ConsoleModel;
 import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jdk.jshell.execution.ObjectExecutionControlProvider;
+import dev.jshfx.jfx.concurrent.QueueTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.jx.tools.GroupNames;
 import dev.jshfx.jx.tools.JavaSourceResolver;
 import dev.jshfx.jx.tools.Lexer;
-import dev.jshfx.jx.tools.Token;
 import jdk.jshell.JShell;
 import jdk.jshell.JShell.Subscription;
 import jdk.jshell.Snippet;
@@ -303,7 +303,7 @@ public class Session {
 
     private void restart() {
         initJShell();
-        loadStartupFiles();       
+        loadStartupFiles();
     }
 
     private void initJShell() {
@@ -312,7 +312,7 @@ public class Session {
 
         buildJShell();
         setListener();
-        
+
         if (settings.isLoadStartupFiles()) {
             loadPredefinedStartupFiles();
         }
@@ -435,23 +435,30 @@ public class Session {
 
         var tokens = lexer.tokenize(input);
         StringBuilder snippets = new StringBuilder();
+        List<QueueTask<Void>> tasks = new ArrayList<>();
 
-        for (Token token : tokens) {
-            if (token.getType().equals(GroupNames.JSHELLCOMMAND)) {
-                if (snippets.length() > 0) {
-                    snippetProcessor.process(snippets.toString());
-                    snippets.delete(0, snippets.length());
-                }
-                commandProcessor.process(token.getValue());
-            } else {
-                if (!token.getType().equals(GroupNames.COMMENT) && !token.getType().equals(GroupNames.NEWLINE)) {
-                    snippets.append(token.getValue());
-                }
-            }
-        }
+        tokens.stream().filter(t -> !t.getType().equals(GroupNames.COMMENT) && !t.getType().equals(GroupNames.NEWLINE))
+                .forEach(token -> {
+                    if (token.getType().equals(GroupNames.JSHELLCOMMAND)) {
+                        if (snippets.length() > 0) {
+                            tasks.add(snippetProcessor.getTask(snippets.toString()));
+                            snippets.setLength(0);
+                        }
+                        tasks.add(commandProcessor.getTask(token.getValue()));
+                    } else {
+                        snippets.append(token.getValue());
+                    }
+                });
 
         if (snippets.length() > 0) {
-            snippetProcessor.process(snippets.toString());
+            tasks.add(snippetProcessor.getTask(snippets.toString()));
         }
+
+        if (!tasks.isEmpty()) {
+            var task = tasks.get(tasks.size() - 1);
+            task.setOnSucceeded(e -> timer.stop());
+            task.setOnFailed(e -> timer.stop());
+            tasks.forEach(t -> taskQueuer.add(t));
+        }        
     }
 }
