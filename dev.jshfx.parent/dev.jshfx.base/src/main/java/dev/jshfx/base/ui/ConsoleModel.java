@@ -155,10 +155,15 @@ public class ConsoleModel {
             int oldLength = textBuilder.length();
 
             if (oldLength > LIMIT) {
-                textBuilder.delete(0, textBuilder.length() - LIMIT);
-                int index = textBuilder.indexOf("\n");
+                int index = textBuilder.lastIndexOf("\n", LIMIT);
                 if (index > -1) {
                     textBuilder.delete(0, index + 1);
+                } else {
+                    textBuilder.delete(0, textBuilder.length() - LIMIT);
+                    index = textBuilder.indexOf("\n");
+                    if (index > -1) {
+                        textBuilder.delete(0, index + 1);
+                    }
                 }
 
                 int newLength = textBuilder.length();
