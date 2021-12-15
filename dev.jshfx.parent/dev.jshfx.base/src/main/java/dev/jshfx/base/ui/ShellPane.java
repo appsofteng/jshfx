@@ -313,6 +313,9 @@ public class ShellPane extends AreaPane {
 
     @Override
     public void init() {
+        
+        session.init();
+        
         var resolveCommands = lexer.getTokens().stream().filter(
                 t -> t.getType().equals(GroupNames.JSHELLCOMMAND) && t.getValue().startsWith(ResolveCommand.NAME))
                 .map(Token::getValue).collect(Collectors.joining("\n"));

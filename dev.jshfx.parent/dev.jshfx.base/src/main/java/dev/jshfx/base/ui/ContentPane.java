@@ -2,7 +2,6 @@ package dev.jshfx.base.ui;
 
 import java.nio.file.Path;
 
-import dev.jshfx.fxmisc.richtext.TextStyleSpans;
 import dev.jshfx.jfx.file.FXPath;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;

@@ -1,6 +1,10 @@
 package dev.jshfx.base.jshell;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,6 +112,13 @@ public class SnippetProcessor extends Processor {
         session.getFeedback().flush();
 
         return allSnippetEvents;
+    }
+    
+    public void process(InputStream in) throws IOException {
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+            reader.lines().forEach(s -> session.getJshell().eval(s));
+        }
     }
 
     private void setFeedback(SnippetEvent event, boolean quiet) {

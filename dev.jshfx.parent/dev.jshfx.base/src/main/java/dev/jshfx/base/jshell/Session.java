@@ -75,7 +75,11 @@ public class Session {
         setSources();
         feedback = new Feedback(consoleModel, settings);
         idGenerator = new IdGenerator();
-        restart();
+    }
+
+    public void init() {
+        taskQueuer.add(() -> initJShell());
+        loadStartupFiles();
     }
 
     public void setOnExitCommand(Runnable value) {
@@ -298,15 +302,25 @@ public class Session {
     }
 
     private void restart() {
+        initJShell();
+        loadStartupFiles();       
+    }
+
+    private void initJShell() {
         snippetsById.clear();
         snippetsByName.clear();
 
         buildJShell();
         setListener();
-
+        
         if (settings.isLoadStartupFiles()) {
             loadPredefinedStartupFiles();
-            loadStartupFiles();
+        }
+    }
+
+    private void loadStartupFiles() {
+        if (settings.isLoadStartupFiles()) {
+            loadCustomStartupFiles();
         }
 
         startSnippetMaxIndex = idGenerator.getMaxId();
@@ -376,8 +390,7 @@ public class Session {
     public void loadPredefinedStartupFile(String file) {
         try {
 
-            JShellUtils.loadSnippets(jshell,
-                    getClass().getResourceAsStream(Settings.PREDEFINED_STARTUP_FILES.get(file)));
+            snippetProcessor.process(getClass().getResourceAsStream(Settings.PREDEFINED_STARTUP_FILES.get(file)));
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -388,8 +401,7 @@ public class Session {
         try {
 
             for (String file : settings.getPredefinedStartupFiles()) {
-                JShellUtils.loadSnippets(jshell,
-                        getClass().getResourceAsStream(Settings.PREDEFINED_STARTUP_FILES.get(file)));
+                snippetProcessor.process(getClass().getResourceAsStream(Settings.PREDEFINED_STARTUP_FILES.get(file)));
             }
 
         } catch (IOException e) {
@@ -397,7 +409,7 @@ public class Session {
         }
     }
 
-    private void loadStartupFiles() {
+    private void loadCustomStartupFiles() {
 
         for (String file : settings.getStartupFiles()) {
             Path path = Path.of(file);
@@ -405,6 +417,7 @@ public class Session {
                 try {
                     String spippets = Files.readString(path);
                     process(spippets);
+
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -413,11 +426,11 @@ public class Session {
     }
 
     public void process(String input) {
-        timer.start();
         if (input.isBlank()) {
             return;
         }
 
+        timer.start();
         history.add(input.strip());
 
         var tokens = lexer.tokenize(input);
