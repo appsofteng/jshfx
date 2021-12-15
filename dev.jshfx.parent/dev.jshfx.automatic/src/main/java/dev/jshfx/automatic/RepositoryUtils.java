@@ -2,6 +2,7 @@ package dev.jshfx.automatic;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -66,14 +67,14 @@ public final class RepositoryUtils {
         return new Coordinates(group, artifact, version);
     }
 
-    public void resolve(String coords, Set<String> classPaths, Set<String> sourcePaths) throws Exception {
+    public void resolve(String coords, Set<String> classPaths, Set<String> sourcePaths, Collection<Comparable<?>> allCoords) throws Exception {
 
         Artifact artifact = new DefaultArtifact(coords);
 
-        resolve(artifact, classPaths, sourcePaths);
+        resolve(artifact, classPaths, sourcePaths, allCoords);
     }
 
-    public void resolvePom(String pom, Set<String> classPaths, Set<String> sourcePaths) throws Exception {
+    public void resolvePom(String pom, Set<String> classPaths, Set<String> sourcePaths, Collection<Comparable<?>> allCoords) throws Exception {
 
         File pomFile = new File(pom);
         ModelBuildingRequest modelBuildingRequest = new DefaultModelBuildingRequest().setProcessPlugins(false)
@@ -86,11 +87,11 @@ public final class RepositoryUtils {
         for (org.apache.maven.model.Dependency dependency : model.getDependencies()) {
             Artifact artifact = new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(),
                     dependency.getType(), dependency.getVersion());
-            resolve(artifact, classPaths, sourcePaths);
+            resolve(artifact, classPaths, sourcePaths, allCoords);
         }
     }
 
-    private void resolve(Artifact artifact, Set<String> classePaths, Set<String> sourcePaths)
+    private void resolve(Artifact artifact, Set<String> classePaths, Set<String> sourcePaths, Collection<Comparable<?>> coords)
             throws DependencyResolutionException, ArtifactResolutionException {
         DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
 
@@ -105,6 +106,9 @@ public final class RepositoryUtils {
 
         for (var ar : artifactResults) {
             var classArtifact = ar.getArtifact();
+            ComparableVersion version = new ComparableVersion(classArtifact.getBaseVersion());
+
+            coords.add(new Coordinates(classArtifact.getGroupId(), classArtifact.getArtifactId(), version));
             classePaths.add(classArtifact.getFile().toString());
             Artifact sourceArtifact = new DefaultArtifact(classArtifact.getGroupId(), classArtifact.getArtifactId(),
                     "sources", classArtifact.getExtension(), classArtifact.getVersion());
@@ -178,24 +182,25 @@ public final class RepositoryUtils {
 
         return List.of(central, sonatype);
     }
-    
-    private record Coordinates(String group, String artifact, ComparableVersion version) implements Comparable<Coordinates> {
+
+    private record Coordinates(String group, String artifact, ComparableVersion version)
+            implements Comparable<Coordinates> {
 
         @Override
         public int compareTo(Coordinates o) {
             int result = group.compareTo(o.group);
-            
+
             if (result == 0) {
                 result = artifact.compareTo(o.artifact);
-                
+
                 if (result == 0) {
                     result = version.compareTo(o.version);
                 }
             }
-            
+
             return result;
         }
-        
+
         public String toString() {
             return String.format("%s:%s:%s", group, artifact, version);
         }

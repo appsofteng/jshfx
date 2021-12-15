@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -71,10 +70,6 @@ public final class FileManager extends Manager {
     private FileSystem jdkSource;
     private List<Path> sourcePaths;
 
-    private List<String> repoCoordinates = List.of();
-
-    private ReentrantLock lock = new ReentrantLock();
-
     private FileManager() {
     }
 
@@ -93,7 +88,6 @@ public final class FileManager extends Manager {
         Files.createDirectories(USER_ENV_DIR);
 
         loadSourceCodes();
-        loadRepoCoordinates();
     }
 
     @Override
@@ -145,15 +139,6 @@ public final class FileManager extends Manager {
                 .forEach(p -> LU.of(() -> Files.delete(p)));
     }
 
-    public List<String> getRepoCoordinates() {
-        lock.lock();
-        try {
-            return repoCoordinates;
-        } finally {
-            lock.unlock();
-        }
-    }
-    
     private void loadSourceCodes() throws IOException {
         URI uri = URI.create("jar:" + JDK_SOURCE_FILE.toUri());
         jdkSource = FileSystems.newFileSystem(uri, Collections.emptyMap());
@@ -168,31 +153,6 @@ public final class FileManager extends Manager {
         }
 
         Files.list(SOURCE_DIR).forEach(p -> sourcePaths.add(p));
-    }
-
-    private void loadRepoCoordinates() {
-
-        TaskManager.get().execute(() -> {
-            var repoDir = RepositoryManager.get().getLocalRepoDir();
-
-            try {
-                var coordinates = Files.walk(repoDir).filter(p -> !Files.isDirectory(p) && !p.equals(repoDir) && p.toString().endsWith(".jar"))
-                        .map(p -> RepositoryManager.get().toRepoCoordinates(repoDir, p.getParent()))
-                        .sorted()
-                        .map(c -> c.toString())
-                        .distinct().toList();
-
-                lock.lock();
-                try {
-                    repoCoordinates = coordinates;
-                } finally {
-                    lock.unlock();
-                }
-
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, e.getMessage(), e);
-            }
-        });
     }
 
     private static String getFXClassPath() {
