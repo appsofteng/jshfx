@@ -100,6 +100,20 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>binary</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<useBaseVersion>true</useBaseVersion>
+							<includeGroupIds>org.openjfx</includeGroupIds>
+							<classifier>${platform}</classifier>
+							<outputDirectory>${project.parent.basedir}/dev.jshfx.distribution/working/lib/fx</outputDirectory>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+					<execution>
 						<id>sources</id>
 						<phase>package</phase>
 						<goals>
