@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>dev.jshfx</groupId>
 	<artifactId>dev.jshfx.parent</artifactId>
@@ -9,8 +7,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8
-		</project.reporting.outputEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<ojfxVersion>17.0.1</ojfxVersion>
 		<picocliVersion>4.6.1</picocliVersion>
 		<mavenVersion>3.8.3</mavenVersion>
@@ -321,8 +318,7 @@
 					<artifactId>maven-jlink-plugin</artifactId>
 					<version>3.1.0</version>
 					<extensions>true</extensions>
-					<configuration>
-					</configuration>
+					<configuration></configuration>
 				</plugin>
 				<plugin>
 					<artifactId>maven-assembly-plugin</artifactId>
