@@ -17,9 +17,9 @@ Unzip the downloaded file and from the extracted directory run
 ### Linux and macOS x64
 Extract the file, e.g. to the /opt directory:
 
-`tar zxvf jshfx-0.0.1-SNAPSHOT-linux-x64.tgz -C /opt` 
+`tar zxvf jshfx-0.0.1-linux-x64.tgz -C /opt` 
 
-`tar zxvf jshfx-0.0.1-SNAPSHOT-mac-x64.tgz -C /opt` 
+`tar zxvf jshfx-0.0.1-mac-x64.tgz -C /opt` 
 
 then from the extracted directory run
 
