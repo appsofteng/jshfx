@@ -1,5 +1,5 @@
 
-.styled-text-area .keyword {
+.styled-text-area .keyword, .styled-text-area .permits, .styled-text-area .record, .styled-text-area .var, .styled-text-area .sealed {
     -fx-fill: cyan;
     -fx-font-weight: bolder;
 }
