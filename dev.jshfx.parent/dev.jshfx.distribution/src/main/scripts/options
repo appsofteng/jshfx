@@ -1,4 +1,7 @@
 #-Djavafx.animation.fullspeed=true
+-XX:+NeverActAsServerClassMachine
+-XX:MinHeapFreeRatio=0
+-XX:MaxHeapFreeRatio=0
 -Djava.util.logging.config.file=conf/logging.properties
 -Djava.util.concurrent.ForkJoinPool.common.threadFactory=dev.jfxde.logic.PrivilegedForkJoinWorkerThreadFactory
 --add-exports javafx.base/com.sun.javafx.event=org.controlsfx.controls
