@@ -38,6 +38,10 @@ public final class RepositoryManager extends Manager {
         loadRepoCoordinates();
     }
 
+    public Comparable<?> toVersion(String ver) {
+        return repositoryUtils.toVersion(ver);
+    }
+    
     public List<String> getRepoCoordinates() {
         lock.lock();
         try {

@@ -58,6 +58,11 @@ public final class RepositoryUtils {
         return session.getLocalRepository().getBasedir().toPath();
     }
 
+    public Comparable<?> toVersion(String ver) {
+        ComparableVersion version = new ComparableVersion(ver);
+        return version;
+    }
+    
     public Comparable<?> toRepoCoordinates(Path repoDir, Path path) {
         ComparableVersion version = new ComparableVersion(path.getFileName().toString());
         Path parent = path.getParent();

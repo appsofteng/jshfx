@@ -30,10 +30,11 @@ public final class FileManager extends Manager {
 
     public static final String JAVA_RELEASE = getJavaRelease();
 
-    private static final String SYS_HOME_DIR = System.getProperty("user.home") + "/." + Constants.SYS_NAME + "/"
-            + Constants.SYS_VERSION;
-    private static final Path USER_CONF_DIR = Path.of(SYS_HOME_DIR + "/conf");
-    private static final Path LOG_DIR = Path.of(SYS_HOME_DIR + "/log");
+    static final Path SYS_HOME_DIR = Path.of(System.getProperty("user.home"), "/." + Constants.SYS_NAME);
+    static final Path SYS_VERSION_DIR = SYS_HOME_DIR.resolve(Constants.SYS_VERSION);
+    static final String CONF = "conf";
+    static final Path USER_CONF_DIR = SYS_VERSION_DIR.resolve(CONF);
+    private static final Path LOG_DIR = SYS_VERSION_DIR.resolve("log");
 
     public static final Path USER_ENV_DIR = Path.of(USER_CONF_DIR + "/env");
 
@@ -80,6 +81,11 @@ public final class FileManager extends Manager {
 
     @Override
     public void init() throws IOException {
+        
+        if (Files.notExists(SYS_VERSION_DIR)) {
+            new Upgrader().upgrade();
+        }
+        
         in = System.in;
         err = System.err;
         out = System.out;
