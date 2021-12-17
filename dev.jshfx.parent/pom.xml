@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>dev.jshfx</groupId>
 	<artifactId>dev.jshfx.parent</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -354,6 +354,18 @@
 		</profile>
 		<profile>
 			<id>doc</id>
+		</profile>
+		<profile>
+			<id>ver</id>
+			<modules>
+				<module>dev.jshfx.base</module>
+				<module>dev.jshfx.fonts</module>
+				<module>dev.jshfx.util</module>
+				<module>dev.jshfx.automatic</module>
+				<module>dev.jshfx.demos</module>
+				<module>dev.jshfx.image</module>
+				<module>dev.jshfx.distribution</module>
+			</modules>
 		</profile>
 		<profile>
 			<id>linux</id>
