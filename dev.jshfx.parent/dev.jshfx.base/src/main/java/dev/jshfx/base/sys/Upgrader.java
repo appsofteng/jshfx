@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 
@@ -11,7 +12,7 @@ class Upgrader {
     
     void upgrade() throws IOException {
         @SuppressWarnings({ "unchecked", "rawtypes" })
-        var previousVersion = Files.list(FileManager.SYS_HOME_DIR)
+        Optional<Path> previousVersion = Files.list(FileManager.SYS_HOME_DIR)
                 .max(Comparator.<Path, Comparable>comparing(p -> RepositoryManager.get().toVersion(p.getFileName().toString())));
         
         if (previousVersion.isPresent()) {
