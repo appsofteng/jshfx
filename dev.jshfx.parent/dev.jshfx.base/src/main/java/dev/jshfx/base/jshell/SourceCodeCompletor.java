@@ -149,16 +149,21 @@ class SourceCodeCompletor extends Completor {
             int start = inputArea.getAbsolutePosition(startPar, 0);
             int end = inputArea.getAbsolutePosition(endPar, inputArea.getParagraphLength(endPar));
 
-            List<String> importLines = importPars.stream().map(i -> inputArea.getParagraph(i).getText())
-                    .collect(Collectors.toCollection(() -> new ArrayList<>()));
-
-            int lastIndex = importLines.size() - 1;
-            while (importLines.get(lastIndex--).isBlank()) {}
+            List<String> importLines = new ArrayList<>();
+            int index = 0;
             
-            int index = IntStream.range(0, importLines.size()).filter(i -> importLines.get(i).startsWith("import"))
-                    .filter(i -> importLines.get(i).compareToIgnoreCase(newImport) > 0).findFirst()
-                    .orElse(lastIndex);
-
+            for (int i = startPar; i <= endPar; i++) {
+                var text = inputArea.getParagraph(i).getText();
+                importLines.add(text);
+                if (text.startsWith("import")) {
+                    if (text.compareToIgnoreCase(newImport) > 0) {
+                        index = i;
+                    } else {
+                        index = i + 1;
+                    }
+                }
+            }
+           
             importLines.add(index, newImport);
 
             var newImports = importLines.stream().collect(Collectors.joining("\n"));
