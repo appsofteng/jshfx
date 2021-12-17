@@ -1,4 +1,4 @@
-package dev.jshfx.util.chart;
+package dev.jshfx.access.chart;
 
 import java.util.List;
 import java.util.Map;

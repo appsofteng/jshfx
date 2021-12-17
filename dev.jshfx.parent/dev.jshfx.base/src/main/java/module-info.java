@@ -30,7 +30,7 @@ module dev.jshfx.base {
     
     requires info.picocli;
     requires dev.jshfx.automatic;
-    requires dev.jshfx.util;
+    requires dev.jshfx.access;
     requires org.apache.commons.lang3;
     requires org.apache.commons.io;
 	
@@ -40,5 +40,5 @@ module dev.jshfx.base {
     opens dev.jshfx.base.jshell to org.eclipse.yasson, javafx.base;
     opens dev.jshfx.base.jshell.commands to info.picocli;
     
-    provides dev.jshfx.util.sys.JShService with dev.jshfx.base.sys.JShServiceImpl;
+    provides dev.jshfx.access.sys.JShService with dev.jshfx.base.sys.JShServiceImpl;
 }

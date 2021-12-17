@@ -42,7 +42,7 @@ public final class FileManager extends Manager {
     private static final String START_DIR = System.getProperty("user.dir");
     public static final Path DEFAULT_PREFS_FILE = Path.of(START_DIR, "conf/preferences.properties");
     private static final Path JDK_SOURCE_FILE = Path.of(START_DIR, "src/java-src.zip");
-    public static final String UTIL_CLASSPATH = START_DIR + "/modules/dev.jshfx.util.jar";
+    public static final String UTIL_CLASSPATH = START_DIR + "/modules/dev.jshfx.access.jar";
     private static final Path FX_DIR = Path.of(START_DIR, "lib", "fx");
     private static final String FX_MODULES = ModuleUtils.getModuleNames(FX_DIR);
     private static final String FX_CLASSPATH = getFXClassPath();

@@ -1,4 +1,4 @@
-package dev.jshfx.util.chart;
+package dev.jshfx.access.chart;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;

@@ -1,9 +1,9 @@
-package dev.jshfx.util.sys;
+package dev.jshfx.access.sys;
 
 import java.nio.file.Path;
 import java.util.List;
 
-import dev.jshfx.util.jsh.WindowOptions;
+import dev.jshfx.access.jsh.WindowOptions;
 import javafx.scene.Node;
 
 public interface JShService {

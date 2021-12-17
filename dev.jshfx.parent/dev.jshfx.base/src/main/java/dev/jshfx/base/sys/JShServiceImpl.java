@@ -5,8 +5,8 @@ import java.util.List;
 
 import dev.jshfx.base.ui.RootPane;
 import dev.jshfx.base.ui.WindowUtils;
-import dev.jshfx.util.jsh.WindowOptions;
-import dev.jshfx.util.sys.JShService;
+import dev.jshfx.access.jsh.WindowOptions;
+import dev.jshfx.access.sys.JShService;
 import javafx.application.Platform;
 import javafx.scene.Node;
 

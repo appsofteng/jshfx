@@ -21,7 +21,7 @@
 		</dependency>
 		<dependency>
 			<groupId>dev.jshfx</groupId>
-			<artifactId>dev.jshfx.util</artifactId>
+			<artifactId>dev.jshfx.access</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>dev.jshfx</groupId>

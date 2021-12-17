@@ -1,4 +1,4 @@
-package dev.jshfx.util.jsh;
+package dev.jshfx.access.jsh;
 
 public final class $ extends JSh {
 

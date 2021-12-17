@@ -12,7 +12,7 @@ import dev.jshfx.base.MainApp;
 import dev.jshfx.base.sys.ResourceManager;
 import dev.jshfx.jfx.scene.control.AutoCompleteArea;
 import dev.jshfx.jfx.util.FXResourceBundle;
-import dev.jshfx.util.jsh.WindowOptions;
+import dev.jshfx.access.jsh.WindowOptions;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.geometry.Pos;

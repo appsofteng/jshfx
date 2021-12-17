@@ -71,49 +71,10 @@
 				<include>dev.jshfx:dev.jshfx.base</include>
 				<include>dev.jshfx:dev.jshfx.fonts</include>
 				<include>dev.jshfx:dev.jshfx.automatic</include>
-				<include>dev.jshfx:dev.jshfx.util</include>
+				<include>dev.jshfx:dev.jshfx.access</include>
 			</includes>
 		</dependencySet>
 	</dependencySets>
-
-	<!-- <moduleSets> -->
-	<!-- <moduleSet> -->
-	<!-- <useAllReactorProjects>true</useAllReactorProjects> -->
-	<!-- <includes> -->
-	<!-- <include>dev.jshfx:dev.jshfx.base</include> -->
-	<!-- <include>dev.jshfx:dev.jshfx.fonts</include> -->
-	<!-- </includes> -->
-	<!-- <binaries> -->
-	<!-- <outputDirectory>modules/mp</outputDirectory> -->
-	<!-- <unpack>false</unpack> -->
-	<!-- <dependencySets> -->
-	<!-- <dependencySet> -->
-	<!-- <excludes> -->
-	<!-- <exclude>*:*:*</exclude> -->
-	<!-- </excludes> -->
-	<!-- </dependencySet> -->
-	<!-- </dependencySets> -->
-	<!-- </binaries> -->
-	<!-- </moduleSet> -->
-	<!-- <moduleSet> -->
-	<!-- <useAllReactorProjects>true</useAllReactorProjects> -->
-	<!-- <includes> -->
-	<!-- <include>dev.jshfx:dev.jshfx.automatic</include> -->
-	<!-- <include>dev.jshfx:dev.jshfx.util</include> -->
-	<!-- </includes> -->
-	<!-- <binaries> -->
-	<!-- <outputDirectory>modules/cp</outputDirectory> -->
-	<!-- <unpack>false</unpack> -->
-	<!-- <dependencySets> -->
-	<!-- <dependencySet> -->
-	<!-- <excludes> -->
-	<!-- <exclude>*:*:*</exclude> -->
-	<!-- </excludes> -->
-	<!-- </dependencySet> -->
-	<!-- </dependencySets> -->
-	<!-- </binaries> -->
-	<!-- </moduleSet> -->
-	<!-- </moduleSets> -->
 
 	<fileSets>
 		<fileSet>

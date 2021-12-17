@@ -1,11 +1,11 @@
-package dev.jshfx.util.jsh;
+package dev.jshfx.access.jsh;
 
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import dev.jshfx.util.sys.JShService;
+import dev.jshfx.access.sys.JShService;
 import javafx.scene.Node;
 
 public sealed class JSh permits $ {

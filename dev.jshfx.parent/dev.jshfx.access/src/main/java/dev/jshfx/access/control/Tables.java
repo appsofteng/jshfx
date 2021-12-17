@@ -1,4 +1,4 @@
-package dev.jshfx.util.control;
+package dev.jshfx.access.control;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -10,5 +10,5 @@ import java.util.function.*;
 import java.util.prefs.*;
 import java.util.regex.*;
 import java.util.stream.*;
-import dev.jshfx.util.jsh.$;
-import dev.jshfx.util.jsh.JSh;
+import dev.jshfx.access.jsh.$;
+import dev.jshfx.access.jsh.JSh;

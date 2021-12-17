@@ -36,7 +36,7 @@
 			</dependency>
 			<dependency>
 				<groupId>dev.jshfx</groupId>
-				<artifactId>dev.jshfx.util</artifactId>
+				<artifactId>dev.jshfx.access</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -347,7 +347,7 @@
 			<modules>
 				<module>dev.jshfx.base</module>
 				<module>dev.jshfx.fonts</module>
-				<module>dev.jshfx.util</module>
+				<module>dev.jshfx.access</module>
 				<module>dev.jshfx.automatic</module>
 				<module>dev.jshfx.demos</module>
 			</modules>
@@ -360,7 +360,7 @@
 			<modules>
 				<module>dev.jshfx.base</module>
 				<module>dev.jshfx.fonts</module>
-				<module>dev.jshfx.util</module>
+				<module>dev.jshfx.access</module>
 				<module>dev.jshfx.automatic</module>
 				<module>dev.jshfx.demos</module>
 				<module>dev.jshfx.image</module>
@@ -372,7 +372,7 @@
 			<modules>
 				<module>dev.jshfx.base</module>
 				<module>dev.jshfx.fonts</module>
-				<module>dev.jshfx.util</module>
+				<module>dev.jshfx.access</module>
 				<module>dev.jshfx.automatic</module>
 				<module>dev.jshfx.image</module>
 				<module>dev.jshfx.distribution</module>
@@ -391,7 +391,7 @@
 			<modules>
 				<module>dev.jshfx.base</module>
 				<module>dev.jshfx.fonts</module>
-				<module>dev.jshfx.util</module>
+				<module>dev.jshfx.access</module>
 				<module>dev.jshfx.automatic</module>
 				<module>dev.jshfx.image</module>
 				<module>dev.jshfx.distribution</module>
@@ -410,7 +410,7 @@
 			<modules>
 				<module>dev.jshfx.base</module>
 				<module>dev.jshfx.fonts</module>
-				<module>dev.jshfx.util</module>
+				<module>dev.jshfx.access</module>
 				<module>dev.jshfx.automatic</module>
 				<module>dev.jshfx.image</module>
 				<module>dev.jshfx.distribution</module>
