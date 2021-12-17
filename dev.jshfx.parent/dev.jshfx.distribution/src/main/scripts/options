@@ -9,6 +9,6 @@
 --add-exports javafx.graphics/com.sun.javafx.scene=org.controlsfx.controls
 --add-exports javafx.graphics/com.sun.javafx.scene.traversal=org.controlsfx.controls
 --add-opens javafx.graphics/javafx.scene=org.controlsfx.controls
--p lib/mp${pathSeparator}lib/fx${pathSeparator}modules
+-p lib/mp${pathSeparator}lib/fx${pathSeparator}modules/int${pathSeparator}modules/ext
 -cp lib/cp/*
 -m dev.jshfx.base

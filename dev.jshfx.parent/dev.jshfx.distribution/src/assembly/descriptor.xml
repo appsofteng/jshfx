@@ -62,7 +62,7 @@
 			</includes>
 		</dependencySet>
 		<dependencySet>
-			<outputDirectory>modules</outputDirectory>
+			<outputDirectory>modules/int</outputDirectory>
 			<outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
 			<useProjectArtifact>false</useProjectArtifact>
 			<useTransitiveDependencies>false</useTransitiveDependencies>
@@ -71,6 +71,15 @@
 				<include>dev.jshfx:dev.jshfx.base</include>
 				<include>dev.jshfx:dev.jshfx.fonts</include>
 				<include>dev.jshfx:dev.jshfx.automatic</include>
+			</includes>
+		</dependencySet>
+		<dependencySet>
+			<outputDirectory>modules/ext</outputDirectory>
+			<outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+			<useProjectArtifact>false</useProjectArtifact>
+			<useTransitiveDependencies>false</useTransitiveDependencies>
+			<fileMode>0755</fileMode>
+			<includes>
 				<include>dev.jshfx:dev.jshfx.access</include>
 				<include>dev.jshfx:dev.jshfx.jfxext</include>
 			</includes>

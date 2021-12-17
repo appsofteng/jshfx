@@ -27,7 +27,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.parent.basedir}/dev.jshfx.distribution/working/modules</outputDirectory>
+							<outputDirectory>${project.parent.basedir}/dev.jshfx.distribution/working/modules/ext</outputDirectory>
 							<resources>
 								<resource>
 									<directory>target</directory>
