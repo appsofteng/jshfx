@@ -72,6 +72,7 @@
 				<include>dev.jshfx:dev.jshfx.fonts</include>
 				<include>dev.jshfx:dev.jshfx.automatic</include>
 				<include>dev.jshfx:dev.jshfx.access</include>
+				<include>dev.jshfx:dev.jshfx.jfxext</include>
 			</includes>
 		</dependencySet>
 	</dependencySets>

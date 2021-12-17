@@ -1,4 +1,4 @@
-import dev.jshfx.access.chart.Charts
+import dev.jshfx.jfxext.scene.chart.Charts
 import javafx.scene.chart.XYChart.Data
 import javafx.scene.chart.XYChart.Series
 import static java.lang.Double.parseDouble

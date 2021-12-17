@@ -1,4 +1,4 @@
-import dev.jshfx.access.chart.Charts
+import dev.jshfx.jfxext.scene.chart.Charts
 import javafx.scene.chart.PieChart.Data
 import static java.lang.Double.parseDouble
 import static java.lang.Integer.parseInt

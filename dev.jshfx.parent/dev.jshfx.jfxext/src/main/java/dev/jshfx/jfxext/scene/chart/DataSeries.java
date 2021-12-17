@@ -1,4 +1,4 @@
-package dev.jshfx.access.chart;
+package dev.jshfx.jfxext.scene.chart;
 
 import java.util.List;
 import java.util.Map;

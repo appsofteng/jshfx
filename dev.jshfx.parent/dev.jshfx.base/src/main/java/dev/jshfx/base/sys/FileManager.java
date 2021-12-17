@@ -42,10 +42,11 @@ public final class FileManager extends Manager {
     private static final String START_DIR = System.getProperty("user.dir");
     public static final Path DEFAULT_PREFS_FILE = Path.of(START_DIR, "conf/preferences.properties");
     private static final Path JDK_SOURCE_FILE = Path.of(START_DIR, "src/java-src.zip");
-    public static final String UTIL_CLASSPATH = START_DIR + "/modules/dev.jshfx.access.jar";
+    public static final Path ACCESS_DIR =  Path.of(START_DIR, "modules");
     private static final Path FX_DIR = Path.of(START_DIR, "lib", "fx");
     private static final String FX_MODULES = ModuleUtils.getModuleNames(FX_DIR);
-    private static final String FX_CLASSPATH = getFXClassPath();
+    private static final String FX_CLASSPATH = getClassPath(FX_DIR);
+    private static final String ACCESS_CLASSPATH = getClassPath(ACCESS_DIR);
     private static final Path SOURCE_DIR = Path.of(START_DIR, "src/lib");
 
     public static final Path HISTORY_FILE = Path.of(USER_CONF_DIR + "/history.json");
@@ -106,7 +107,7 @@ public final class FileManager extends Manager {
     }
 
     public String getClassPath() {
-        return UTIL_CLASSPATH + File.pathSeparator + FX_CLASSPATH;
+        return ACCESS_CLASSPATH + File.pathSeparator + FX_CLASSPATH;
     }
 
     public String getModulePath() {
@@ -155,10 +156,10 @@ public final class FileManager extends Manager {
         Files.list(SOURCE_DIR).forEach(p -> sourcePaths.add(p));
     }
 
-    private static String getFXClassPath() {
+    private static String getClassPath(Path dir) {
         String path = "";
         try {
-            path = Files.list(FX_DIR).map(Path::toString).collect(Collectors.joining(File.pathSeparator));
+            path = Files.list(dir).map(Path::toString).collect(Collectors.joining(File.pathSeparator));
         } catch (IOException e) {
 
             LOGGER.log(Level.WARNING, e.getMessage(), e);

@@ -1,32 +1,22 @@
-package dev.jshfx.access.chart;
+package dev.jshfx.jfxext.scene.chart;
 
-import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import javafx.scene.chart.XYChart.Data;
 import javafx.collections.FXCollections;
-import javafx.collections.transformation.SortedList;
 import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.Axis;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.BubbleChart;
 import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.Chart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.StackedAreaChart;
 import javafx.scene.chart.StackedBarChart;
-import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 
 public final class Charts {

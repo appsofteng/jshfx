@@ -45,6 +45,11 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>dev.jshfx</groupId>
+				<artifactId>dev.jshfx.jfxext</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-base</artifactId>
 				<version>${ojfxVersion}</version>
@@ -346,6 +351,7 @@
 			</activation>
 			<modules>
 				<module>dev.jshfx.base</module>
+				<module>dev.jshfx.jfxext</module>
 				<module>dev.jshfx.fonts</module>
 				<module>dev.jshfx.access</module>
 				<module>dev.jshfx.automatic</module>
@@ -359,6 +365,7 @@
 			<id>ver</id>
 			<modules>
 				<module>dev.jshfx.base</module>
+				<module>dev.jshfx.jfxext</module>
 				<module>dev.jshfx.fonts</module>
 				<module>dev.jshfx.access</module>
 				<module>dev.jshfx.automatic</module>
@@ -371,6 +378,7 @@
 			<id>linux</id>
 			<modules>
 				<module>dev.jshfx.base</module>
+				<module>dev.jshfx.jfxext</module>
 				<module>dev.jshfx.fonts</module>
 				<module>dev.jshfx.access</module>
 				<module>dev.jshfx.automatic</module>
@@ -390,6 +398,7 @@
 			<id>mac</id>
 			<modules>
 				<module>dev.jshfx.base</module>
+				<module>dev.jshfx.jfxext</module>
 				<module>dev.jshfx.fonts</module>
 				<module>dev.jshfx.access</module>
 				<module>dev.jshfx.automatic</module>
@@ -409,6 +418,7 @@
 			<id>win</id>
 			<modules>
 				<module>dev.jshfx.base</module>
+				<module>dev.jshfx.jfxext</module>
 				<module>dev.jshfx.fonts</module>
 				<module>dev.jshfx.access</module>
 				<module>dev.jshfx.automatic</module>
@@ -438,5 +448,4 @@
 			</snapshots>
 		</repository>
 	</repositories>
-
 </project>
