@@ -8,7 +8,7 @@ import static java.util.stream.Collectors.collectingAndThen
 import static java.util.stream.Collectors.toCollection
 import static javafx.collections.FXCollections.observableArrayList
 
-var lines = Files.lines(JSh.getCurDir().resolve("../../resources/ourworldindata/demography/life-expectancy-vs-gdp-per-capita.csv"))
+var lines = Files.lines(JSh.resolve("../../resources/ourworldindata/demography/life-expectancy-vs-gdp-per-capita.csv"))
 
 var series = lines
     .map(line -> line.split(",", -1))

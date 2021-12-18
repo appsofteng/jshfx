@@ -9,7 +9,7 @@ import static java.util.stream.Collectors.collectingAndThen
 import static java.util.stream.Collectors.groupingBy
 import static java.util.stream.Collectors.maxBy
 
-var lines = Files.lines(JSh.getCurDir().resolve("../../resources/ourworldindata/education/users-by-social-media-platform.csv"))
+var lines = Files.lines(JSh.resolve("../../resources/ourworldindata/education/users-by-social-media-platform.csv"))
 
 var map = lines
     .skip(1)
