@@ -72,15 +72,16 @@ public class SaveCommand extends BaseCommand {
 
     private void save(String file, Stream<String> snippets) {
         Platform.runLater(() -> {
-                Path path = commandProcessor.getSession().getCurDir().resolve(Path.of(file));
-                commandProcessor.getSession().getTaskQueuer().add(Session.PRIVILEDGED_TASK_QUEUE, () -> {
-                    try (var f = Files.newBufferedWriter(path)) {
-                        snippets.forEach(s -> LU.of(() -> {
-                            f.append(s.strip());
-                            f.newLine();
-                        }));
-                    }
-                });
+            Path path = PathUtils.resolve(commandProcessor.getSession().getCurDir(),
+                    commandProcessor.getSession().getSettings().getJshPaths(), file);
+            commandProcessor.getSession().getTaskQueuer().add(Session.PRIVILEDGED_TASK_QUEUE, () -> {
+                try (var f = Files.newBufferedWriter(path)) {
+                    snippets.forEach(s -> LU.of(() -> {
+                        f.append(s.strip());
+                        f.newLine();
+                    }));
+                }
+            });
         });
     }
 }

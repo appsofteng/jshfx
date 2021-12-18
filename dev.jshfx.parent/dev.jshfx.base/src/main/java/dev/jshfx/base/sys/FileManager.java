@@ -32,6 +32,8 @@ public final class FileManager extends Manager {
     static final String CONF = "conf";
     static final Path USER_CONF_DIR = SYS_VERSION_DIR.resolve(CONF);
     private static final Path LOG_DIR = SYS_VERSION_DIR.resolve("log");
+    
+    public static final String DEFAULT_JSH_PATH = System.getProperty("user.home") + "/workspace/jsh"; 
 
     public static final Path USER_PREFS_FILE = USER_CONF_DIR.resolve("preferences.properties");
 

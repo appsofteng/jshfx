@@ -1,7 +1,11 @@
 package dev.jshfx.base.jshell.commands;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import dev.jshfx.base.jshell.CommandProcessor;
@@ -23,6 +27,9 @@ public class SetCommand extends BaseCommand {
 
     @Option(names = "start", arity = "0..*", paramLabel = "<file>", descriptionKey = "/set.start", completionCandidates = StartOptions.class)
     private List<String> start;
+    
+    @Option(names = "-jshpath", arity = "0..1", paramLabel = "<path>", descriptionKey = "/set.-jshpath")
+    private String jshpath;
 
     @Option(names = "-retain", descriptionKey = "/set.-retain")
     private boolean retain;
@@ -58,7 +65,7 @@ public class SetCommand extends BaseCommand {
                     .collect(Collectors.joining("\n"));
             names += commandProcessor.getSession().getSettings().getStartupFiles().stream()
                     .collect(Collectors.joining("\n"));
-            commandProcessor.getSession().getFeedback().commandResult(names).flush();;
+            commandProcessor.getSession().getFeedback().commandResult(names).flush();
         } else if (start != null && !start.isEmpty()) {
             start.forEach(f -> {
                 if (Settings.PREDEFINED_STARTUP_FILES.keySet().contains(f)) {
@@ -76,6 +83,15 @@ public class SetCommand extends BaseCommand {
                     commandProcessor.getSession().getSettings().setLoadStartupFiles(true);
                 }
             });
+        }
+        
+        if (jshpath != null) {
+            Collection<String> paths = jshpath.isEmpty() ? Set.of()
+                    : Arrays.asList(jshpath.split(String.valueOf(File.pathSeparatorChar)));
+            commandProcessor.getSession().getSettings().getJshPaths().clear();
+            commandProcessor.getSession().getSettings().getJshPaths().addAll(paths);
+        } else {
+            commandProcessor.getSession().getFeedback().commandResult(commandProcessor.getSession().getSettings().getJshPaths().toString()).flush();
         }
 
         if (retain) {

@@ -14,6 +14,7 @@ public class Settings {
     private boolean loadStartupFiles = true;
     private Set<String> predefinedStartupFiles = new HashSet<>(List.of(DEFAULT, PRINTING));
     private Set<String> startupFiles = new HashSet<>();
+    private Set<String> jshPaths = new HashSet<>();
 
     public String getFeedbackMode() {
         return feedbackMode;
@@ -45,5 +46,13 @@ public class Settings {
 
     public void setStartupFiles(Set<String> startupScripts) {
         this.startupFiles = startupScripts;
+    }
+    
+    public Set<String> getJshPaths() {
+        return jshPaths;
+    }
+    
+    public void setJshPaths(Set<String> jshPaths) {
+        this.jshPaths = jshPaths;
     }
 }

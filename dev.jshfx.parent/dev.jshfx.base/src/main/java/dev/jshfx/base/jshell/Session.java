@@ -208,7 +208,10 @@ public class Session {
     }
 
     public Settings loadSettings() {
-        return JsonUtils.get().fromJson(FileManager.SET_FILE, Settings.class, new Settings());
+        var set = JsonUtils.get().fromJson(FileManager.SET_FILE, Settings.class, new Settings());
+        set.getJshPaths().add(FileManager.DEFAULT_JSH_PATH);
+        
+        return set;
     }
 
     public void saveSettings() {

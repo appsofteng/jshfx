@@ -28,8 +28,7 @@ public class OpenCommand extends BaseCommand {
 		if (Settings.PREDEFINED_STARTUP_FILES.keySet().contains(file)) {
 			commandProcessor.getSession().loadPredefinedStartupFile(file);
 		} else if (file != null) {
-			var path = Path.of(file);
-			path = commandProcessor.getSession().getCurDir().resolve(path);
+			Path path = PathUtils.resolve(commandProcessor.getSession().getCurDir(), commandProcessor.getSession().getSettings().getJshPaths(), file);
 			if (Files.exists(path)) {
 				try {
 					String spippets = Files.readString(path);
