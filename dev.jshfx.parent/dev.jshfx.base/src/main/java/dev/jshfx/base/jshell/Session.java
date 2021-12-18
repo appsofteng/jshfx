@@ -22,6 +22,7 @@ import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jdk.jshell.execution.ObjectExecutionControlProvider;
 import dev.jshfx.jfx.concurrent.QueueTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
+import dev.jshfx.jfx.file.FXPath;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import dev.jshfx.jx.tools.GroupNames;
 import dev.jshfx.jx.tools.JavaSourceResolver;
@@ -46,6 +47,7 @@ public class Session {
     private Timer timer = new Timer();
     private JShell jshell;
     private TaskQueuer taskQueuer;
+    private FXPath fxPath;
     private ConsoleModel consoleModel;
     private List<String> history = new ArrayList<>();
     private IdGenerator idGenerator;
@@ -60,8 +62,8 @@ public class Session {
     private ObjectExecutionControlProvider objectExecutionControlProvider;
     private Lexer lexer = Lexer.get("jsh");
 
-    public Session(ConsoleModel consoleModel, TaskQueuer taskQueuer) {
-
+    public Session(FXPath fxPath, ConsoleModel consoleModel, TaskQueuer taskQueuer) {
+        this.fxPath = fxPath;
         this.consoleModel = consoleModel;
         this.taskQueuer = taskQueuer;
         objectExecutionControlProvider = new ObjectExecutionControlProvider();
@@ -88,6 +90,10 @@ public class Session {
 
     public void setOnResult(BiConsumer<SnippetEvent, Object> resultHandler) {
         this.resultHandler = resultHandler;
+    }
+
+    public Path getCurDir() {
+        return fxPath.getPath().getParent();
     }
 
     public Feedback getFeedback() {
@@ -459,6 +465,6 @@ public class Session {
             task.setOnSucceeded(e -> timer.stop());
             task.setOnFailed(e -> timer.stop());
             tasks.forEach(t -> taskQueuer.add(t));
-        }        
+        }
     }
 }

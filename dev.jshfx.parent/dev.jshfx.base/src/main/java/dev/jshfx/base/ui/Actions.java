@@ -74,6 +74,7 @@ public class Actions {
 
     private Action insertDirPathAction;
     private Action insertFilePathAction;
+    private Action insertRelativeFilePathAction;
     private Action insertSeparatedFilePathAction;
     private Action insertSaveFilePathAction;
 
@@ -242,6 +243,10 @@ public class Actions {
         insertFilePathAction = new Action(e -> rootPane.getEnvPane().handle(insertFilePathAction));
         FXResourceBundle.getBundle().put(insertFilePathAction.textProperty(), "insertFilePaths");
         insertFilePathAction.setAccelerator(KeyCombination.keyCombination("Alt+O"));
+        
+        insertRelativeFilePathAction = new Action(e -> rootPane.getEnvPane().handle(insertRelativeFilePathAction));
+        FXResourceBundle.getBundle().put(insertRelativeFilePathAction.textProperty(), "insertRelativeFilePaths");
+        insertRelativeFilePathAction.setAccelerator(KeyCombination.keyCombination("Shift+Alt+O"));
 
         insertSeparatedFilePathAction = new Action(e -> rootPane.getEnvPane().handle(insertSeparatedFilePathAction));
         FXResourceBundle.getBundle().put(insertSeparatedFilePathAction.textProperty(), "insertSeparatedFilePaths");
@@ -338,6 +343,10 @@ public class Actions {
 
     public Action getInsertFilePathAction() {
         return insertFilePathAction;
+    }
+    
+    public Action getInsertRelativeFilePathAction() {
+        return insertRelativeFilePathAction;
     }
 
     public Action getInsertSeparatedFilePathAction() {
@@ -459,7 +468,7 @@ public class Actions {
         var actions = List.of(copyAction, cutAction, pasteAction, selectAllAction, clearAction,
                 ActionUtils.ACTION_SEPARATOR, undoAction, redoAction, ActionUtils.ACTION_SEPARATOR, evalAction,
                 evalLineAction, submitAction, submitLineAction, ActionUtils.ACTION_SEPARATOR, historyUpAction,
-                historyDownAction, ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction,
+                historyDownAction, ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction, insertRelativeFilePathAction,
                 insertSeparatedFilePathAction, insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR,
                 codeCompletionAction, codeCompletionContainsAction, historySearchAction, findAction, ActionUtils.ACTION_SEPARATOR,
                 toggleCommentAction);
@@ -477,7 +486,7 @@ public class Actions {
     public void addShellKeyHandlers(Node node) {
         addKeyHandlers(node,
                 List.of(codeCompletionAction, codeCompletionContainsAction, evalAction, evalLineAction, findAction, historySearchAction, historyUpAction, historyDownAction, insertDirPathAction,
-                        insertFilePathAction, insertSeparatedFilePathAction, insertSaveFilePathAction, saveAction, saveAsAction, submitAction,
+                        insertFilePathAction, insertRelativeFilePathAction, insertSeparatedFilePathAction, insertSaveFilePathAction, saveAction, saveAsAction, submitAction,
                         submitLineAction, toggleCommentAction));
     }
 

@@ -7,6 +7,7 @@ import java.util.Iterator;
 
 import dev.jshfx.base.jshell.CommandProcessor;
 import dev.jshfx.base.jshell.Settings;
+import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -28,8 +29,8 @@ public class OpenCommand extends BaseCommand {
 			commandProcessor.getSession().loadPredefinedStartupFile(file);
 		} else if (file != null) {
 			var path = Path.of(file);
+			path = commandProcessor.getSession().getCurDir().resolve(path);
 			if (Files.exists(path)) {
-
 				try {
 					String spippets = Files.readString(path);
 					commandProcessor.getSession().process(spippets);

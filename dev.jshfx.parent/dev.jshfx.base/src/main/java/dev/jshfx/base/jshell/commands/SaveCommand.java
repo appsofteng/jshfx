@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import dev.jshfx.base.jshell.CommandProcessor;
 import dev.jshfx.base.jshell.Session;
+import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.j.util.LU;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import javafx.application.Platform;
@@ -71,9 +72,9 @@ public class SaveCommand extends BaseCommand {
 
     private void save(String file, Stream<String> snippets) {
         Platform.runLater(() -> {
-
+                Path path = commandProcessor.getSession().getCurDir().resolve(Path.of(file));
                 commandProcessor.getSession().getTaskQueuer().add(Session.PRIVILEDGED_TASK_QUEUE, () -> {
-                    try (var f = Files.newBufferedWriter(Path.of(file))) {
+                    try (var f = Files.newBufferedWriter(path)) {
                         snippets.forEach(s -> LU.of(() -> {
                             f.append(s.strip());
                             f.newLine();

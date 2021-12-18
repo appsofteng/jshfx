@@ -60,7 +60,7 @@ public class AreaPane extends ContentPane {
         actions.getRedoAction().disabledProperty().bind(areaWrapper.redoEmptyProperty());
     }
 
-    public void insertDirPath() {
+    protected void insertDirPath() {
         var dir = FileDialogUtils.getDirectory(getScene().getWindow());
 
         dir.ifPresent(d -> {
@@ -68,20 +68,28 @@ public class AreaPane extends ContentPane {
         });
     }
 
-    public void insertFilePaths() {
-        insertFilePaths(" ");
+    protected void insertFilePaths() {
+        insertFilePaths(null, " ");
     }
 
-    public void insertFilePaths(String separator) {
+    protected void insertRelativeFilePaths() {
+        insertFilePaths(getFXPath().getPath().getParent(), " ");
+    }
+    
+    protected void insertFilePaths(String separator) {
+        insertFilePaths(null, separator);
+    }
+    
+    private void insertFilePaths(Path parent, String separator) {
         var files = FileDialogUtils.openJavaFiles(getScene().getWindow());
 
-        String path = files.stream().map(f -> PathUtils.relativize(getFXPath().getPath().getParent(), f))
+        String path = files.stream().map(f -> PathUtils.relativize(parent, f))
                 .map(f -> FilenameUtils.separatorsToUnix(f.toString())).collect(Collectors.joining(separator));
 
         getArea().insertText(getArea().getCaretPosition(), path);
-    }
+    }   
 
-    public void insertSaveFilePath() {
+    protected void insertSaveFilePath() {
         var file = FileDialogUtils.saveSourceJavaFile(getScene().getWindow());
 
         file.ifPresent(f -> {

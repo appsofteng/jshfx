@@ -62,7 +62,7 @@ public class ShellPane extends AreaPane {
         super(path, input);
 
         history.addAll(JsonUtils.get().fromJson(FileManager.HISTORY_FILE, List.class, List.of()));
-        session = new Session(consoleModel, taskQueuer);
+        session = new Session(getFXPath(), consoleModel, taskQueuer);
         session.setOnExitCommand(
                 () -> Platform.runLater(() -> onCloseRequest.handle(new Event(this, this, Event.ANY))));
         completion = new Completion(getArea(), session, lexer);
@@ -88,6 +88,7 @@ public class ShellPane extends AreaPane {
         handlers.put(actions.getHistorySearchAction(), () -> showHistorySearch());
         handlers.put(actions.getInsertDirPathAction(), () -> insertDirPath());
         handlers.put(actions.getInsertFilePathAction(), () -> insertFilePaths());
+        handlers.put(actions.getInsertRelativeFilePathAction(), () -> insertRelativeFilePaths());
         handlers.put(actions.getInsertSeparatedFilePathAction(), () -> insertFilePaths(File.pathSeparator));
         handlers.put(actions.getInsertSaveFilePathAction(), () -> insertSaveFilePath());
         handlers.put(actions.getCodeCompletionAction(), () -> showCodeCompletion(false));
