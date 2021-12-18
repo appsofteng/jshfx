@@ -13,9 +13,10 @@ import picocli.CommandLine.Option;
 
 @Command(name = "/set")
 public class SetCommand extends BaseCommand {
-    private static final String ALL = "-all";
-    private static final String CLEAR = "-clear";
-    private static final String NONE = "-none";
+    static final String ALL = "-all";
+    static final String CLEAR = "-clear";
+    static final String NONE = "-none";
+    static final List<String> START_OPTIONS = List.of(ALL, CLEAR, NONE);
 
     @Option(names = "feedback", arity = "0..1", paramLabel = "<mode>", descriptionKey = "/set.feedback", completionCandidates = FeedbakcModes.class)
     private String feedback;

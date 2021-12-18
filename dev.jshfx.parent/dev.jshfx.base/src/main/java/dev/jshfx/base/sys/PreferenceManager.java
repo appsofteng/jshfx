@@ -17,8 +17,6 @@ import javafx.scene.paint.Color;
 
 public final class PreferenceManager extends Manager {
 
-    public static final String DEFAULT_ENV_NAME = "env";
-
     private static final PreferenceManager INSTANCE = new PreferenceManager();
 
     private static final String DEFAULT_THEME_COLOR = "#ecececff";
@@ -109,20 +107,6 @@ public final class PreferenceManager extends Manager {
                 .collect(Collectors.toList());
         String string = JsonUtils.get().toJson(colorStrings);
         Preferences.userRoot().node("/scene").put("colors", string);
-    }
-
-    public String getEnv() {
-        String name = Preferences.userRoot().node("/jshell").get("env", DEFAULT_ENV_NAME);
-
-        return name;
-    }
-    
-    public void setEnv(String name) {
-        Preferences.userRoot().node("/jshell").put("env", name);
-    }
-    
-    public void setDefaultEnv() {
-        Preferences.userRoot().node("/jshell").put("env", DEFAULT_ENV_NAME);
     }
 
     public Path getInitialDirectory() {

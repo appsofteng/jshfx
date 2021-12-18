@@ -7,33 +7,25 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import dev.jshfx.base.sys.PreferenceManager;
 import jakarta.json.bind.annotation.JsonbTransient;
 
-public class Env implements Comparable<Env> {
+public class Env {
 
-    private String name = PreferenceManager.DEFAULT_ENV_NAME;
+    private boolean load = true;
     private Set<String> sourcePaths = new HashSet<>();
     private Set<String> classPaths = new HashSet<>();
     private Set<String> modulePaths = new HashSet<>();
     private Set<String> addModules = new HashSet<>();
     private Set<ExportItem> addExports = new HashSet<>();
 
-    public Env() {
+    public boolean isLoad() {
+        return load;
     }
-
-    public Env(String name) {
-        this.name = name;
+    
+    public void setLoad(boolean load) {
+        this.load = load;
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    
     public Set<String> getSourcePaths() {
         return sourcePaths;
     }
@@ -83,12 +75,20 @@ public class Env implements Comparable<Env> {
     public String getModulePath() {
         return modulePaths.stream().collect(Collectors.joining(File.pathSeparator));
     }
+    
+    public void clear() {
+        sourcePaths.clear();
+        classPaths.clear();
+        modulePaths.clear();
+        addModules.clear();
+        addExports.clear();       
+    }
 
     private List<String> getOptionList(String classpath, String modulepath, String modules) {
 
         List<String> options = new ArrayList<>();
 
-        if (!classPaths.isEmpty() || !classpath.isEmpty()) {
+        if (!classPaths.isEmpty() && load || !classpath.isEmpty()) {
             options.add("--class-path");
             String path = getClassPath();
             
@@ -102,7 +102,7 @@ public class Env implements Comparable<Env> {
             options.add(path);
         }
 
-        if (!modulePaths.isEmpty() || !modulepath.isEmpty()) {
+        if (!modulePaths.isEmpty() && load || !modulepath.isEmpty()) {
             options.add("--module-path");
             String path = getModulePath();
             
@@ -116,7 +116,7 @@ public class Env implements Comparable<Env> {
             options.add(path);
         }
 
-        if (!addModules.isEmpty() || !modules.isEmpty()) {
+        if (!addModules.isEmpty() && load || !modules.isEmpty()) {
             options.add("--add-modules");
             
             String addm = addModules.stream().collect(Collectors.joining(","));
@@ -132,7 +132,7 @@ public class Env implements Comparable<Env> {
             options.add(addm);
         }
 
-        if (!addExports.isEmpty()) {
+        if (!addExports.isEmpty() && load) {
             addExports.forEach(e -> {
                 options.add("--add-exports");
                 options.add(e.toString());
@@ -152,7 +152,7 @@ public class Env implements Comparable<Env> {
 
     @Override
     public String toString() {
-        return name + "\n" + getOptionList("", "", "").stream().collect(Collectors.joining(" "));
+        return getOptionList("", "", "").stream().collect(Collectors.joining(" "));
     }
 
     @Override
@@ -160,15 +160,10 @@ public class Env implements Comparable<Env> {
         boolean result = false;
 
         if (obj instanceof Env env) {
-            result = name.equals(env.name) && classPaths.equals(env.classPaths) && modulePaths.equals(env.modulePaths)
+            result = classPaths.equals(env.classPaths) && modulePaths.equals(env.modulePaths)
                     && addModules.equals(env.addModules) && addExports.equals(env.addExports);
         }
 
         return result;
-    }
-
-    @Override
-    public int compareTo(Env o) {
-        return name.compareTo(o.name);
     }
 }

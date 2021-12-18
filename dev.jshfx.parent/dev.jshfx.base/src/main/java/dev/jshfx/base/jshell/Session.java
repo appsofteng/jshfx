@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +14,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import dev.jshfx.base.sys.FileManager;
-import dev.jshfx.base.sys.PreferenceManager;
 import dev.jshfx.base.ui.ConsoleModel;
-import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jdk.jshell.execution.ObjectExecutionControlProvider;
 import dev.jshfx.jfx.concurrent.QueueTask;
@@ -162,18 +159,6 @@ public class Session {
         this.env = env;
     }
 
-    public void setEnv(String name) {
-        env = loadEnv(name);
-    }
-
-    public String getNewEnvName() {
-        var names = FileManager.get().getEnvNames();
-        names.add(env.getName());
-        String name = PathUtils.getUniqueName(PreferenceManager.DEFAULT_ENV_NAME, n -> names.contains(n));
-
-        return name;
-    }
-
     public void addToClasspath(Set<String> paths) {
         env.getClassPaths().addAll(paths);
         paths.forEach(p -> {
@@ -211,50 +196,11 @@ public class Session {
     }
 
     private Env loadEnv() {
-        return loadEnv(PreferenceManager.get().getEnv());
-    }
-
-    public List<Env> getEnvs() {
-
-        var names = FileManager.get().getEnvNames();
-        names.add(env.getName());
-        var envs = getEnvs(names);
-
-        return envs;
-    }
-
-    public List<Env> getEnvs(Set<String> names) {
-        List<Env> envs = names.stream().map(n -> loadEnv(n)).filter(e -> !e.equals(env))
-                .collect(Collectors.toCollection(() -> new ArrayList<>()));
-        Collections.sort(envs);
-
-        if (names.contains(env.getName())) {
-            envs.add(0, env);
-        }
-
-        return envs;
-    }
-
-    public void deleteEnvs(Set<String> names) {
-
-        if (names.isEmpty()) {
-            names = Set.of(env.getName());
-        }
-
-        FileManager.get().deleteEnvs(names);
-        if (names.contains(env.getName())) {
-            env = new Env();
-            reload(true);
-        }
-    }
-
-    private Env loadEnv(String name) {
-
-        return JsonUtils.get().fromJson(FileManager.get().getEnvFile(name), Env.class, new Env(name));
+        return JsonUtils.get().fromJson(FileManager.ENV_FILE, Env.class, new Env());
     }
 
     public void saveEnv() {
-        JsonUtils.getWithFormatting().toJson(env, FileManager.get().getEnvFile(env.getName()));
+        JsonUtils.getWithFormatting().toJson(env, FileManager.ENV_FILE);
     }
 
     public Settings getSettings() {
@@ -262,11 +208,11 @@ public class Session {
     }
 
     public Settings loadSettings() {
-        return JsonUtils.getWithFormatting().fromJson(FileManager.SET_FILE, Settings.class, new Settings());
+        return JsonUtils.get().fromJson(FileManager.SET_FILE, Settings.class, new Settings());
     }
 
     public void saveSettings() {
-        JsonUtils.get().toJson(settings, FileManager.SET_FILE);
+        JsonUtils.getWithFormatting().toJson(settings, FileManager.SET_FILE);
     }
 
     private void setListener() {
@@ -359,9 +305,13 @@ public class Session {
             jshell = JShell.builder().executionEngine(objectExecutionControlProvider, null).idGenerator(idGenerator)
                     .in(consoleModel.getIn()).out(consoleModel.getOut()).err(consoleModel.getErr())
                     .compilerOptions(options).remoteVMOptions(options).build();
+
             // Create the analysis before putting on the class path.
             jshell.sourceCodeAnalysis();
-            env.getClassPaths().forEach(p -> jshell.addToClasspath(p));
+
+            if (env.isLoad()) {
+                env.getClassPaths().forEach(p -> jshell.addToClasspath(p));
+            }
             jshell.addToClasspath(FileManager.get().getClassPath());
             idGenerator.setJshell(jshell);
 
@@ -386,7 +336,6 @@ public class Session {
         }
 
         javaSourceResolver.close();
-        PreferenceManager.get().setEnv(env.getName());
     }
 
     public void exit() {
