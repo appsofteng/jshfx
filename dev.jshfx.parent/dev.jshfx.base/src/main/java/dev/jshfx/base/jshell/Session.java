@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.base.ui.ConsoleModel;
+import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jdk.jshell.execution.ObjectExecutionControlProvider;
 import dev.jshfx.jfx.concurrent.QueueTask;
@@ -92,7 +93,11 @@ public class Session {
     public Path getCurDir() {
         return fxPath.getPath().getParent();
     }
-
+    
+    public Set<Path> resolve(String path) {
+        return PathUtils.resolve(getCurDir(), settings.getJshPaths(), PathUtils.split(path));
+    }
+    
     public Feedback getFeedback() {
         return feedback;
     }

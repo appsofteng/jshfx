@@ -1,37 +1,81 @@
 package dev.jshfx.j.nio.file;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.function.Predicate;
-
-import org.apache.commons.io.FilenameUtils;
+import java.util.stream.Collectors;
 
 public final class PathUtils {
 
     private PathUtils() {
     }
 
-    public static Path relativize(Path parent, Path path) {
-        if (parent != null && parent.isAbsolute()) {
-            path = parent.relativize(path);
+    public static Path relativize(Path path, Path other) {
+        Path result = other;
+
+        if (path != null) {
+            result = path.relativize(other);
         }
 
-        return path;
+        return result;
     }
 
-    public static Path resolve(Path curDir, Collection<String> dirs, String pathStr) {
+    public static Path relativize(Collection<String> paths, Path other) {
 
-        Path path = Path.of(pathStr);
-        Path result = path;
+        Path result = paths.stream().map(Path::of).filter(p -> other.startsWith(p)).findFirst()
+                .map(p -> p.relativize(other)).orElse(other);
 
-        if (!path.isAbsolute()) {
+        return result;
+    }
 
-            if (FilenameUtils.separatorsToUnix(pathStr).startsWith("/")) {
-                Path p = Path.of(pathStr.substring(1));
-                result = dirs.stream().map(d -> Path.of(d).resolve(p)).findFirst().orElse(path);
+    public static Path resolve(Path path, String other) {
+        Path result = Path.of(other);
+
+        if (!result.isAbsolute() && path != null) {
+            result = path.resolve(result);
+        }
+
+        return result;
+    }
+
+    public static Set<Path> resolve(Path path, Collection<String> paths, Collection<String> others) {
+        return others.stream().map(p -> resolve(path, paths, p)).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    public static Path resolve(Path path, Collection<String> paths, String other) {
+
+        Path otherPath = Path.of(other);
+        Path result = otherPath;
+
+        if (!otherPath.isAbsolute()) {
+
+            if (otherPath.startsWith("/")) {
+                Path p = Path.of("/").relativize(otherPath);
+                result = paths.stream().map(d -> Path.of(d).resolve(p)).filter(Files::exists).findFirst()
+                        .orElse(Path.of(paths.iterator().next()).resolve(otherPath));
             } else {
-                result = curDir.resolve(path);
+                if (path != null) {
+                    result = path.resolve(otherPath);
+                }
             }
+        }
+
+        return result;
+    }
+
+    public static Set<String> split(String path) {
+
+        Set<String> result = Set.of();
+
+        if (path != null && !path.isBlank()) {
+            path = path.replaceFirst("\"(.*)\"", "$1");
+
+            result = new LinkedHashSet<>(Arrays.asList(path.split(File.pathSeparator)));
         }
 
         return result;

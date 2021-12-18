@@ -1,6 +1,5 @@
 package dev.jshfx.base.ui;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,6 +21,7 @@ import dev.jshfx.fxmisc.richtext.CodeAreaWrappers;
 import dev.jshfx.fxmisc.richtext.CommentWrapper;
 import dev.jshfx.fxmisc.richtext.CompletionPopup;
 import dev.jshfx.fxmisc.richtext.TextStyleSpans;
+import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.j.util.json.JsonUtils;
 import dev.jshfx.jfx.concurrent.QueueTask;
 import dev.jshfx.jfx.concurrent.TaskQueuer;
@@ -89,7 +89,7 @@ public class ShellPane extends AreaPane {
         handlers.put(actions.getInsertDirPathAction(), () -> insertDirPath());
         handlers.put(actions.getInsertFilePathAction(), () -> insertFilePaths());
         handlers.put(actions.getInsertRelativeFilePathAction(), () -> insertRelativeFilePaths());
-        handlers.put(actions.getInsertSeparatedFilePathAction(), () -> insertFilePaths(File.pathSeparator));
+        handlers.put(actions.getInsertJshRelativeFilePathAction(), () -> insertJshRelativeFilePaths());
         handlers.put(actions.getInsertSaveFilePathAction(), () -> insertSaveFilePath());
         handlers.put(actions.getCodeCompletionAction(), () -> showCodeCompletion(false));
         handlers.put(actions.getCodeCompletionContainsAction(), () -> showCodeCompletion(true));
@@ -115,6 +115,15 @@ public class ShellPane extends AreaPane {
                 .find().getLexer();
     }
 
+    @Override
+    public Path resolve(String path) {
+        return PathUtils.resolve(getFXPath().getPath().getParent(), session.getSettings().getJshPaths(), path);
+    }
+
+    private void insertJshRelativeFilePaths() {
+        insertFilePaths(p -> PathUtils.relativize(session.getSettings().getJshPaths(), p));
+    }
+    
     private void setBehavior() {
 
         consoleHeaderText.bind(session.getTimer().textProperty());

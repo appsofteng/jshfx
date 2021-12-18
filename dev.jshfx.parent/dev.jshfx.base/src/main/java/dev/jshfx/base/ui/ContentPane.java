@@ -2,6 +2,7 @@ package dev.jshfx.base.ui;
 
 import java.nio.file.Path;
 
+import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.jfx.file.FXPath;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -79,6 +80,10 @@ public class ContentPane extends EnvPane {
 
     public FXPath getFXPath() {
         return fxpath;
+    }
+    
+    public Path resolve(String path) {
+        return PathUtils.resolve(fxpath.getPath().getParent(), path);
     }
 
     public String getContent() {

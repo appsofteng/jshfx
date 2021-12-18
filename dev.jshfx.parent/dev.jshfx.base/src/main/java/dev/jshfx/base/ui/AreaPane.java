@@ -1,6 +1,8 @@
 package dev.jshfx.base.ui;
 
+import java.io.File;
 import java.nio.file.Path;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
@@ -64,36 +66,35 @@ public class AreaPane extends ContentPane {
         var dir = FileDialogUtils.getDirectory(getScene().getWindow());
 
         dir.ifPresent(d -> {
-            getArea().insertText(getArea().getCaretPosition(), FilenameUtils.separatorsToUnix(d.toString()));
+            getArea().insertText(getArea().getCaretPosition(), String.format("\"%s\"",FilenameUtils.separatorsToUnix(d.toString())));
         });
     }
 
     protected void insertFilePaths() {
-        insertFilePaths(null, " ");
+        insertFilePaths(p -> p);
     }
 
     protected void insertRelativeFilePaths() {
-        insertFilePaths(getFXPath().getPath().getParent(), " ");
+        insertFilePaths(p -> PathUtils.relativize(getFXPath().getPath().getParent(), p));
     }
-    
-    protected void insertFilePaths(String separator) {
-        insertFilePaths(null, separator);
-    }
-    
-    private void insertFilePaths(Path parent, String separator) {
+
+    protected void insertFilePaths(UnaryOperator<Path> relativize) {
         var files = FileDialogUtils.openJavaFiles(getScene().getWindow());
 
-        String path = files.stream().map(f -> PathUtils.relativize(parent, f))
-                .map(f -> FilenameUtils.separatorsToUnix(f.toString())).collect(Collectors.joining(separator));
+        if (!files.isEmpty()) {
+            String result = String.format("\"%s\"",
+                    files.stream().map(f -> relativize.apply(f)).map(f -> FilenameUtils.separatorsToUnix(f.toString()))
+                            .collect(Collectors.joining(File.pathSeparator)));
 
-        getArea().insertText(getArea().getCaretPosition(), path);
-    }   
+            getArea().insertText(getArea().getCaretPosition(), result);
+        }
+    }
 
     protected void insertSaveFilePath() {
         var file = FileDialogUtils.saveSourceJavaFile(getScene().getWindow());
 
         file.ifPresent(f -> {
-            getArea().insertText(getArea().getCaretPosition(), FilenameUtils.separatorsToUnix(f.toString()) + " ");
+            getArea().insertText(getArea().getCaretPosition(), String.format("\"%s\"",FilenameUtils.separatorsToUnix(f.toString())));
         });
     }
 

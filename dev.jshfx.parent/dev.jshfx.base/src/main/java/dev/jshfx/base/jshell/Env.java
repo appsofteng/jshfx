@@ -2,7 +2,7 @@ package dev.jshfx.base.jshell;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -12,28 +12,28 @@ import jakarta.json.bind.annotation.JsonbTransient;
 public class Env {
 
     private boolean load = true;
-    private Set<String> sourcePaths = new HashSet<>();
-    private Set<String> classPaths = new HashSet<>();
-    private Set<String> modulePaths = new HashSet<>();
-    private Set<String> addModules = new HashSet<>();
-    private Set<ExportItem> addExports = new HashSet<>();
+    private Set<String> sourcePaths = new LinkedHashSet<>();
+    private Set<String> classPaths = new LinkedHashSet<>();
+    private Set<String> modulePaths = new LinkedHashSet<>();
+    private Set<String> addModules = new LinkedHashSet<>();
+    private Set<ExportItem> addExports = new LinkedHashSet<>();
 
     public boolean isLoad() {
         return load;
     }
-    
+
     public void setLoad(boolean load) {
         this.load = load;
     }
-    
+
     public Set<String> getSourcePaths() {
         return sourcePaths;
     }
-    
+
     public void setSourcePaths(Set<String> sourcePaths) {
         this.sourcePaths = sourcePaths;
     }
-    
+
     public Set<String> getClassPaths() {
         return classPaths;
     }
@@ -75,13 +75,13 @@ public class Env {
     public String getModulePath() {
         return modulePaths.stream().collect(Collectors.joining(File.pathSeparator));
     }
-    
+
     public void clear() {
         sourcePaths.clear();
         classPaths.clear();
         modulePaths.clear();
         addModules.clear();
-        addExports.clear();       
+        addExports.clear();
     }
 
     private List<String> getOptionList(String classpath, String modulepath, String modules) {
@@ -91,7 +91,7 @@ public class Env {
         if (!classPaths.isEmpty() && load || !classpath.isEmpty()) {
             options.add("--class-path");
             String path = getClassPath();
-            
+
             if (path.isEmpty()) {
                 path = classpath;
             } else {
@@ -105,7 +105,7 @@ public class Env {
         if (!modulePaths.isEmpty() && load || !modulepath.isEmpty()) {
             options.add("--module-path");
             String path = getModulePath();
-            
+
             if (path.isEmpty()) {
                 path = modulepath;
             } else {
@@ -118,9 +118,9 @@ public class Env {
 
         if (!addModules.isEmpty() && load || !modules.isEmpty()) {
             options.add("--add-modules");
-            
+
             String addm = addModules.stream().collect(Collectors.joining(","));
-            
+
             if (addm.isEmpty()) {
                 addm = modules;
             } else {
@@ -128,7 +128,7 @@ public class Env {
                     addm += "," + modules;
                 }
             }
-            
+
             options.add(addm);
         }
 
@@ -138,7 +138,7 @@ public class Env {
                 options.add(e.toString());
             });
         }
-        
+
         return options;
     }
 

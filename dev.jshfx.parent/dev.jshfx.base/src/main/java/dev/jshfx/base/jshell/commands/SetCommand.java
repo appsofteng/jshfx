@@ -1,16 +1,16 @@
 package dev.jshfx.base.jshell.commands;
 
-import java.io.File;
-import java.util.Arrays;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import dev.jshfx.base.jshell.CommandProcessor;
 import dev.jshfx.base.jshell.Feedback;
 import dev.jshfx.base.jshell.Settings;
+import dev.jshfx.base.sys.FileManager;
+import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -79,17 +79,17 @@ public class SetCommand extends BaseCommand {
                     commandProcessor.getSession().getSettings().getPredefinedStartupFiles().clear();
                     commandProcessor.getSession().getSettings().getStartupFiles().clear();
                 } else {
-                    commandProcessor.getSession().getSettings().getStartupFiles().add(f);
+                    commandProcessor.getSession().getSettings().getStartupFiles().addAll(commandProcessor.getSession().resolve(f).stream().map(Path::toString).toList());
                     commandProcessor.getSession().getSettings().setLoadStartupFiles(true);
                 }
             });
         }
         
         if (jshpath != null) {
-            Collection<String> paths = jshpath.isEmpty() ? Set.of()
-                    : Arrays.asList(jshpath.split(String.valueOf(File.pathSeparatorChar)));
+            Collection<String> paths = PathUtils.split(jshpath);
             commandProcessor.getSession().getSettings().getJshPaths().clear();
             commandProcessor.getSession().getSettings().getJshPaths().addAll(paths);
+            commandProcessor.getSession().getSettings().getJshPaths().add(FileManager.DEFAULT_JSH_PATH);
         } else {
             commandProcessor.getSession().getFeedback().commandResult(commandProcessor.getSession().getSettings().getJshPaths().toString()).flush();
         }

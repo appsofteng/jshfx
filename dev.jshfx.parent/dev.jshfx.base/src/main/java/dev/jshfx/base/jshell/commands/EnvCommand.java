@@ -1,7 +1,5 @@
 package dev.jshfx.base.jshell.commands;
 
-import java.io.File;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -10,6 +8,7 @@ import java.util.stream.Collectors;
 
 import dev.jshfx.base.jshell.CommandProcessor;
 import dev.jshfx.base.jshell.ExportItem;
+import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -43,16 +42,14 @@ public class EnvCommand extends BaseCommand {
     public void run() {
 
         if (classpath != null) {
-            Collection<String> paths = classpath.isEmpty() ? Set.of()
-                    : Arrays.asList(classpath.split(String.valueOf(File.pathSeparatorChar)));
+            Collection<String> paths = PathUtils.split(classpath);
             commandProcessor.getSession().getEnv().getClassPaths().clear();
             commandProcessor.getSession().getEnv().getClassPaths().addAll(paths);
             commandProcessor.getSession().getEnv().setLoad(true);
         }
 
         if (modulepath != null) {
-            Collection<String> paths = modulepath.isEmpty() ? Set.of()
-                    : Arrays.asList(modulepath.split(String.valueOf(File.pathSeparatorChar)));
+            Collection<String> paths = PathUtils.split(modulepath);
             commandProcessor.getSession().getEnv().getModulePaths().clear();
             commandProcessor.getSession().getEnv().getModulePaths().addAll(paths);
             commandProcessor.getSession().getEnv().setLoad(true);
