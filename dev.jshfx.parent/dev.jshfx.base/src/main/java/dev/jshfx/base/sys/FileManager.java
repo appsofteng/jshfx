@@ -18,6 +18,8 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FilenameUtils;
+
 import dev.jshfx.base.Constants;
 import dev.jshfx.j.module.ModuleUtils;
 
@@ -33,7 +35,7 @@ public final class FileManager extends Manager {
     static final Path USER_CONF_DIR = SYS_VERSION_DIR.resolve(CONF);
     private static final Path LOG_DIR = SYS_VERSION_DIR.resolve("log");
     
-    public static final String DEFAULT_JSH_PATH = System.getProperty("user.home") + "/workspace/jsh"; 
+    public static final String DEFAULT_JSH_PATH = FilenameUtils.separatorsToUnix(System.getProperty("user.home")) + "/workspace/jsh"; 
 
     public static final Path USER_PREFS_FILE = USER_CONF_DIR.resolve("preferences.properties");
 
@@ -87,6 +89,7 @@ public final class FileManager extends Manager {
         err = System.err;
         out = System.out;
         Files.createDirectories(LOG_DIR);
+        Files.createDirectories(USER_CONF_DIR);
         LogManager.getLogManager().readConfiguration(FileManager.class.getResourceAsStream(LOGGING_CONF_FILE));
         Thread.setDefaultUncaughtExceptionHandler(this::uncaughtException);
 
