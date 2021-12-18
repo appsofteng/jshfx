@@ -27,7 +27,7 @@ public class SetCommand extends BaseCommand {
 
     @Option(names = "start", arity = "0..*", paramLabel = "<file>", descriptionKey = "/set.start", completionCandidates = StartOptions.class)
     private List<String> start;
-    
+
     @Option(names = "-jshpath", arity = "0..1", paramLabel = "<path>", descriptionKey = "/set.-jshpath")
     private String jshpath;
 
@@ -79,19 +79,23 @@ public class SetCommand extends BaseCommand {
                     commandProcessor.getSession().getSettings().getPredefinedStartupFiles().clear();
                     commandProcessor.getSession().getSettings().getStartupFiles().clear();
                 } else {
-                    commandProcessor.getSession().getSettings().getStartupFiles().addAll(commandProcessor.getSession().resolve(f).stream().map(Path::toString).toList());
+                    commandProcessor.getSession().getSettings().getStartupFiles()
+                            .addAll(commandProcessor.getSession().resolve(f).stream().map(Path::toString).toList());
                     commandProcessor.getSession().getSettings().setLoadStartupFiles(true);
                 }
             });
         }
-        
+
         if (jshpath != null) {
-            Collection<String> paths = PathUtils.split(jshpath);
-            commandProcessor.getSession().getSettings().getJshPaths().clear();
-            commandProcessor.getSession().getSettings().getJshPaths().addAll(paths);
-            commandProcessor.getSession().getSettings().getJshPaths().add(FileManager.DEFAULT_JSH_PATH);
-        } else {
-            commandProcessor.getSession().getFeedback().commandResult(commandProcessor.getSession().getSettings().getJshPaths().toString()).flush();
+            if (!jshpath.isEmpty()) {
+                Collection<String> paths = PathUtils.split(jshpath);
+                commandProcessor.getSession().getSettings().getJshPaths().clear();
+                commandProcessor.getSession().getSettings().getJshPaths().addAll(paths);
+                commandProcessor.getSession().getSettings().getJshPaths().add(FileManager.DEFAULT_JSH_PATH);
+            }
+            commandProcessor.getSession().getFeedback()
+            .commandResult(commandProcessor.getSession().getSettings().getJshPaths().toString()).flush();
+
         }
 
         if (retain) {
