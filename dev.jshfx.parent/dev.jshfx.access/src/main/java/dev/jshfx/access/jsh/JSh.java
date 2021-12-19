@@ -20,8 +20,8 @@ public sealed class JSh permits $ {
     JSh() {
     }
 
-    public static Path getCurDir() {
-        return jshService.getCurDir();
+    public static Path resolve(String path) {
+        return jshService.resolve(path);
     }
     
     public static void show(Node... nodes) {

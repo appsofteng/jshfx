@@ -74,7 +74,8 @@ public class Actions {
 
     private Action insertDirPathAction;
     private Action insertFilePathAction;
-    private Action insertSeparatedFilePathAction;
+    private Action insertRelativeFilePathAction;
+    private Action insertJshRelativeFilePathAction;
     private Action insertSaveFilePathAction;
 
     private Action codeCompletionAction;
@@ -85,7 +86,7 @@ public class Actions {
     private Action saveSnapshotAction;
 
     private BooleanExpression savedAllExpression;
-    
+
     private BooleanProperty savedAll = new SimpleBooleanProperty(true);
     private BooleanProperty clipboardEmpty = new SimpleBooleanProperty();
 
@@ -243,9 +244,14 @@ public class Actions {
         FXResourceBundle.getBundle().put(insertFilePathAction.textProperty(), "insertFilePaths");
         insertFilePathAction.setAccelerator(KeyCombination.keyCombination("Alt+O"));
 
-        insertSeparatedFilePathAction = new Action(e -> rootPane.getEnvPane().handle(insertSeparatedFilePathAction));
-        FXResourceBundle.getBundle().put(insertSeparatedFilePathAction.textProperty(), "insertSeparatedFilePaths");
-        insertSeparatedFilePathAction.setAccelerator(KeyCombination.keyCombination("Alt+P"));
+        insertRelativeFilePathAction = new Action(e -> rootPane.getEnvPane().handle(insertRelativeFilePathAction));
+        FXResourceBundle.getBundle().put(insertRelativeFilePathAction.textProperty(), "insertRelativeFilePaths");
+        insertRelativeFilePathAction.setAccelerator(KeyCombination.keyCombination("Alt+R"));
+
+        insertJshRelativeFilePathAction = new Action(
+                e -> rootPane.getEnvPane().handle(insertJshRelativeFilePathAction));
+        FXResourceBundle.getBundle().put(insertJshRelativeFilePathAction.textProperty(), "insertJshRelativeFilePaths");
+        insertJshRelativeFilePathAction.setAccelerator(KeyCombination.keyCombination("Alt+Shift+R"));;
 
         insertSaveFilePathAction = new Action(e -> rootPane.getEnvPane().handle(insertSaveFilePathAction));
         FXResourceBundle.getBundle().put(insertSaveFilePathAction.textProperty(), "insertSaveFilePath");
@@ -254,10 +260,10 @@ public class Actions {
         codeCompletionAction = new Action(e -> rootPane.getEnvPane().handle(codeCompletionAction));
         FXResourceBundle.getBundle().put(codeCompletionAction.textProperty(), "codeCompletion");
         codeCompletionAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Space"));
-        
+
         codeCompletionContainsAction = new Action(e -> rootPane.getEnvPane().handle(codeCompletionContainsAction));
         FXResourceBundle.getBundle().put(codeCompletionContainsAction.textProperty(), "codeCompletionContains");
-        codeCompletionContainsAction.setAccelerator(KeyCombination.keyCombination("Shift+Shortcut+Space"));
+        codeCompletionContainsAction.setAccelerator(KeyCombination.keyCombination("Shortcut+Shift+Space"));
 
         toggleCommentAction = new Action(e -> rootPane.getEnvPane().handle(toggleCommentAction));
         FXResourceBundle.getBundle().put(toggleCommentAction.textProperty(), "toggleComment");
@@ -269,7 +275,6 @@ public class Actions {
         findAction = new Action(e -> actionController.showFindDialog());
         FXResourceBundle.getBundle().put(findAction.textProperty(), "find");
         findAction.setAccelerator(KeyCombination.keyCombination("Shortcut+F"));
-
     }
 
     public Action getCopyAction() {
@@ -340,8 +345,12 @@ public class Actions {
         return insertFilePathAction;
     }
 
-    public Action getInsertSeparatedFilePathAction() {
-        return insertSeparatedFilePathAction;
+    public Action getInsertRelativeFilePathAction() {
+        return insertRelativeFilePathAction;
+    }
+
+    public Action getInsertJshRelativeFilePathAction() {
+        return insertJshRelativeFilePathAction;
     }
 
     public Action getInsertSaveFilePathAction() {
@@ -355,7 +364,7 @@ public class Actions {
     public Action getCodeCompletionContainsAction() {
         return codeCompletionContainsAction;
     }
-    
+
     public Action getToggleCommentAction() {
         return toggleCommentAction;
     }
@@ -404,7 +413,7 @@ public class Actions {
             var node = toolBar.getItems().stream().filter(Node::isDisabled)
                     .filter(n -> n.contains(n.parentToLocal(e.getX(), e.getY()))).findFirst();
 
-            if (node.isPresent() && node.get()instanceof Control control) {
+            if (node.isPresent() && node.get() instanceof Control control) {
                 toolBar.setTooltip(control.getTooltip());
             } else {
                 toolBar.setTooltip(null);
@@ -460,8 +469,9 @@ public class Actions {
                 ActionUtils.ACTION_SEPARATOR, undoAction, redoAction, ActionUtils.ACTION_SEPARATOR, evalAction,
                 evalLineAction, submitAction, submitLineAction, ActionUtils.ACTION_SEPARATOR, historyUpAction,
                 historyDownAction, ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction,
-                insertSeparatedFilePathAction, insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR,
-                codeCompletionAction, codeCompletionContainsAction, historySearchAction, findAction, ActionUtils.ACTION_SEPARATOR,
+                insertRelativeFilePathAction, insertJshRelativeFilePathAction, 
+                insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR, codeCompletionAction,
+                codeCompletionContainsAction, historySearchAction, findAction, ActionUtils.ACTION_SEPARATOR,
                 toggleCommentAction);
         ActionUtils.updateContextMenu(menu, actions);
     }
@@ -469,15 +479,17 @@ public class Actions {
     public void addConsoleKeyHandlers(Node node) {
         addKeyHandlers(node, List.of(findAction));
     }
-    
+
     public void addEditorKeyHandlers(Node node) {
         addKeyHandlers(node, List.of(findAction, saveAction, saveAsAction));
     }
 
     public void addShellKeyHandlers(Node node) {
         addKeyHandlers(node,
-                List.of(codeCompletionAction, codeCompletionContainsAction, evalAction, evalLineAction, findAction, historySearchAction, historyUpAction, historyDownAction, insertDirPathAction,
-                        insertFilePathAction, insertSeparatedFilePathAction, insertSaveFilePathAction, saveAction, saveAsAction, submitAction,
+                List.of(codeCompletionAction, codeCompletionContainsAction, evalAction, evalLineAction, findAction,
+                        historySearchAction, historyUpAction, historyDownAction, insertDirPathAction,
+                        insertFilePathAction, insertRelativeFilePathAction, insertJshRelativeFilePathAction,
+                        insertSaveFilePathAction, saveAction, saveAsAction, submitAction,
                         submitLineAction, toggleCommentAction));
     }
 

@@ -1,6 +1,6 @@
 package dev.jshfx.base.jshell;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,8 +12,9 @@ public class Settings {
     public static final Map<String,String> PREDEFINED_STARTUP_FILES = Map.of(DEFAULT, "start-default.txt", PRINTING, "start-printing.txt");
     private String feedbackMode = Feedback.NORMAL;
     private boolean loadStartupFiles = true;
-    private Set<String> predefinedStartupFiles = new HashSet<>(List.of(DEFAULT, PRINTING));
-    private Set<String> startupFiles = new HashSet<>();
+    private Set<String> predefinedStartupFiles = new LinkedHashSet<>(List.of(DEFAULT, PRINTING));
+    private Set<String> startupFiles = new LinkedHashSet<>();
+    private Set<String> jshPaths = new LinkedHashSet<>();
 
     public String getFeedbackMode() {
         return feedbackMode;
@@ -45,5 +46,13 @@ public class Settings {
 
     public void setStartupFiles(Set<String> startupScripts) {
         this.startupFiles = startupScripts;
+    }
+    
+    public Set<String> getJshPaths() {
+        return jshPaths;
+    }
+    
+    public void setJshPaths(Set<String> jshPaths) {
+        this.jshPaths = jshPaths;
     }
 }

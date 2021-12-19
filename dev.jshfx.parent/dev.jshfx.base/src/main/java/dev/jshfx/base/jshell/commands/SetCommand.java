@@ -1,5 +1,7 @@
 package dev.jshfx.base.jshell.commands;
 
+import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,21 +9,27 @@ import java.util.stream.Collectors;
 import dev.jshfx.base.jshell.CommandProcessor;
 import dev.jshfx.base.jshell.Feedback;
 import dev.jshfx.base.jshell.Settings;
+import dev.jshfx.base.sys.FileManager;
+import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "/set")
 public class SetCommand extends BaseCommand {
-    private static final String ALL = "-all";
-    private static final String CLEAR = "-clear";
-    private static final String NONE = "-none";
+    static final String ALL = "-all";
+    static final String CLEAR = "-clear";
+    static final String NONE = "-none";
+    static final List<String> START_OPTIONS = List.of(ALL, CLEAR, NONE);
 
     @Option(names = "feedback", arity = "0..1", paramLabel = "<mode>", descriptionKey = "/set.feedback", completionCandidates = FeedbakcModes.class)
     private String feedback;
 
     @Option(names = "start", arity = "0..*", paramLabel = "<file>", descriptionKey = "/set.start", completionCandidates = StartOptions.class)
     private List<String> start;
+
+    @Option(names = "jshpath", arity = "0..1", paramLabel = "<path>", descriptionKey = "/set.jshpath")
+    private String jshpath;
 
     @Option(names = "-retain", descriptionKey = "/set.-retain")
     private boolean retain;
@@ -57,7 +65,7 @@ public class SetCommand extends BaseCommand {
                     .collect(Collectors.joining("\n"));
             names += commandProcessor.getSession().getSettings().getStartupFiles().stream()
                     .collect(Collectors.joining("\n"));
-            commandProcessor.getSession().getFeedback().commandResult(names).flush();;
+            commandProcessor.getSession().getFeedback().commandResult(names).flush();
         } else if (start != null && !start.isEmpty()) {
             start.forEach(f -> {
                 if (Settings.PREDEFINED_STARTUP_FILES.keySet().contains(f)) {
@@ -71,10 +79,23 @@ public class SetCommand extends BaseCommand {
                     commandProcessor.getSession().getSettings().getPredefinedStartupFiles().clear();
                     commandProcessor.getSession().getSettings().getStartupFiles().clear();
                 } else {
-                    commandProcessor.getSession().getSettings().getStartupFiles().add(f);
+                    commandProcessor.getSession().getSettings().getStartupFiles()
+                            .addAll(commandProcessor.getSession().resolve(f).stream().map(Path::toString).toList());
                     commandProcessor.getSession().getSettings().setLoadStartupFiles(true);
                 }
             });
+        }
+
+        if (jshpath != null) {
+            if (!jshpath.isEmpty()) {
+                Collection<String> paths = PathUtils.split(jshpath);
+                commandProcessor.getSession().getSettings().getJshPaths().clear();
+                commandProcessor.getSession().getSettings().getJshPaths().addAll(paths);
+                commandProcessor.getSession().getSettings().getJshPaths().add(FileManager.DEFAULT_JSH_PATH);
+            }
+            commandProcessor.getSession().getFeedback()
+            .commandResult(commandProcessor.getSession().getSettings().getJshPaths().toString()).flush();
+
         }
 
         if (retain) {

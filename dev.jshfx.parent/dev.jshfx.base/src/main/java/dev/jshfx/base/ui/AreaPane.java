@@ -1,6 +1,8 @@
 package dev.jshfx.base.ui;
 
+import java.io.File;
 import java.nio.file.Path;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
@@ -60,32 +62,39 @@ public class AreaPane extends ContentPane {
         actions.getRedoAction().disabledProperty().bind(areaWrapper.redoEmptyProperty());
     }
 
-    public void insertDirPath() {
+    protected void insertDirPath() {
         var dir = FileDialogUtils.getDirectory(getScene().getWindow());
 
         dir.ifPresent(d -> {
-            getArea().insertText(getArea().getCaretPosition(), FilenameUtils.separatorsToUnix(d.toString()));
+            getArea().insertText(getArea().getCaretPosition(), String.format("\"%s\"",FilenameUtils.separatorsToUnix(d.toString())));
         });
     }
 
-    public void insertFilePaths() {
-        insertFilePaths(" ");
+    protected void insertFilePaths() {
+        insertFilePaths(p -> p);
     }
 
-    public void insertFilePaths(String separator) {
+    protected void insertRelativeFilePaths() {
+        insertFilePaths(p -> PathUtils.relativize(getFXPath().getPath().getParent(), p));
+    }
+
+    protected void insertFilePaths(UnaryOperator<Path> relativize) {
         var files = FileDialogUtils.openJavaFiles(getScene().getWindow());
 
-        String path = files.stream().map(f -> PathUtils.relativize(getFXPath().getPath().getParent(), f))
-                .map(f -> FilenameUtils.separatorsToUnix(f.toString())).collect(Collectors.joining(separator));
+        if (!files.isEmpty()) {
+            String result = String.format("\"%s\"",
+                    files.stream().map(f -> relativize.apply(f)).map(f -> FilenameUtils.separatorsToUnix(f.toString()))
+                            .collect(Collectors.joining(File.pathSeparator)));
 
-        getArea().insertText(getArea().getCaretPosition(), path);
+            getArea().insertText(getArea().getCaretPosition(), result);
+        }
     }
 
-    public void insertSaveFilePath() {
+    protected void insertSaveFilePath() {
         var file = FileDialogUtils.saveSourceJavaFile(getScene().getWindow());
 
         file.ifPresent(f -> {
-            getArea().insertText(getArea().getCaretPosition(), FilenameUtils.separatorsToUnix(f.toString()) + " ");
+            getArea().insertText(getArea().getCaretPosition(), String.format("\"%s\"",FilenameUtils.separatorsToUnix(f.toString())));
         });
     }
 

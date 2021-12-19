@@ -8,6 +8,6 @@ import javafx.scene.Node;
 
 public interface JShService {
     
-    Path getCurDir() ;
+    Path resolve(String path) ;
     void show(List<Node> nodes, WindowOptions options);
 }

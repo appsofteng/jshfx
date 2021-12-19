@@ -10,7 +10,7 @@ import static java.lang.Double.parseDouble
 import static java.util.Comparator.comparingInt
 import static java.util.stream.Collectors.groupingBy
 
-var lines = Files.lines(JSh.getCurDir().resolve("../../resources/ourworldindata/demography/life-expectancy.csv"))
+var lines = Files.lines(JSh.resolve("../../resources/ourworldindata/demography/life-expectancy.csv"))
 var dataset = lines
     .skip(1)
     .map(line -> line.split(","))

@@ -3,10 +3,10 @@ package dev.jshfx.base.sys;
 import java.nio.file.Path;
 import java.util.List;
 
-import dev.jshfx.base.ui.RootPane;
-import dev.jshfx.base.ui.WindowUtils;
 import dev.jshfx.access.jsh.WindowOptions;
 import dev.jshfx.access.sys.JShService;
+import dev.jshfx.base.ui.RootPane;
+import dev.jshfx.base.ui.WindowUtils;
 import javafx.application.Platform;
 import javafx.scene.Node;
 
@@ -18,15 +18,7 @@ public class JShServiceImpl implements JShService {
     }
 
     @Override
-    public Path getCurDir() {
-        var path = RootPane.get().getContentPane().getFXPath().getPath();
-
-        if (path.isAbsolute()) {
-            path = path.getParent();
-        } else {
-            path = null;
-        }
-
-        return path;
+    public Path resolve(String path) {
+        return RootPane.get().getContentPane().resolve(path);
     }
 }

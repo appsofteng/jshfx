@@ -1,38 +1,26 @@
 package dev.jshfx.base.jshell.commands;
 
-import java.io.File;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import dev.jshfx.base.jshell.CommandProcessor;
-import dev.jshfx.base.jshell.Env;
 import dev.jshfx.base.jshell.ExportItem;
-import dev.jshfx.base.sys.FileManager;
+import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 
 @Command(name = "/env")
 public class EnvCommand extends BaseCommand {
-    
-    private static final String ENV_ENAME_PATTERN = "\\w+";
 
-    @Parameters(arity = "0..*", descriptionKey = "/env.names", completionCandidates = EnvNames.class)
-    private Set<String> names;
+    @Option(names = "-retain", descriptionKey = "/env.-retain")
+    private boolean retain;
 
-    @Option(names = "-retain", arity = "0..1", paramLabel = "<name>", descriptionKey = "/env.-retain", completionCandidates = EnvNames.class)
-    private String retain;
-
-    @Option(names = "-delete", arity = "0..*", paramLabel = "<names>", descriptionKey = "/env.-delete", completionCandidates = EnvNames.class)
-    private Set<String> delete;
-
-    @Option(names = "-new", arity = "0..1", descriptionKey = "/env.-new")
-    private String newEnv;
+    @Option(names = "start", arity = "0..*", paramLabel = "<options>", descriptionKey = "/env.start", completionCandidates = StartOptions.class)
+    private List<String> start;
 
     @Option(names = "--class-path", arity = "0..1", paramLabel = "<path>", descriptionKey = "/env.--class-path")
     private String classpath;
@@ -53,76 +41,24 @@ public class EnvCommand extends BaseCommand {
     @Override
     public void run() {
 
-        if (names != null && !names.isEmpty()) {
-            var diff = new HashSet<>(names);
-            diff.removeAll(FileManager.get().getEnvNames());
-            if (diff.isEmpty()) {
-
-                String envs = commandProcessor.getSession().getEnvs(names).stream().map(Env::toString)
-                        .collect(Collectors.joining("\n", "", "\n"));
-                commandProcessor.getSession().getFeedback().commandResult(envs).flush();
-            } else {
-                commandProcessor.getSession().getFeedback()
-                        .commandFailure(FXResourceBundle.getBundle().getString​("msg.env.unknownName", diff)).flush();
-            }
-            return;
-        }
-
-        if (delete != null) {
-
-            var diff = new HashSet<>(delete);
-            diff.removeAll(FileManager.get().getEnvNames());
-            if (diff.isEmpty()) {
-                try {
-                    commandProcessor.getSession().deleteEnvs(delete);
-                    commandProcessor.getSession().getFeedback()
-                            .commandSuccess(FXResourceBundle.getBundle().getString​("msg.env.delete.success")).flush();
-                } catch (Exception e) {
-                    commandProcessor.getSession().getFeedback()
-                            .commandFailure(
-                                    FXResourceBundle.getBundle().getString​("msg.env.delete.failure", e.getMessage()))
-                            .flush();
-                }
-            } else {
-                commandProcessor.getSession().getFeedback()
-                        .commandFailure(FXResourceBundle.getBundle().getString​("msg.env.unknownName", diff)).flush();
-            }
-
-            return;
-        }
-
-        if (newEnv != null) {
-            
-            if (newEnv.isEmpty()) {
-                newEnv = commandProcessor.getSession().getNewEnvName();
-            } else if (!newEnv.matches(ENV_ENAME_PATTERN)) {
-                commandProcessor.getSession().getFeedback()
-                .commandFailure(FXResourceBundle.getBundle().getString​("msg.env.save.failure.invalidName"))
-                .flush();
-                
-                return;
-            }
-            
-            commandProcessor.getSession().setEnv(new Env(newEnv));
-        }
-
         if (classpath != null) {
-            Collection<String> paths = classpath.isEmpty() ? Set.of()
-                    : Arrays.asList(classpath.split(String.valueOf(File.pathSeparatorChar)));
+            Collection<String> paths = PathUtils.split(classpath);
             commandProcessor.getSession().getEnv().getClassPaths().clear();
             commandProcessor.getSession().getEnv().getClassPaths().addAll(paths);
+            commandProcessor.getSession().getEnv().setLoad(true);
         }
 
         if (modulepath != null) {
-            Collection<String> paths = modulepath.isEmpty() ? Set.of()
-                    : Arrays.asList(modulepath.split(String.valueOf(File.pathSeparatorChar)));
+            Collection<String> paths = PathUtils.split(modulepath);
             commandProcessor.getSession().getEnv().getModulePaths().clear();
             commandProcessor.getSession().getEnv().getModulePaths().addAll(paths);
+            commandProcessor.getSession().getEnv().setLoad(true);
         }
 
         if (addModules != null) {
             commandProcessor.getSession().getEnv().getAddModules().clear();
             commandProcessor.getSession().getEnv().getAddModules().addAll(addModules);
+            commandProcessor.getSession().getEnv().setLoad(true);
         }
 
         if (addExports != null) {
@@ -130,40 +66,51 @@ public class EnvCommand extends BaseCommand {
                 Set<ExportItem> exports = addExports.stream().map(ExportItem::parse).collect(Collectors.toSet());
                 commandProcessor.getSession().getEnv().getAddExports().clear();
                 commandProcessor.getSession().getEnv().getAddExports().addAll(exports);
+                commandProcessor.getSession().getEnv().setLoad(true);
             } catch (IllegalArgumentException e) {
                 commandProcessor.getSession().getFeedback().commandFailure(FXResourceBundle.getBundle()
                         .getString​("msg.env.adExports.failure.illegalArgument", e.getMessage())).flush();
             }
         }
 
-        if (classpath != null || modulepath != null || addModules != null || addExports != null) {
-            commandProcessor.getSession().reload(true);
-
+        if (start != null && !start.isEmpty()) {
+            start.forEach(f -> {
+                if (SetCommand.NONE.equals(f)) {
+                    commandProcessor.getSession().getEnv().setLoad(false);
+                } else if (SetCommand.ALL.equals(f)) {
+                    commandProcessor.getSession().getEnv().setLoad(true);
+                } else if (SetCommand.CLEAR.equals(f)) {
+                    commandProcessor.getSession().getEnv().clear();
+                }
+            });
         }
 
-        if (retain != null) {
+        if (retain) {
 
-            if (retain.isEmpty()) {
-                commandProcessor.getSession().saveEnv();
-                commandProcessor.getSession().getFeedback()
-                        .commandSuccess(FXResourceBundle.getBundle().getString​("msg.env.save.success")).flush();
-            } else if (retain.matches(ENV_ENAME_PATTERN)) {
-                commandProcessor.getSession().getEnv().setName(retain);
-                commandProcessor.getSession().saveEnv();
-                commandProcessor.getSession().getFeedback()
-                        .commandSuccess(FXResourceBundle.getBundle().getString​("msg.env.save.success")).flush();
-            } else {
-                commandProcessor.getSession().getFeedback()
-                        .commandFailure(FXResourceBundle.getBundle().getString​("msg.env.save.failure.invalidName"))
-                        .flush();
+            commandProcessor.getSession().saveEnv();
+            commandProcessor.getSession().getFeedback()
+                    .commandSuccess(FXResourceBundle.getBundle().getString​("msg.env.save.success")).flush();
+        }
+
+        if (classpath == null && modulepath == null && addModules == null && addExports == null) {
+
+            String envs = commandProcessor.getSession().getEnv().toString();
+            
+            if (envs.isBlank()) {
+                envs = FXResourceBundle.getBundle().getString​("msg.env.empty");
             }
-        }
-
-        if (classpath == null && modulepath == null && addModules == null && addExports == null && retain == null && newEnv == null) {
-
-            String envs = commandProcessor.getSession().getEnvs().stream().map(Env::toString)
-                    .collect(Collectors.joining("\n", "", "\n"));
+            
             commandProcessor.getSession().getFeedback().commandResult(envs).flush();
+        } else {
+            commandProcessor.getSession().reload(true);
+        }
+    }
+
+    public static class StartOptions implements Iterable<String> {
+
+        @Override
+        public Iterator<String> iterator() {
+            return SetCommand.START_OPTIONS.iterator();
         }
     }
 }
