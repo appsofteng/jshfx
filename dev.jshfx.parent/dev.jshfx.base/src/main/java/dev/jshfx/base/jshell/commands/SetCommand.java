@@ -28,7 +28,7 @@ public class SetCommand extends BaseCommand {
     @Option(names = "start", arity = "0..*", paramLabel = "<file>", descriptionKey = "/set.start", completionCandidates = StartOptions.class)
     private List<String> start;
 
-    @Option(names = "-jshpath", arity = "0..1", paramLabel = "<path>", descriptionKey = "/set.-jshpath")
+    @Option(names = "jshpath", arity = "0..1", paramLabel = "<path>", descriptionKey = "/set.jshpath")
     private String jshpath;
 
     @Option(names = "-retain", descriptionKey = "/set.-retain")
