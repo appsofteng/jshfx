@@ -33,22 +33,25 @@ public final class FileManager extends Manager {
     static final Path SYS_VERSION_DIR = SYS_HOME_DIR.resolve(Constants.SYS_VERSION);
     static final String CONF = "conf";
     static final Path USER_CONF_DIR = SYS_VERSION_DIR.resolve(CONF);
+    private static final Path USER_STYLE_DIR = USER_CONF_DIR.resolve("style");
     private static final Path LOG_DIR = SYS_VERSION_DIR.resolve("log");
-    
-    public static final String DEFAULT_JSH_PATH = FilenameUtils.separatorsToUnix(System.getProperty("user.home")) + "/workspace/jsh"; 
+
+    public static final String DEFAULT_JSH_PATH = FilenameUtils.separatorsToUnix(System.getProperty("user.home"))
+            + "/workspace/jsh";
 
     public static final Path USER_PREFS_FILE = USER_CONF_DIR.resolve("preferences.properties");
 
     private static final String START_DIR = System.getProperty("user.dir");
     public static final Path DEFAULT_PREFS_FILE = Path.of(START_DIR, "conf", "preferences.properties");
     private static final Path JDK_SOURCE_FILE = Path.of(START_DIR, "src", "java-src.zip");
-    public static final Path EXT_DIR =  Path.of(START_DIR, "modules", "ext");
+    public static final Path EXT_DIR = Path.of(START_DIR, "modules", "ext");
     private static final Path FX_DIR = Path.of(START_DIR, "lib", "fx");
     private static final String FX_MODULES = ModuleUtils.getModuleNames(FX_DIR);
     private static final String FX_CLASSPATH = getClassPath(FX_DIR);
     private static final String ACCESS_CLASSPATH = getClassPath(EXT_DIR);
     private static final Path SOURCE_DIR = Path.of(START_DIR, "src", "lib");
 
+    public static final Path STYLE_FILE = USER_STYLE_DIR.resolve("style.css");
     public static final Path ENV_FILE = USER_CONF_DIR.resolve("env.json");
     public static final Path HISTORY_FILE = USER_CONF_DIR.resolve("history.json");
     public static final Path SET_FILE = USER_CONF_DIR.resolve("set.json");
@@ -80,16 +83,17 @@ public final class FileManager extends Manager {
 
     @Override
     public void init() throws IOException {
-        
+
         if (Files.notExists(SYS_VERSION_DIR)) {
             new Upgrader().upgrade();
         }
-        
+
         in = System.in;
         err = System.err;
         out = System.out;
         Files.createDirectories(LOG_DIR);
         Files.createDirectories(USER_CONF_DIR);
+        Files.createDirectories(USER_STYLE_DIR);
         LogManager.getLogManager().readConfiguration(FileManager.class.getResourceAsStream(LOGGING_CONF_FILE));
         Thread.setDefaultUncaughtExceptionHandler(this::uncaughtException);
 
@@ -122,7 +126,7 @@ public final class FileManager extends Manager {
     public String getModules() {
         return FX_MODULES;
     }
-
+    
     private void loadSourceCodes() throws IOException {
         URI uri = URI.create("jar:" + JDK_SOURCE_FILE.toUri());
         jdkSource = FileSystems.newFileSystem(uri, Collections.emptyMap());
