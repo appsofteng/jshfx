@@ -114,28 +114,13 @@ public final class CodeAreaWrappers {
                         compilationWrapper.compile();
                     }
 
-                    var plainChange = ch.toPlainTextChange();
-                    int insertionEnd = plainChange.getInsertionEnd();
-                    int caretPosition = area.getCaretPosition();
-
-                    // Use List not StyleSpansBuilder, StyleSpansBuilder merges styles immediately.
-                    List<StyleSpan<Collection<String>>> spans = new ArrayList<>();
-
-                    var end = getLexer().tokenize(area.getText(), caretPosition, (lastEnd, t) -> {
-                        spans.add(new StyleSpan<>(Collections.emptyList(), t.getStart() - lastEnd));
-                        StyleSpan<Collection<String>> styleSpan = new StyleSpan<>(t.getStyle(), t.getLength());
-                        spans.add(styleSpan);
-                    });
-
+                    highlight();
+                    
                     highlightWrapper.setToken(getLexer().getTokensOnCaretPosition());
                     highlightWrapper.setAreaLength(area.getLength());
-
-                    StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
-                    spansBuilder.addAll(spans);
-                    spansBuilder.add(Collections.emptyList(), area.getText().length() - end);
-                    StyleSpans<Collection<String>> styleSpans = spansBuilder.create();
-
-                    area.setStyleSpans(0, styleSpans);
+                    
+                    var plainChange = ch.toPlainTextChange();
+                    int insertionEnd = plainChange.getInsertionEnd();
 
                     var tokenOnCaret = getLexer().getTokensOnCaretPosition().stream().filter(Token::isClose).findFirst().orElse(null);
 
@@ -159,7 +144,29 @@ public final class CodeAreaWrappers {
 
         return this;
     }
+    
+    public CodeAreaWrappers highlight() {
+        
+        int caretPosition = area.getCaretPosition();
 
+        // Use List not StyleSpansBuilder, StyleSpansBuilder merges styles immediately.
+        List<StyleSpan<Collection<String>>> spans = new ArrayList<>();
+
+        var end = getLexer().tokenize(area.getText(), caretPosition, (lastEnd, t) -> {
+            spans.add(new StyleSpan<>(Collections.emptyList(), t.getStart() - lastEnd));
+            StyleSpan<Collection<String>> styleSpan = new StyleSpan<>(t.getStyle(), t.getLength());
+            spans.add(styleSpan);
+        });
+
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+        spansBuilder.addAll(spans);
+        spansBuilder.add(Collections.emptyList(), area.getText().length() - end);
+        StyleSpans<Collection<String>> styleSpans = spansBuilder.create();
+
+        area.setStyleSpans(0, styleSpans);
+        
+        return this;
+    }
 
     public CodeAreaWrappers indentation() {
         IndentationWrapper<GenericStyledArea<?, ?, ?>> indentationWrapper = new IndentationWrapper<>(area, getLexer());

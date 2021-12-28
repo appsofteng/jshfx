@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.fxmisc.flowless.VirtualizedScrollPane;
-import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 
@@ -61,6 +60,9 @@ public class ShellPane extends AreaPane {
     public ShellPane(Path path, String input) {
         super(path, input);
 
+        lexer = CodeAreaWrappers.get(getArea(), "java").style().highlighting(consoleModel.getReadFromPipe()).indentation()
+                .find().highlight().getLexer();
+        
         history.addAll(JsonUtils.get().fromJson(FileManager.HISTORY_FILE, List.class, List.of()));
         session = new Session(getFXPath(), consoleModel, taskQueuer);
         session.setOnExitCommand(
@@ -107,12 +109,6 @@ public class ShellPane extends AreaPane {
 
         actions.getHistoryUpAction().disabledProperty().bind(historyStartReachedProperty());
         actions.getHistoryDownAction().disabledProperty().bind(historyEndReachedProperty());
-    }
-
-    @Override
-    protected void wrap(CodeArea area) {
-        lexer = CodeAreaWrappers.get(area, "java").style().highlighting(consoleModel.getReadFromPipe()).indentation()
-                .find().getLexer();
     }
 
     @Override
