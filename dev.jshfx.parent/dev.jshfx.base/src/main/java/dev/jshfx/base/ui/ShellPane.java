@@ -61,7 +61,7 @@ public class ShellPane extends AreaPane {
         super(path, input);
 
         lexer = CodeAreaWrappers.get(getArea(), "java").style().highlighting(consoleModel.getReadFromPipe()).indentation()
-                .find().highlight().getLexer();
+                .find().getLexer();
         
         history.addAll(JsonUtils.get().fromJson(FileManager.HISTORY_FILE, List.class, List.of()));
         session = new Session(getFXPath(), consoleModel, taskQueuer);

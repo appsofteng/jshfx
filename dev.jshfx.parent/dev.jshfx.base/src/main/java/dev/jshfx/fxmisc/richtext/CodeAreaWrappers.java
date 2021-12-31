@@ -52,7 +52,7 @@ public final class CodeAreaWrappers {
     public FindWrapper getFindWrapper() {
         return findWrapper;
     }
-    
+
     public CompilationWrapper getCompilationWrapper() {
         return compilationWrapper;
     }
@@ -104,8 +104,7 @@ public final class CodeAreaWrappers {
 
         area.richChanges()
                 .filter(ch -> !ch.toPlainTextChange().getInserted().equals(ch.toPlainTextChange().getRemoved()))
-                .successionEnds(Duration.ofMillis(100))
-                .subscribe(ch -> {
+                .successionEnds(Duration.ofMillis(100)).subscribe(ch -> {
                     if (disableHighlight.get()) {
                         return;
                     }
@@ -114,18 +113,16 @@ public final class CodeAreaWrappers {
                         compilationWrapper.compile();
                     }
 
-                    highlight();
-                    
-                    highlightWrapper.setToken(getLexer().getTokensOnCaretPosition());
-                    highlightWrapper.setAreaLength(area.getLength());
-                    
                     var plainChange = ch.toPlainTextChange();
                     int insertionEnd = plainChange.getInsertionEnd();
 
-                    var tokenOnCaret = getLexer().getTokensOnCaretPosition().stream().filter(Token::isClose).findFirst().orElse(null);
+                    highlight(highlightWrapper);
 
-                    if (insertionEnd == area.getCaretPosition() && tokenOnCaret != null &&
-                            tokenOnCaret.getValue().equals(plainChange.getInserted())) {
+                    var tokenOnCaret = getLexer().getTokensOnCaretPosition().stream().filter(Token::isClose).findFirst()
+                            .orElse(null);
+
+                    if (insertionEnd == area.getCaretPosition() && tokenOnCaret != null
+                            && tokenOnCaret.getValue().equals(plainChange.getInserted())) {
                         blockEndWrapper.indentEnd(tokenOnCaret);
                     }
 
@@ -138,15 +135,17 @@ public final class CodeAreaWrappers {
                     }
                 });
 
+        highlight(highlightWrapper);
+        
         area.caretPositionProperty().addListener((v, o, n) -> {
             Platform.runLater(() -> highlightWrapper.highlightDelimiters(n));
         });
 
         return this;
     }
-    
-    public CodeAreaWrappers highlight() {
-        
+
+    private CodeAreaWrappers highlight(HighlightWrapper highlightWrapper) {
+
         int caretPosition = area.getCaretPosition();
 
         // Use List not StyleSpansBuilder, StyleSpansBuilder merges styles immediately.
@@ -158,22 +157,25 @@ public final class CodeAreaWrappers {
             spans.add(styleSpan);
         });
 
+        highlightWrapper.setToken(getLexer().getTokensOnCaretPosition());
+        highlightWrapper.setAreaLength(area.getLength());
+
         StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
         spansBuilder.addAll(spans);
         spansBuilder.add(Collections.emptyList(), area.getText().length() - end);
         StyleSpans<Collection<String>> styleSpans = spansBuilder.create();
 
         area.setStyleSpans(0, styleSpans);
-        
+
         return this;
     }
 
     public CodeAreaWrappers indentation() {
         IndentationWrapper<GenericStyledArea<?, ?, ?>> indentationWrapper = new IndentationWrapper<>(area, getLexer());
-        Nodes.addInputMap(area, sequence(
-                consume(keyPressed(ENTER), e -> indentationWrapper.insertNewLineIndentation()),
-                consume(keyPressed(TAB), e -> indentationWrapper.insertIndentation()),
-                consume(keyPressed(TAB, SHIFT_DOWN), e -> indentationWrapper.deleteIndentation())));
+        Nodes.addInputMap(area,
+                sequence(consume(keyPressed(ENTER), e -> indentationWrapper.insertNewLineIndentation()),
+                        consume(keyPressed(TAB), e -> indentationWrapper.insertIndentation()),
+                        consume(keyPressed(TAB, SHIFT_DOWN), e -> indentationWrapper.deleteIndentation())));
 
         return this;
     }
