@@ -22,6 +22,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import dev.jshfx.base.Constants;
 import dev.jshfx.j.module.ModuleUtils;
+import dev.jshfx.j.nio.file.FileUtils;
 
 public final class FileManager extends Manager {
 
@@ -125,6 +126,20 @@ public final class FileManager extends Manager {
 
     public String getModules() {
         return FX_MODULES;
+    }
+    
+    public String readString(Path path) {
+        String string = "";
+        
+        try {
+            if (path.isAbsolute()) {
+                string = FileUtils.readString(path);
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
+        }
+        
+        return string;
     }
     
     private void loadSourceCodes() throws IOException {
