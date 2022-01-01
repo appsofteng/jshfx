@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -80,6 +81,11 @@ public class JavaSourceResolver {
     }
 
     public HtmlDoc getHtmlDoc(Signature signature) {
+        
+        if ("class".equals(signature.getSimpleName())) {
+            return null;
+        }
+        
         StringBuilder htmlBuilder = new StringBuilder("");
         HtmlDoc htmlDoc = null;
 
@@ -112,13 +118,13 @@ public class JavaSourceResolver {
                 } else {
                     // This happens when the signature parsing is wrong and no match is found in the
                     // source code.
-                    LOGGER.severe(String.format("Treepath is null for: %s", signature.info()));
+                    LOGGER.warning(String.format("Treepath is null for: %s", signature.info()));
                 }
             }
 
         } catch (IOException e) {
 
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
 
         return htmlDoc;
