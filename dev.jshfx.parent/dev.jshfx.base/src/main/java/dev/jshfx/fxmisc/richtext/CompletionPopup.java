@@ -11,6 +11,7 @@ import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -50,6 +51,8 @@ public class CompletionPopup extends Tooltip {
 
     private EventHandler<KeyEvent> keyHandler;
     private EventHandler<MouseEvent> mouseHandler;
+    
+    private AtomicBoolean process = new AtomicBoolean();
 
     private CompletionPopup() {
         docPopup = new DocPopup();
@@ -91,9 +94,13 @@ public class CompletionPopup extends Tooltip {
         itemView.getItems().clear();
     }
 
+    public void setProcess(boolean value) {
+        process.set(value);
+    }
+    
     public boolean add(CompletionItem item) {
 
-        if (isShowing()) {
+        if (process.get()) {
             if (item != null) {
                 buffer.add(item);
             }
@@ -116,7 +123,7 @@ public class CompletionPopup extends Tooltip {
             }
         } 
         
-        return isShowing();
+        return process.get();
     }
 
     public void setItems(Collection<? extends CompletionItem> items) {
@@ -251,8 +258,9 @@ public class CompletionPopup extends Tooltip {
     @Override
     public void hide() {
         if (isShowing()) {
+            process.set(false);
             getOwnerNode().removeEventFilter(KeyEvent.KEY_PRESSED, keyHandler);
-            getOwnerNode().removeEventHandler(MouseEvent.MOUSE_PRESSED, mouseHandler);
+            getOwnerNode().removeEventFilter(MouseEvent.MOUSE_PRESSED, mouseHandler);
             docPopup.hide();
             super.hide();
         }
@@ -260,6 +268,7 @@ public class CompletionPopup extends Tooltip {
 
     @Override
     public void show(Node ownerNode, double anchorX, double anchorY) {
+        process.set(true);
         placeHolder.setText(FXResourceBundle.getBundle().getString​("searching"));
         if (isShowing()) {
             setAnchorX(anchorX);
@@ -271,7 +280,7 @@ public class CompletionPopup extends Tooltip {
             ownerNode.getScene().getWindow().xProperty().addListener(windowListener);
             ownerNode.getScene().getWindow().yProperty().addListener(windowListener);
             ownerNode.addEventFilter(KeyEvent.KEY_PRESSED, keyHandler);
-            ownerNode.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseHandler);
+            ownerNode.addEventFilter(MouseEvent.MOUSE_PRESSED, mouseHandler);
 
             super.show(ownerNode, anchorX, anchorY);
 

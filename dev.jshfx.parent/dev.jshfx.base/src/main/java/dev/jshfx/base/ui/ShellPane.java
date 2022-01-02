@@ -60,9 +60,9 @@ public class ShellPane extends AreaPane {
     public ShellPane(Path path, String input) {
         super(path, input);
 
-        lexer = CodeAreaWrappers.get(getArea(), "java").style().highlighting(consoleModel.getReadFromPipe()).indentation()
-                .find().getLexer();
-        
+        lexer = CodeAreaWrappers.get(getArea(), "java").style().highlighting(consoleModel.getReadFromPipe())
+                .indentation().find().getLexer();
+
         history.addAll(JsonUtils.get().fromJson(FileManager.HISTORY_FILE, List.class, List.of()));
         session = new Session(getFXPath(), consoleModel, taskQueuer);
         session.setOnExitCommand(
@@ -119,7 +119,7 @@ public class ShellPane extends AreaPane {
     private void insertJshRelativeFilePaths() {
         insertFilePaths(p -> PathUtils.relativize(session.getSettings().getJshPaths(), p));
     }
-    
+
     private void setBehavior() {
 
         consoleHeaderText.bind(session.getTimer().textProperty());
@@ -163,13 +163,17 @@ public class ShellPane extends AreaPane {
         if (boundsOption.isPresent()) {
             Bounds bounds = boundsOption.get();
             var completor = completion.getCompletor();
-            CompletionPopup.get().setDocumentation(completor::loadDocumentation);
-            CompletionPopup.get().setCompletionItem(completor::getCompletionItem);
-            CompletionPopup.get().clear();
-            CompletionPopup.get().show(getArea(), bounds.getMaxX(), bounds.getMaxY());
-            QueueTask<Void> task = QueueTask
-                    .create(() -> completor.getCompletionItems(contains, i -> CompletionPopup.get().add(i)))
-                    .queueId(Session.PRIVILEDGED_TASK_QUEUE);
+            CompletionPopup.get().setProcess(false);
+            QueueTask<Void> task = QueueTask.create(() -> {
+                Platform.runLater(() -> {
+                    CompletionPopup.get().setDocumentation(completor::loadDocumentation);
+                    CompletionPopup.get().setCompletionItem(completor::getCompletionItem);
+                    CompletionPopup.get().clear();
+                    CompletionPopup.get().show(getArea(), bounds.getMaxX(), bounds.getMaxY());
+                    QueueTask<Void> task2 = QueueTask.create(() -> completor.getCompletionItems(contains, i -> CompletionPopup.get().add(i))).queueId(Session.PRIVILEDGED_TASK_QUEUE);
+                    taskQueuer.add(task2);
+                });                
+            }).queueId(Session.PRIVILEDGED_TASK_QUEUE);
             taskQueuer.add(task);
         }
     }
