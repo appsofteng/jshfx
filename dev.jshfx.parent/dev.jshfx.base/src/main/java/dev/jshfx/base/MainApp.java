@@ -1,5 +1,7 @@
 package dev.jshfx.base;
 
+import java.nio.file.Files;
+
 import org.controlsfx.glyphfont.GlyphFontRegistry;
 
 import dev.jshfx.base.sys.CustomSecurityManager;
@@ -53,6 +55,9 @@ public class MainApp extends Application {
 
         Scene scene = new Scene(root, WINDOW_PREF_WIDTH, WINDOW_PREF_HEIGHT, false, SceneAntialiasing.BALANCED);
         scene.getStylesheets().add(ResourceManager.get().getStyle());
+        if (Files.exists(FileManager.STYLE_FILE)) {
+            scene.getStylesheets().add(FileManager.STYLE_FILE.toUri().toString());
+        }
         stage.setScene(scene);
         stage.setTitle(FXResourceBundle.getBundle().getString​("appName") + " " + Constants.SYS_VERSION);
         stage.getIcons().add(ResourceManager.get().getIconImage());

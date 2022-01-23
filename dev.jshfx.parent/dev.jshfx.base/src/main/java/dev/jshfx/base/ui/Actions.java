@@ -6,7 +6,9 @@ import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
@@ -16,9 +18,11 @@ import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.wellbehaved.event.Nodes;
 
+import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.base.sys.ResourceManager;
 import dev.jshfx.cfx.glyphfont.StyleGlyph;
 import dev.jshfx.fonts.Fonts;
+import dev.jshfx.jfx.css.CssUtils;
 import dev.jshfx.jfx.scene.NodeUtils;
 import dev.jshfx.jfx.util.FXResourceBundle;
 import javafx.application.Platform;
@@ -26,14 +30,19 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
+import javafx.css.Size;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Control;
 import javafx.scene.control.Tab;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.KeyCombination;
@@ -84,6 +93,8 @@ public class Actions {
     private Action findAction;
 
     private Action saveSnapshotAction;
+
+    private ChoiceBox<Integer> fontSizeBox = new ChoiceBox<>();
 
     private BooleanExpression savedAllExpression;
 
@@ -251,7 +262,7 @@ public class Actions {
         insertJshRelativeFilePathAction = new Action(
                 e -> rootPane.getEnvPane().handle(insertJshRelativeFilePathAction));
         FXResourceBundle.getBundle().put(insertJshRelativeFilePathAction.textProperty(), "insertJshRelativeFilePaths");
-        insertJshRelativeFilePathAction.setAccelerator(KeyCombination.keyCombination("Alt+Shift+R"));;
+        insertJshRelativeFilePathAction.setAccelerator(KeyCombination.keyCombination("Alt+Shift+R"));        
 
         insertSaveFilePathAction = new Action(e -> rootPane.getEnvPane().handle(insertSaveFilePathAction));
         FXResourceBundle.getBundle().put(insertSaveFilePathAction.textProperty(), "insertSaveFilePath");
@@ -275,6 +286,30 @@ public class Actions {
         findAction = new Action(e -> actionController.showFindDialog());
         FXResourceBundle.getBundle().put(findAction.textProperty(), "find");
         findAction.setAccelerator(KeyCombination.keyCombination("Shortcut+F"));
+
+        ObservableList<Integer> sizes = FXCollections
+                .observableArrayList(IntStream.rangeClosed(10, 30).boxed().toList());
+        fontSizeBox.setItems(sizes);
+        String selector = ".styled-text-area .text";
+        String property = "-fx-font-size";
+        Optional<Size> fontSize = CssUtils.getPropertyValue(FileManager.STYLE_FILE, selector, property);
+        if (fontSize.isEmpty()) {
+            fontSize = CssUtils.getPropertyValue(ResourceManager.get().getStyleURL(), selector, property);
+        }
+
+        if (fontSize.isPresent()) {
+            fontSizeBox.setValue((int)fontSize.get().getValue());
+        } else {
+            fontSizeBox.setValue(14);
+        }
+
+        fontSizeBox.setTooltip(new Tooltip());
+        FXResourceBundle.getBundle().put(fontSizeBox.getTooltip().textProperty(), "fontSize");
+        fontSizeBox.setOnAction(e -> {
+            CssUtils.setPropertyValue(FileManager.STYLE_FILE, selector, property, fontSizeBox.getValue());
+            rootPane.getScene().getStylesheets().remove(FileManager.STYLE_FILE.toUri().toString());
+            rootPane.getScene().getStylesheets().add(FileManager.STYLE_FILE.toUri().toString());
+        });
     }
 
     public Action getCopyAction() {
@@ -379,6 +414,7 @@ public class Actions {
         evalLineAction.setDisabled(true);
         submitAction.setDisabled(true);
         submitLineAction.setDisabled(true);
+        fontSizeBox.setDisable(true);
     }
 
     public void dispose() {
@@ -395,6 +431,7 @@ public class Actions {
 
     public void setActions(ContentPane pane) {
         saveAsAction.setDisabled(false);
+        fontSizeBox.setDisable(false);
         if (savedAllExpression == null) {
             savedAllExpression = pane.modifiedProperty().not();
         } else {
@@ -407,7 +444,7 @@ public class Actions {
     private ToolBar getToolbar() {
         ToolBar toolBar = ActionUtils.createToolBar(List.of(newAction, openAction, saveAction, saveAsAction,
                 saveAllAction, evalAction, evalLineAction, submitAction, submitLineAction), ActionTextBehavior.HIDE);
-
+        toolBar.getItems().add(fontSizeBox);
         toolBar.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
 
             var node = toolBar.getItems().stream().filter(Node::isDisabled)
@@ -469,10 +506,9 @@ public class Actions {
                 ActionUtils.ACTION_SEPARATOR, undoAction, redoAction, ActionUtils.ACTION_SEPARATOR, evalAction,
                 evalLineAction, submitAction, submitLineAction, ActionUtils.ACTION_SEPARATOR, historyUpAction,
                 historyDownAction, ActionUtils.ACTION_SEPARATOR, insertDirPathAction, insertFilePathAction,
-                insertRelativeFilePathAction, insertJshRelativeFilePathAction, 
-                insertSaveFilePathAction, ActionUtils.ACTION_SEPARATOR, codeCompletionAction,
-                codeCompletionContainsAction, historySearchAction, findAction, ActionUtils.ACTION_SEPARATOR,
-                toggleCommentAction);
+                insertRelativeFilePathAction, insertJshRelativeFilePathAction, insertSaveFilePathAction,
+                ActionUtils.ACTION_SEPARATOR, codeCompletionAction, codeCompletionContainsAction, historySearchAction,
+                findAction, ActionUtils.ACTION_SEPARATOR, toggleCommentAction);
         ActionUtils.updateContextMenu(menu, actions);
     }
 
@@ -489,8 +525,8 @@ public class Actions {
                 List.of(codeCompletionAction, codeCompletionContainsAction, evalAction, evalLineAction, findAction,
                         historySearchAction, historyUpAction, historyDownAction, insertDirPathAction,
                         insertFilePathAction, insertRelativeFilePathAction, insertJshRelativeFilePathAction,
-                        insertSaveFilePathAction, saveAction, saveAsAction, submitAction,
-                        submitLineAction, toggleCommentAction));
+                        insertSaveFilePathAction, saveAction, saveAsAction, submitAction, submitLineAction,
+                        toggleCommentAction));
     }
 
     private void addKeyHandlers(Node node, List<Action> actions) {

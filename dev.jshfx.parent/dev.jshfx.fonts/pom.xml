@@ -3,7 +3,7 @@
   <parent>
     <groupId>dev.jshfx</groupId>
     <artifactId>dev.jshfx.parent</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
   </parent>
   <artifactId>dev.jshfx.fonts</artifactId>
   

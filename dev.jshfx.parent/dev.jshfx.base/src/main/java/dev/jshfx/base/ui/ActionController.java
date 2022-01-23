@@ -12,6 +12,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import dev.jshfx.base.sys.FileManager;
 import dev.jshfx.base.sys.TaskManager;
+import dev.jshfx.j.nio.file.FileUtils;
 import dev.jshfx.j.nio.file.PathUtils;
 import dev.jshfx.jfx.concurrent.QueueTask;
 import dev.jshfx.jfx.scene.control.AlertBuilder;
@@ -36,9 +37,9 @@ public class ActionController {
     }
 
     public void close(Event event) {
-        if (event.getSource()instanceof Tab tab) {
+        if (event.getSource() instanceof Tab tab) {
             close(tab, event);
-        } else if (event.getSource()instanceof MenuItem item) {
+        } else if (event.getSource() instanceof MenuItem item) {
             Tab tab = (Tab) item.getParentPopup().getUserData();
             close(tab, null);
         }
@@ -49,7 +50,7 @@ public class ActionController {
     }
 
     public void closeOthers(ActionEvent event) {
-        if (event.getSource()instanceof MenuItem item) {
+        if (event.getSource() instanceof MenuItem item) {
             Tab tab = (Tab) item.getParentPopup().getUserData();
             var tabs = rootPane.getTabs().stream().filter(t -> t != tab).collect(Collectors.toList());
 
@@ -166,15 +167,7 @@ public class ActionController {
 
     private ContentPane create(Path path) {
         ContentPane pane = null;
-        String input = "";
-
-        try {
-            if (path.isAbsolute()) {
-                input = Files.readString(path);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String input = FileManager.get().readString(path);
 
         if (FileManager.SHELL_EXTENSIONS.contains(FilenameUtils.getExtension(path.toString()))) {
 

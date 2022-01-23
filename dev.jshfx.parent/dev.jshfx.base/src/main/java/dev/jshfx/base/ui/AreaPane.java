@@ -24,7 +24,6 @@ public class AreaPane extends ContentPane {
 
     public AreaPane(Path p, String input) {
         super(p);
-        wrap(area);
         area.replaceText(input);
         area.moveTo(0);
         area.requestFollowCaret();
@@ -106,10 +105,6 @@ public class AreaPane extends ContentPane {
 
     public CodeArea getArea() {
         return area;
-    }
-
-    protected void wrap(CodeArea area) {
-
     }
 
     private void forgetEdit() {

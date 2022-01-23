@@ -164,7 +164,7 @@ class SourceCodeCompletor extends Completor {
                 }
             }
            
-            importLines.add(index, newImport);
+            importLines.add(index - startPar, newImport);
 
             var newImports = importLines.stream().collect(Collectors.joining("\n"));
             Platform.runLater(() -> {
