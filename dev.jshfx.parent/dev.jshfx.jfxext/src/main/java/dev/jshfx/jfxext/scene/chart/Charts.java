@@ -129,6 +129,10 @@ public final class Charts {
 
         Axis<X> axisX = getAxis(x);
         Axis<Y> axisY = getAxis(y);
+        
+        if (series.size() > 1) {
+            sortCategories(axisX, axisY, series);
+        }
 
         if (axisX instanceof NumberAxis numberAxis) {
             series.stream().map(s -> s.getData().get(0)).mapToDouble(d ->  ((Number)d.getXValue()).doubleValue()).min()
